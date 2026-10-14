@@ -54,9 +54,7 @@
       "intervalSeconds": 30
     },
     "backups": [],
-    "templateType": "",
-    "cloudflarePagesUrl": "https://allodeploy-test-demo.pages.dev",
-    "cloudflareConnected": true
+    "templateType": ""
   },
   {
     "id": "srv-1cfc53ac",
@@ -103,9 +101,7 @@
       "intervalSeconds": 30
     },
     "backups": [],
-    "templateType": "",
-    "cloudflarePagesUrl": "https://pack2door-frontend.pages.dev",
-    "cloudflareConnected": true
+    "templateType": ""
   },
   {
     "id": "srv-0e2edd4a",
@@ -161,9 +157,7 @@
       "intervalSeconds": 30
     },
     "backups": [],
-    "templateType": "",
-    "cloudflarePagesUrl": "https://dist.pages.dev",
-    "cloudflareConnected": true
+    "templateType": ""
   },
   {
     "id": "srv-09f762b9",
@@ -273,8 +267,6 @@
         "serviceName": "my-coolify-app"
       }
     ],
-    "templateType": "",
-    "cloudflarePagesUrl": "https://allodeploy-web-app.pages.dev",
-    "cloudflareConnected": true
+    "templateType": ""
   }
 ]

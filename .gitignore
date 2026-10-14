@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Production builds
+dist/
+frontend/dist/
+
+# Environment and sensitive secrets
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+backend/storage/cloudflare_config.json
+
+# Local runtime data & caches
+.wrangler/
+backend/.wrangler/
+backend/storage/backups/
+backend/storage/sites/
+backend/storage/deploys/
+backend/storage/snapshots/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.local

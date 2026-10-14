@@ -1,0 +1,280 @@
+[
+  {
+    "id": "srv-fe82c49a",
+    "name": "allodeploy-test-demo",
+    "type": "Application",
+    "status": "stopped",
+    "url": "https://allodeploy-test-demo.pages.dev",
+    "liveDomain": "https://allodeploy-test-demo.pages.dev",
+    "customDomain": "",
+    "domains": [],
+    "sslEnabled": true,
+    "forceHttps": true,
+    "port": 4669,
+    "region": "Frankfurt (eu-central-1)",
+    "source": "Manual Upload (2 folder files)",
+    "gitRepo": "",
+    "gitUrl": "",
+    "gitBranch": "main",
+    "gitCommit": "",
+    "gitCommitMsg": "",
+    "gitAuthor": "",
+    "buildCommand": "",
+    "publishDir": "",
+    "autoDeploy": false,
+    "filesCount": 2,
+    "size": "0.1 KB",
+    "framework": "Static Site",
+    "updatedAt": "Just now",
+    "createdAt": "2026-10-14 06:16",
+    "deployCount": 2,
+    "metrics": {
+      "cpu": "0.2%",
+      "memory": "0.1 KB",
+      "uptime": "100%"
+    },
+    "envVars": [],
+    "sampleFiles": [
+      "index.html",
+      "style.css"
+    ],
+    "deploys": [
+      {
+        "id": "dep-2c18d45f",
+        "date": "Just now",
+        "hash": "6f9977",
+        "status": "running",
+        "message": "Deploy from bundle (2 files, 0.1 KB)",
+        "duration": "2.4s"
+      }
+    ],
+    "healthcheck": {
+      "path": "/",
+      "expectedStatus": 200,
+      "intervalSeconds": 30
+    },
+    "backups": [],
+    "templateType": "",
+    "cloudflarePagesUrl": "https://allodeploy-test-demo.pages.dev",
+    "cloudflareConnected": true
+  },
+  {
+    "id": "srv-1cfc53ac",
+    "name": "pack2door-frontend",
+    "type": "Application",
+    "status": "running",
+    "url": "https://pack2door-frontend.pages.dev",
+    "liveDomain": "https://pack2door-frontend.pages.dev",
+    "customDomain": "pack2door.com",
+    "domains": [],
+    "sslEnabled": true,
+    "forceHttps": true,
+    "port": 7246,
+    "region": "Frankfurt (eu-central-1)",
+    "source": "Manual Upload (Direct Drop)",
+    "gitRepo": "",
+    "gitUrl": "",
+    "gitBranch": "main",
+    "gitCommit": "",
+    "gitCommitMsg": "",
+    "gitAuthor": "",
+    "buildCommand": "",
+    "publishDir": "",
+    "autoDeploy": false,
+    "filesCount": 1,
+    "size": "12 KB",
+    "framework": "Static Site",
+    "updatedAt": "Just now",
+    "createdAt": "2026-10-13 15:09",
+    "deployCount": 1,
+    "metrics": {
+      "cpu": "0.2%",
+      "memory": "12 KB",
+      "uptime": "100%"
+    },
+    "envVars": [],
+    "sampleFiles": [
+      "index.html"
+    ],
+    "deploys": [],
+    "healthcheck": {
+      "path": "/",
+      "expectedStatus": 200,
+      "intervalSeconds": 30
+    },
+    "backups": [],
+    "templateType": "",
+    "cloudflarePagesUrl": "https://pack2door-frontend.pages.dev",
+    "cloudflareConnected": true
+  },
+  {
+    "id": "srv-0e2edd4a",
+    "name": "dist",
+    "type": "Application",
+    "status": "running",
+    "url": "https://dist.pages.dev",
+    "liveDomain": "https://dist.pages.dev",
+    "customDomain": "",
+    "domains": [],
+    "sslEnabled": false,
+    "forceHttps": true,
+    "port": 7373,
+    "region": "Frankfurt (eu-central-1)",
+    "source": "Manual Upload (Direct Drop)",
+    "gitRepo": "",
+    "gitUrl": "",
+    "gitBranch": "main",
+    "gitCommit": "",
+    "gitCommitMsg": "",
+    "gitAuthor": "",
+    "buildCommand": "",
+    "publishDir": "",
+    "autoDeploy": false,
+    "filesCount": 1,
+    "size": "12 KB",
+    "framework": "Static HTML Bundle",
+    "updatedAt": "Just now",
+    "createdAt": "2026-10-13 12:34",
+    "deployCount": 2,
+    "metrics": {
+      "cpu": "0.2%",
+      "memory": "12 KB",
+      "uptime": "100%"
+    },
+    "envVars": [],
+    "sampleFiles": [
+      "index.html"
+    ],
+    "deploys": [
+      {
+        "id": "dep-f97a2a89",
+        "date": "Just now",
+        "hash": "d73ae0",
+        "status": "running",
+        "message": "Deploy from bundle upload",
+        "duration": "2.4s"
+      }
+    ],
+    "healthcheck": {
+      "path": "/",
+      "expectedStatus": 200,
+      "intervalSeconds": 30
+    },
+    "backups": [],
+    "templateType": "",
+    "cloudflarePagesUrl": "https://dist.pages.dev",
+    "cloudflareConnected": true
+  },
+  {
+    "id": "srv-09f762b9",
+    "name": "allodeploy-web-app",
+    "type": "Application",
+    "status": "stopped",
+    "url": "https://allodeploy-web-app.pages.dev",
+    "liveDomain": "https://allodeploy-web-app.pages.dev",
+    "customDomain": "dashboard.allodeploy.internal",
+    "domains": [
+      {
+        "domain": "dashboard.company.internal",
+        "issuedAt": "2026-10-12T10:44:47.482Z",
+        "expiresAt": "2027-01-10T10:44:47.482Z",
+        "sslStatus": "active",
+        "forceHttps": true
+      }
+    ],
+    "sslEnabled": true,
+    "forceHttps": true,
+    "port": 3000,
+    "region": "Self-Hosted Server",
+    "source": "Self-Hosted Container",
+    "gitRepo": "",
+    "gitUrl": "",
+    "gitBranch": "main",
+    "gitCommit": "",
+    "gitCommitMsg": "",
+    "gitAuthor": "",
+    "buildCommand": "",
+    "publishDir": "",
+    "autoDeploy": false,
+    "filesCount": 1,
+    "size": "1.2 MB",
+    "framework": "Node.js",
+    "updatedAt": "Just now",
+    "createdAt": "2026-10-12 10:42",
+    "deployCount": 4,
+    "metrics": {
+      "cpu": "0.4%",
+      "memory": "48 MB",
+      "uptime": "100%"
+    },
+    "envVars": [
+      {
+        "key": "PORT",
+        "value": "4100"
+      },
+      {
+        "key": "NODE_ENV",
+        "value": "production"
+      }
+    ],
+    "sampleFiles": [
+      "index.html",
+      "docker-compose.yml"
+    ],
+    "deploys": [
+      {
+        "id": "dep-c6cccb7b",
+        "date": "Just now",
+        "hash": "e828b3",
+        "status": "running",
+        "message": "Manual container redeploy triggered",
+        "duration": "2.4s"
+      },
+      {
+        "id": "dep-18c77817",
+        "date": "Just now",
+        "hash": "rollback",
+        "status": "superseded",
+        "message": "Rollback to deployment dep-9c2e942b",
+        "duration": "1.4s"
+      },
+      {
+        "id": "dep-9c2e942b",
+        "date": "Just now",
+        "hash": "f33ec1",
+        "status": "superseded",
+        "message": "Manual container redeploy triggered",
+        "duration": "2.4s"
+      },
+      {
+        "id": "dep-b97ec0cd",
+        "date": "Just now",
+        "hash": "1eebb0",
+        "status": "superseded",
+        "message": "Initial deployment via AlloDeploy engine",
+        "duration": "2.4s"
+      }
+    ],
+    "healthcheck": {
+      "path": "/",
+      "expectedStatus": 200,
+      "intervalSeconds": 30
+    },
+    "backups": [
+      {
+        "id": "bkp-8ddd7820",
+        "note": "Pre-deployment backup test",
+        "size": "2.9 KB",
+        "bytes": 3012,
+        "filePath": "C:\\Users\\gamin\\OneDrive\\Documents\\Website hosting manager\\backend\\storage\\backups\\my-coolify-app\\bkp-8ddd7820.zip",
+        "createdAt": "2026-10-12T10:44:47.971Z",
+        "serviceId": "srv-09f762b9",
+        "filesCount": 1,
+        "serviceName": "my-coolify-app"
+      }
+    ],
+    "templateType": "",
+    "cloudflarePagesUrl": "https://allodeploy-web-app.pages.dev",
+    "cloudflareConnected": true
+  }
+]

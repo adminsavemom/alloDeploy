@@ -1,0 +1,16 @@
+[
+  {
+    "id": "task-1bab93a0",
+    "serviceId": "srv-09f762b9",
+    "serviceName": "allodeploy-web-app",
+    "name": "Nightly Database Vacuum",
+    "cronExpression": "0 2 * * *",
+    "command": "vacuumdb -U postgres -d app",
+    "enabled": true,
+    "timeoutSeconds": 300,
+    "createdAt": "2026-10-12T10:44:48.093Z",
+    "lastRunAt": null,
+    "lastStatus": "pending",
+    "lastOutput": ""
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "name": "website-hosting-manager",
+  "version": "1.0.0",
+  "description": "AlloDeploy - Modern Website Hosting Manager",
+  "type": "module",
+  "scripts": {
+    "dev": "node start-dev.js",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "build": "npm --prefix frontend run build",
+    "start": "node start-dev.js"
+  }
+}

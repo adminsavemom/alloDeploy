@@ -1,0 +1,11 @@
+{
+  "apiToken": "",
+  "accountId": "",
+  "zoneId": "",
+  "serverIp": "127.0.0.1",
+  "autoDns": true,
+  "autoPurge": true,
+  "defaultProxied": true,
+  "deployPages": true,
+  "updatedAt": ""
+}

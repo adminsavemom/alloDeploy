@@ -22,6 +22,7 @@ backend/storage/backups/
 backend/storage/sites/
 backend/storage/deploys/
 backend/storage/snapshots/
+backend/storage/health_logs.json
 
 # Logs
 logs/

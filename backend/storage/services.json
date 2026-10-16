@@ -10,7 +10,7 @@
     "domains": [],
     "sslEnabled": false,
     "forceHttps": true,
-    "port": 7997,
+    "port": 4995,
     "region": "Frankfurt (eu-central-1)",
     "source": "Manual Upload (Direct Drop)",
     "gitRepo": "",
@@ -26,7 +26,7 @@
     "size": "12 KB",
     "framework": "Static Site",
     "updatedAt": "Just now",
-    "createdAt": "2026-10-16 05:43",
+    "createdAt": "2026-10-16 05:57",
     "deployCount": 2,
     "metrics": {
       "cpu": "0.2%",
@@ -39,9 +39,9 @@
     ],
     "deploys": [
       {
-        "id": "dep-29258598",
+        "id": "dep-41034e43",
         "date": "Just now",
-        "hash": "567ef9",
+        "hash": "d6dc49",
         "status": "running",
         "message": "Deploy from bundle (1 files, 12 KB)",
         "duration": "2.4s"

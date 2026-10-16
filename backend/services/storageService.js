@@ -157,6 +157,7 @@ export const storageService = {
     const current = this.getServicesSync();
     const existingIndex = current.findIndex(s => s.id === newService.id || s.name === newService.name);
     if (existingIndex >= 0) {
+      newService.id = current[existingIndex].id;
       current[existingIndex] = { ...current[existingIndex], ...newService };
     } else {
       current.unshift(newService);

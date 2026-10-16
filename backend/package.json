@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js",
-    "dev:backend": "node --watch server.js"
+    "dev": "node --watch-path=server.js --watch-path=routes --watch-path=services server.js",
+    "dev:backend": "node --watch-path=server.js --watch-path=routes --watch-path=services server.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",

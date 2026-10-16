@@ -21,10 +21,12 @@ import { nginxService } from './services/nginxService.js';
 import { automationService } from './services/automationService.js';
 import { cloudflareService } from './services/cloudflareService.js';
 
-dotenv.config();
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config();
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 

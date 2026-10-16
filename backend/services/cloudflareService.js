@@ -3,9 +3,12 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
 import dns from 'dns';
+import dotenv from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
+dotenv.config();
 const STORAGE_DIR = path.resolve(__dirname, '..', 'storage');
 const CONFIG_FILE = path.join(STORAGE_DIR, 'cloudflare_config.json');
 
@@ -455,77 +458,100 @@ export const cloudflareService = {
       }
     }
 
-    const isWin = process.platform === 'win32';
     const backendDir = path.resolve(__dirname, '..');
-    const wranglerCmd = isWin ? 'npx.cmd' : 'npx';
-    const prefixArgs = ['wrangler'];
+    let wranglerEntry = null;
+    try {
+      const candidate = path.join(backendDir, 'node_modules', 'wrangler', 'bin', 'wrangler.js');
+      if (fs.existsSync(candidate)) {
+        wranglerEntry = candidate;
+      }
+    } catch {}
 
     const env = {
       ...process.env,
+      CI: 'true',
+      WRANGLER_SEND_METRICS: 'false',
+      CLOUDFLARE_TELEMETRY_DISABLED: '1',
       CLOUDFLARE_API_TOKEN: cfg.apiToken,
       ...(accountId ? { CLOUDFLARE_ACCOUNT_ID: accountId } : {})
     };
 
-    const runWrangler = (args) => new Promise((resolve) => {
+    const runWrangler = (args, timeoutMs = 60000) => new Promise((resolve) => {
       let fullOutput = '';
-      if (onLog) onLog(`> wrangler ${args.filter(a => a !== 'wrangler').join(' ')}`);
+      if (onLog) onLog(`> wrangler ${args.join(' ')}`);
 
-      const safeArgs = args.map(arg => {
-        if (typeof arg === 'string' && arg.includes(' ') && !arg.startsWith('"')) {
-          return `"${arg}"`;
-        }
-        return arg;
-      });
+      let timer = null;
+      let proc = null;
 
-      const proc = spawn(wranglerCmd, safeArgs, {
-        cwd: backendDir,
-        env,
-        shell: isWin,
-        windowsHide: true
-      });
+      try {
+        const isWin = process.platform === 'win32';
+        const execArgs = wranglerEntry ? [wranglerEntry, ...args] : ['wrangler', ...args];
+        const execBin = wranglerEntry ? process.execPath : (isWin ? 'npx.cmd' : 'npx');
 
-      proc.stdout.on('data', (d) => {
-        const str = d.toString();
-        fullOutput += str;
-        if (onLog) {
-          str.split(/\r?\n/).filter(l => l.trim()).forEach(l => onLog(l));
-        }
-      });
+        proc = spawn(execBin, execArgs, {
+          cwd: backendDir,
+          env,
+          stdio: ['ignore', 'pipe', 'pipe'],
+          shell: !wranglerEntry && isWin,
+          windowsHide: true
+        });
 
-      proc.stderr.on('data', (d) => {
-        const str = d.toString();
-        fullOutput += str;
-        if (onLog) {
-          str.split(/\r?\n/).filter(l => l.trim()).forEach(l => onLog(`[Wrangler] ${l}`));
-        }
-      });
+        timer = setTimeout(() => {
+          if (proc && !proc.killed) {
+            try { proc.kill('SIGKILL'); } catch {}
+            if (onLog) onLog(`[Wrangler] Timeout after ${timeoutMs / 1000}s, proceeding...`);
+            resolve({ code: 1, output: fullOutput + '\nTimeout exceeded.' });
+          }
+        }, timeoutMs);
 
-      proc.on('close', (code) => {
-        resolve({ code, output: fullOutput });
-      });
+        proc.stdout.on('data', (d) => {
+          const str = d.toString();
+          fullOutput += str;
+          if (onLog) {
+            str.split(/\r?\n/).filter(l => l.trim()).forEach(l => onLog(l));
+          }
+        });
 
-      proc.on('error', (err) => {
+        proc.stderr.on('data', (d) => {
+          const str = d.toString();
+          fullOutput += str;
+          if (onLog) {
+            str.split(/\r?\n/).filter(l => l.trim()).forEach(l => onLog(`[Wrangler] ${l}`));
+          }
+        });
+
+        proc.on('close', (code) => {
+          if (timer) clearTimeout(timer);
+          resolve({ code: code || 0, output: fullOutput });
+        });
+
+        proc.on('error', (err) => {
+          if (timer) clearTimeout(timer);
+          if (onLog) onLog(`[Wrangler Error] ${err.message}`);
+          resolve({ code: 1, output: err.message });
+        });
+      } catch (err) {
+        if (timer) clearTimeout(timer);
         resolve({ code: 1, output: err.message });
-      });
+      }
     });
 
     try {
       if (onLog) onLog(`Ensuring Cloudflare Pages project "${cleanName}" exists...`);
       // 1. Ensure project exists: wrangler pages project create <name> --production-branch=main
-      await runWrangler([...prefixArgs, 'pages', 'project', 'create', cleanName, '--production-branch=main']);
+      await runWrangler(['pages', 'project', 'create', cleanName, '--production-branch=main'], 30000);
 
       // 2. Deploy directory: wrangler pages deploy <siteDir> --project-name=<name> --branch=<branch>
       if (siteDir && fs.existsSync(siteDir)) {
         if (onLog) onLog(`Deploying files to Cloudflare Pages project "${cleanName}"...`);
         const deployRes = await runWrangler([
-          ...prefixArgs,
           'pages',
           'deploy',
           siteDir,
           `--project-name=${cleanName}`,
           `--branch=${branch || 'main'}`,
           '--commit-dirty=true'
-        ]);
+        ], 60000);
 
         const urlMatch = deployRes.output.match(/https:\/\/[a-zA-Z0-9.-]+\.pages\.dev/i);
         const previewUrl = urlMatch ? urlMatch[0] : defaultPagesUrl;

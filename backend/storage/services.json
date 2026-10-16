@@ -1,5 +1,63 @@
 [
   {
+    "id": "srv-0fd2b9db",
+    "name": "uyir-portal",
+    "type": "Application",
+    "status": "running",
+    "url": "https://uyir-portal.pages.dev",
+    "liveDomain": "https://uyir-portal.pages.dev",
+    "customDomain": "",
+    "domains": [],
+    "sslEnabled": false,
+    "forceHttps": true,
+    "port": 7997,
+    "region": "Frankfurt (eu-central-1)",
+    "source": "Manual Upload (Direct Drop)",
+    "gitRepo": "",
+    "gitUrl": "",
+    "gitBranch": "main",
+    "gitCommit": "",
+    "gitCommitMsg": "",
+    "gitAuthor": "",
+    "buildCommand": "",
+    "publishDir": "",
+    "autoDeploy": false,
+    "filesCount": 1,
+    "size": "12 KB",
+    "framework": "Static Site",
+    "updatedAt": "Just now",
+    "createdAt": "2026-10-16 05:43",
+    "deployCount": 2,
+    "metrics": {
+      "cpu": "0.2%",
+      "memory": "12 KB",
+      "uptime": "100%"
+    },
+    "envVars": [],
+    "sampleFiles": [
+      "index.html"
+    ],
+    "deploys": [
+      {
+        "id": "dep-29258598",
+        "date": "Just now",
+        "hash": "567ef9",
+        "status": "running",
+        "message": "Deploy from bundle (1 files, 12 KB)",
+        "duration": "2.4s"
+      }
+    ],
+    "healthcheck": {
+      "path": "/",
+      "expectedStatus": 200,
+      "intervalSeconds": 30
+    },
+    "backups": [],
+    "templateType": "",
+    "cloudflarePagesUrl": "https://uyir-portal.pages.dev",
+    "cloudflareConnected": true
+  },
+  {
     "id": "srv-fe82c49a",
     "name": "allodeploy-test-demo",
     "type": "Application",
@@ -62,7 +120,7 @@
     "id": "srv-1cfc53ac",
     "name": "pack2door-frontend",
     "type": "Application",
-    "status": "running",
+    "status": "stopped",
     "url": "https://pack2door-frontend.pages.dev",
     "liveDomain": "https://pack2door-frontend.pages.dev",
     "customDomain": "pack2door.com",

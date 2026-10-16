@@ -2293,11 +2293,17 @@ export function renderDeployModal(container) {
               method: 'POST',
               body: formData
             });
-            const data = await res.json();
+            let data = null;
+            try {
+              data = await res.json();
+            } catch (jsonErr) {
+              throw new Error(`Server returned status ${res.status}: ${res.statusText || 'Unable to parse server response'}`);
+            }
+
             if (!res.ok || !data.success) {
               if (sse) sse.close();
               const errMsg = data.error || 'Deployment failed on server.';
-              store.showToast(errMsg, 'warn');
+              store.showToast(errMsg, 'error');
               logLines.push({ time: new Date().toISOString().substring(14, 19), type: 'error', category: 'build', text: `❌ ${errMsg}` });
               const logBox = container.querySelector('#terminal-log-output');
               if (logBox) {
@@ -2305,7 +2311,10 @@ export function renderDeployModal(container) {
                 div.className = 'log-line';
                 div.innerHTML = `<span class="log-time">[error]</span><span class="log-error">${errMsg}</span>`;
                 logBox.appendChild(div);
+                logBox.scrollTop = logBox.scrollHeight;
               }
+              const subText = container.querySelector('#deploying-status-subtext');
+              if (subText) subText.innerHTML = `<span style="color: #ef4444;">Deployment Failed: ${errMsg}</span>`;
               return;
             }
 
@@ -2345,7 +2354,19 @@ export function renderDeployModal(container) {
           }, 600);
         } catch (err) {
           if (sse) sse.close();
-          store.showToast(err.message, 'warn');
+          const errMsg = err.message || 'Deployment aborted by network or server reset.';
+          store.showToast(errMsg, 'error');
+          logLines.push({ time: new Date().toISOString().substring(14, 19), type: 'error', category: 'build', text: `❌ Network / Server Error: ${errMsg}` });
+          const logBox = container.querySelector('#terminal-log-output');
+          if (logBox) {
+            const div = document.createElement('div');
+            div.className = 'log-line';
+            div.innerHTML = `<span class="log-time">[error]</span><span class="log-error">❌ ${errMsg}</span>`;
+            logBox.appendChild(div);
+            logBox.scrollTop = logBox.scrollHeight;
+          }
+          const subText = container.querySelector('#deploying-status-subtext');
+          if (subText) subText.innerHTML = `<span style="color: #ef4444;">Connection interrupted: ${errMsg}</span>`;
         }
       })();
 

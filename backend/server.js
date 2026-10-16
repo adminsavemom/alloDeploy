@@ -113,6 +113,18 @@ app.use('/api/*', (req, res) => {
   res.status(404).json({ error: 'Endpoint not found' });
 });
 
+// Serve static frontend assets when built (Docker / production)
+const frontendDistPath = path.resolve(__dirname, '../frontend/dist');
+if (fs.existsSync(frontendDistPath)) {
+  app.use(express.static(frontendDistPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/sites')) {
+      return next();
+    }
+    res.sendFile(path.join(frontendDistPath, 'index.html'));
+  });
+}
+
 // Background Automation Scheduler (Certbot Auto-Renewal & Healthcheck Prober)
 function startAutomationBackgroundTasks() {
   console.log('⏰ Starting background automation jobs...');

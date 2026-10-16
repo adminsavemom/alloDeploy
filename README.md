@@ -74,6 +74,30 @@ npm run dev
 
 ---
 
+## 🐳 Docker Deployment
+
+AlloDeploy includes a multi-stage production Docker build that compiles both the frontend and backend into a single lightweight container image:
+
+### Build and Run with Docker
+
+```bash
+# Build the production image
+docker build -t allodeploy:latest .
+
+# Run the container (maps to port 5000)
+docker run -d -p 5000:5000 -v allodeploy_storage:/app/backend/storage --name allodeploy allodeploy:latest
+```
+
+### Run with Docker Compose
+
+```bash
+docker compose up -d --build
+```
+
+Access the application in your browser at `http://localhost:5000`.
+
+---
+
 ## 📄 License
 
 MIT License. Built with ❤️ for modern self-hosted web infrastructure.

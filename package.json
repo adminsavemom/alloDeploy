@@ -8,6 +8,9 @@
     "dev:frontend": "npm --prefix frontend run dev",
     "dev:backend": "npm --prefix backend run dev",
     "build": "npm --prefix frontend run build",
-    "start": "node start-dev.js"
+    "start": "node start-dev.js",
+    "docker:build": "docker build -t allodeploy:latest .",
+    "docker:run": "docker run -d -p 5000:5000 --name allodeploy allodeploy:latest",
+    "docker:compose": "docker compose up -d --build"
   }
 }

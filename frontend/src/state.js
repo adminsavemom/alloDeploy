@@ -117,7 +117,9 @@ class StateStore {
     this.deployModalTab = 'drop'; // 'drop' | 'github'
 
     // Server telemetry & metrics
-    this.backendUrl = 'http://localhost:5000';
+    this.backendUrl = (typeof window !== 'undefined' && window.location.port === '5173')
+      ? 'http://localhost:5000'
+      : (typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'http://localhost:5000');
     this.backendConnected = false;
     this.backendMetrics = null;
     this.serverMetrics = null;

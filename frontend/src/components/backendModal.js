@@ -177,12 +177,12 @@ export function renderBackendModal(container) {
   const pingBtn = container.querySelector('#btn-ping-backend');
   if (pingBtn) {
     pingBtn.addEventListener('click', async () => {
-      store.showToast('Pinging backend server at http://localhost:5000...', 'info');
+      store.showToast(`Pinging backend server at ${store.backendUrl}...`, 'info');
       await store.checkBackendConnection();
       if (store.backendConnected) {
-        store.showToast('Backend is online and responding at port 5000!', 'success');
+        store.showToast(`Backend is online and responding at ${store.backendUrl}!`, 'success');
       } else {
-        store.showToast('Backend is not running. Please start it using "npm start" in the ../backend folder.', 'warn');
+        store.showToast('Backend is not running. Please check server container or run "npm start" in backend.', 'warn');
       }
     });
   }

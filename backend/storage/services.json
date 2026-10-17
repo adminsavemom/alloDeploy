@@ -199,7 +199,14 @@
       "memory": "12 KB",
       "uptime": "100%"
     },
-    "envVars": [],
+    "envVars": [
+      {
+        "key": "PORT",
+        "value": "5000",
+        "isSecret": false,
+        "isBuildSecret": false
+      }
+    ],
     "sampleFiles": [
       "index.html"
     ],

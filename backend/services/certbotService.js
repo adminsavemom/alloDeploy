@@ -101,7 +101,7 @@ export const certbotService = {
   async issueCertificate({ domain, email, serviceId = '', serviceName = '', staging = false }) {
     if (!domain) throw new Error('Domain name is required.');
     const cleanDomain = domain.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
-    const userEmail = email || 'admin@allodeploy.dev';
+    const userEmail = email || 'alex.smith@example.com';
 
     const domainDir = path.join(LIVE_DIR, cleanDomain);
     if (!fs.existsSync(domainDir)) fs.mkdirSync(domainDir, { recursive: true });

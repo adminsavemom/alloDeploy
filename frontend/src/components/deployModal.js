@@ -280,11 +280,8 @@ export function renderDeployModal(container) {
       <div style="background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius-md); padding: 16px 18px; margin-bottom: 16px;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
           <label for="project-name-input" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #cbd5e1; display: flex; align-items: center; gap: 6px; margin: 0;">
-            <span style="color: #f6821f;">☁️</span> Cloudflare Pages Project Name
+            Project Name
           </label>
-          <span class="badge" style="background: rgba(246, 130, 31, 0.15); color: #f6821f; border: 1px solid rgba(246, 130, 31, 0.3); font-size: 10.5px; padding: 2px 8px;">
-            Global Anycast Edge
-          </span>
         </div>
 
         <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
@@ -407,26 +404,12 @@ export function renderDeployModal(container) {
             <button type="button" class="btn btn-secondary btn-sm" id="btn-select-zip">
               ${icons.archive} Upload .ZIP Archive
             </button>
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-select-files">
-              ${icons.fileCode} Browse Web Files
-            </button>
           </div>
         </div>
       `}
 
       <!-- Step 3: Direct Deploy Action Banner -->
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: var(--radius-md); padding: 14px 18px; flex-wrap: wrap;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 20px;">⚡</span>
-          <div>
-            <div style="font-size: 13.5px; font-weight: 700; color: #fff;">
-              Ready to Publish Worldwide
-            </div>
-            <div style="font-size: 12px; color: var(--text-faint);">
-              Deploys instantly to Cloudflare Pages Anycast edge network with free HTTPS and DDoS protection.
-            </div>
-          </div>
-        </div>
+      <div style="display: flex; align-items: center; justify-content: flex-end; gap: 14px; background: rgba(99, 102, 241, 0.04); border: 1px solid rgba(99, 102, 241, 0.15); border-radius: var(--radius-md); padding: 12px 16px; flex-wrap: wrap;">
 
         <button
           type="button"
@@ -982,7 +965,7 @@ export function renderDeployModal(container) {
         <!-- Deployment Configuration Form -->
         <div class="config-grid">
           <div class="form-group">
-            <label class="form-label" for="cfg-service-name">Cloudflare Pages Project Name</label>
+            <label class="form-label" for="cfg-service-name">Project Name</label>
             <div class="input-with-icon" style="position: relative;">
               <input type="text" id="cfg-service-name" value="${serviceName}" placeholder="e.g. my-awesome-site" spellcheck="false" />
             </div>

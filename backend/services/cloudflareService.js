@@ -758,5 +758,415 @@ export const cloudflareService = {
       resolves: aRecords.length > 0,
       error
     };
+  },
+
+  // ===========================================================================
+  // CLOUDFLARE CUSTOM HOSTNAMES API (Cloudflare for SaaS / Custom Origin Routing)
+  // ===========================================================================
+
+  // Update a Custom Hostname (PATCH /zones/:zone_id/custom_hostnames/:custom_hostname_id)
+  async updateCustomHostname({
+    zoneId = null,
+    customHostnameId,
+    customOriginServer = null,
+    customOriginSni = null,
+    ssl = null,
+    overrideToken = null
+  }) {
+    try {
+      const cfg = this.getConfig();
+      const targetZone = zoneId || cfg.zoneId;
+      if (!targetZone) throw new Error('Cloudflare Zone ID is required for Custom Hostname updates.');
+      if (!customHostnameId) throw new Error('Cloudflare Custom Hostname ID is required.');
+
+      const payload = {};
+      if (customOriginServer !== undefined && customOriginServer !== null) {
+        payload.custom_origin_server = customOriginServer.trim();
+      }
+      if (customOriginSni !== undefined && customOriginSni !== null) {
+        payload.custom_origin_sni = customOriginSni.trim();
+      }
+      if (ssl !== undefined && ssl !== null) {
+        payload.ssl = ssl;
+      }
+
+      const url = `${CF_API_BASE}/zones/${targetZone}/custom_hostnames/${encodeURIComponent(customHostnameId)}`;
+      const res = await fetch(url, {
+        method: 'PATCH',
+        headers: this.getHeaders(overrideToken),
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        const errMsg = data.errors?.[0]?.message || 'Failed to update Cloudflare custom hostname';
+        throw new Error(errMsg);
+      }
+
+      return data.result;
+    } catch (err) {
+      console.error('Cloudflare updateCustomHostname error:', err.message);
+      throw err;
+    }
+  },
+
+  // List Custom Hostnames for a zone
+  async getCustomHostnames({ zoneId = null, hostname = null, page = 1, perPage = 50, overrideToken = null } = {}) {
+    try {
+      const cfg = this.getConfig();
+      const targetZone = zoneId || cfg.zoneId;
+      if (!targetZone) throw new Error('Cloudflare Zone ID is required to fetch custom hostnames.');
+
+      let url = `${CF_API_BASE}/zones/${targetZone}/custom_hostnames?page=${page}&per_page=${perPage}`;
+      if (hostname) {
+        const clean = hostname.toLowerCase().trim().replace(/^https?:\/\//i, '').replace(/\/.*$/, '');
+        url += `&hostname=${encodeURIComponent(clean)}`;
+      }
+
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: this.getHeaders(overrideToken)
+      });
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.errors?.[0]?.message || 'Failed to fetch custom hostnames');
+      }
+
+      return data.result || [];
+    } catch (err) {
+      console.error('Cloudflare getCustomHostnames error:', err.message);
+      throw err;
+    }
+  },
+
+  // Get single Custom Hostname by ID
+  async getCustomHostname({ zoneId = null, customHostnameId, overrideToken = null }) {
+    try {
+      const cfg = this.getConfig();
+      const targetZone = zoneId || cfg.zoneId;
+      if (!targetZone || !customHostnameId) throw new Error('Zone ID and Custom Hostname ID are required.');
+
+      const url = `${CF_API_BASE}/zones/${targetZone}/custom_hostnames/${encodeURIComponent(customHostnameId)}`;
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: this.getHeaders(overrideToken)
+      });
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.errors?.[0]?.message || 'Failed to fetch custom hostname details');
+      }
+      return data.result;
+    } catch (err) {
+      console.error('Cloudflare getCustomHostname error:', err.message);
+      throw err;
+    }
+  },
+
+  // Create Custom Hostname (POST /zones/:zone_id/custom_hostnames)
+  async createCustomHostname({
+    zoneId = null,
+    hostname,
+    customOriginServer = null,
+    customOriginSni = null,
+    ssl = null,
+    overrideToken = null
+  }) {
+    try {
+      const cfg = this.getConfig();
+      const targetZone = zoneId || cfg.zoneId;
+      if (!targetZone) throw new Error('Cloudflare Zone ID is required to create a custom hostname.');
+      if (!hostname) throw new Error('Hostname is required.');
+
+      const clean = hostname.toLowerCase().trim().replace(/^https?:\/\//i, '').replace(/\/.*$/, '');
+      const payload = {
+        hostname: clean,
+        ssl: ssl || { method: 'http', type: 'dv', settings: { min_tls_version: '1.2' } }
+      };
+
+      if (customOriginServer) payload.custom_origin_server = customOriginServer.trim();
+      if (customOriginSni) payload.custom_origin_sni = customOriginSni.trim();
+
+      const url = `${CF_API_BASE}/zones/${targetZone}/custom_hostnames`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: this.getHeaders(overrideToken),
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.errors?.[0]?.message || 'Failed to create custom hostname');
+      }
+      return data.result;
+    } catch (err) {
+      console.error('Cloudflare createCustomHostname error:', err.message);
+      throw err;
+    }
+  },
+
+  // Delete Custom Hostname (DELETE /zones/:zone_id/custom_hostnames/:custom_hostname_id)
+  async deleteCustomHostname({ zoneId = null, customHostnameId, overrideToken = null }) {
+    try {
+      const cfg = this.getConfig();
+      const targetZone = zoneId || cfg.zoneId;
+      if (!targetZone || !customHostnameId) throw new Error('Zone ID and Custom Hostname ID are required.');
+
+      const url = `${CF_API_BASE}/zones/${targetZone}/custom_hostnames/${encodeURIComponent(customHostnameId)}`;
+      const res = await fetch(url, {
+        method: 'DELETE',
+        headers: this.getHeaders(overrideToken)
+      });
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.errors?.[0]?.message || 'Failed to delete custom hostname');
+      }
+      return { success: true, id: customHostnameId };
+    } catch (err) {
+      console.error('Cloudflare deleteCustomHostname error:', err.message);
+      throw err;
+    }
+  },
+
+  // Find or Create or Update Custom Hostname (Idempotent helper for domain name changes)
+  async syncCustomHostnameForDomain({
+    zoneId = null,
+    domain,
+    customOriginServer = null,
+    customOriginSni = null,
+    customHostnameId = null,
+    ssl = null,
+    overrideToken = null
+  }) {
+    const cfg = this.getConfig();
+    const targetZone = zoneId || cfg.zoneId;
+    if (!targetZone) throw new Error('Cloudflare Zone ID is required for Custom Hostnames.');
+
+    const clean = domain.toLowerCase().trim().replace(/^https?:\/\//i, '').replace(/\/.*$/, '');
+
+    // 1. If customHostnameId provided, call PATCH directly
+    if (customHostnameId) {
+      const updated = await this.updateCustomHostname({
+        zoneId: targetZone,
+        customHostnameId,
+        customOriginServer,
+        customOriginSni,
+        ssl,
+        overrideToken
+      });
+      return { action: 'updated', result: updated, id: updated.id };
+    }
+
+    // 2. Otherwise search if this hostname already exists in Cloudflare
+    let existing = null;
+    try {
+      const hostnames = await this.getCustomHostnames({ zoneId: targetZone, hostname: clean, overrideToken });
+      existing = hostnames.find(h => h.hostname.toLowerCase() === clean);
+    } catch (e) {
+      console.warn('Notice querying custom hostnames:', e.message);
+    }
+
+    if (existing && existing.id) {
+      // Hostname exists: execute PATCH update
+      const updated = await this.updateCustomHostname({
+        zoneId: targetZone,
+        customHostnameId: existing.id,
+        customOriginServer,
+        customOriginSni,
+        ssl,
+        overrideToken
+      });
+      return { action: 'updated', result: updated, id: updated.id };
+    }
+
+    // 3. Not existing: create new Custom Hostname
+    const created = await this.createCustomHostname({
+      zoneId: targetZone,
+      hostname: clean,
+      customOriginServer,
+      customOriginSni,
+      ssl,
+      overrideToken
+    });
+    return { action: 'created', result: created, id: created.id };
+  },
+
+  // PUT /zones/:zone_id/custom_hostnames/:custom_hostname_id - Full replace
+  async replaceCustomHostname({
+    zoneId = null,
+    customHostnameId,
+    hostname,
+    customOriginServer = null,
+    customOriginSni = null,
+    ssl = null,
+    customMetadata = null,
+    overrideToken = null
+  }) {
+    try {
+      const cfg = this.getConfig();
+      const targetZone = zoneId || cfg.zoneId;
+      if (!targetZone || !customHostnameId) throw new Error('Zone ID and Custom Hostname ID are required.');
+
+      const payload = {};
+      if (hostname) payload.hostname = hostname.trim();
+      if (customOriginServer !== undefined) payload.custom_origin_server = customOriginServer;
+      if (customOriginSni !== undefined) payload.custom_origin_sni = customOriginSni;
+      if (ssl !== undefined) payload.ssl = ssl;
+      if (customMetadata !== undefined) payload.custom_metadata = customMetadata;
+
+      const url = `${CF_API_BASE}/zones/${targetZone}/custom_hostnames/${encodeURIComponent(customHostnameId)}`;
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers: this.getHeaders(overrideToken),
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.errors?.[0]?.message || 'Failed to replace custom hostname');
+      }
+      return data.result;
+    } catch (err) {
+      console.error('Cloudflare replaceCustomHostname error:', err.message);
+      throw err;
+    }
+  },
+
+  // GET /zones/:zone_id/custom_hostnames/fallback_origin - Get Fallback Origin
+  async getFallbackOrigin({ zoneId = null, overrideToken = null } = {}) {
+    try {
+      const cfg = this.getConfig();
+      const targetZone = zoneId || cfg.zoneId;
+      if (!targetZone) throw new Error('Zone ID is required for Fallback Origin.');
+
+      const url = `${CF_API_BASE}/zones/${targetZone}/custom_hostnames/fallback_origin`;
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: this.getHeaders(overrideToken)
+      });
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.errors?.[0]?.message || 'Failed to fetch fallback origin');
+      }
+      return data.result;
+    } catch (err) {
+      console.error('Cloudflare getFallbackOrigin error:', err.message);
+      throw err;
+    }
+  },
+
+  // PUT /zones/:zone_id/custom_hostnames/fallback_origin - Set Fallback Origin
+  async updateFallbackOrigin({ zoneId = null, origin, overrideToken = null }) {
+    try {
+      const cfg = this.getConfig();
+      const targetZone = zoneId || cfg.zoneId;
+      if (!targetZone) throw new Error('Zone ID is required for Fallback Origin.');
+      if (!origin) throw new Error('Origin hostname is required.');
+
+      const url = `${CF_API_BASE}/zones/${targetZone}/custom_hostnames/fallback_origin`;
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers: this.getHeaders(overrideToken),
+        body: JSON.stringify({ origin: origin.trim() })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.errors?.[0]?.message || 'Failed to update fallback origin');
+      }
+      return data.result;
+    } catch (err) {
+      console.error('Cloudflare updateFallbackOrigin error:', err.message);
+      throw err;
+    }
+  },
+
+  // DELETE /zones/:zone_id/custom_hostnames/fallback_origin - Delete Fallback Origin
+  async deleteFallbackOrigin({ zoneId = null, overrideToken = null } = {}) {
+    try {
+      const cfg = this.getConfig();
+      const targetZone = zoneId || cfg.zoneId;
+      if (!targetZone) throw new Error('Zone ID is required for Fallback Origin.');
+
+      const url = `${CF_API_BASE}/zones/${targetZone}/custom_hostnames/fallback_origin`;
+      const res = await fetch(url, {
+        method: 'DELETE',
+        headers: this.getHeaders(overrideToken)
+      });
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.errors?.[0]?.message || 'Failed to delete fallback origin');
+      }
+      return { success: true };
+    } catch (err) {
+      console.error('Cloudflare deleteFallbackOrigin error:', err.message);
+      throw err;
+    }
+  },
+
+  // DELETE Cloudflare Pages project
+  async deletePagesProject(projectName) {
+    const cfg = this.getConfig();
+    const cleanProject = (projectName || '').toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    let accountId = cfg.accountId;
+    if (!accountId) {
+      const accounts = await this.listAccounts();
+      if (accounts.length > 0) accountId = accounts[0].id;
+    }
+    if (accountId && cfg.apiToken) {
+      try {
+        const res = await fetch(`${CF_API_BASE}/accounts/${accountId}/pages/projects/${encodeURIComponent(cleanProject)}`, {
+          method: 'DELETE',
+          headers: this.getHeaders()
+        });
+        const data = await res.json();
+        return { success: data.success };
+      } catch (e) {
+        console.warn('Error deleting Pages project from Cloudflare:', e.message);
+      }
+    }
+    return { success: true };
+  },
+
+  // Update Cloudflare Pages project environment variables
+  async updatePagesEnvironmentVariables(projectName, envVars = []) {
+    const cfg = this.getConfig();
+    const cleanProject = (projectName || '').toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    let accountId = cfg.accountId;
+    if (!accountId) {
+      const accounts = await this.listAccounts();
+      if (accounts.length > 0) accountId = accounts[0].id;
+    }
+    if (!accountId || !cfg.apiToken) return null;
+
+    try {
+      const envObj = {};
+      (envVars || []).forEach(ev => {
+        if (ev && ev.key) {
+          envObj[ev.key] = {
+            value: ev.value || '',
+            type: ev.isSecret ? 'secret_text' : 'plain_text'
+          };
+        }
+      });
+
+      const url = `${CF_API_BASE}/accounts/${accountId}/pages/projects/${encodeURIComponent(cleanProject)}`;
+      const res = await fetch(url, {
+        method: 'PATCH',
+        headers: this.getHeaders(),
+        body: JSON.stringify({
+          deployment_configs: {
+            production: {
+              env_vars: envObj
+            },
+            preview: {
+              env_vars: envObj
+            }
+          }
+        })
+      });
+      const data = await res.json();
+      return data;
+    } catch (e) {
+      console.warn('Notice syncing Pages environment variables:', e.message);
+      return null;
+    }
   }
 };
+

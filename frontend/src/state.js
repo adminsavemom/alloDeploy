@@ -8,15 +8,15 @@ class StateStore {
   constructor() {
     this.listeners = new Set();
     
-    // Load saved session or set corporate enterprise default
+    // Load saved session or set corporate default (non-admin example email)
     const defaultUser = {
-      id: 'usr_enterprise_admin',
-      name: 'Admin',
-      handle: 'admin',
-      email: 'admin@company.internal',
-      avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=admin',
+      id: 'usr_enterprise_dev',
+      name: 'Alex Smith',
+      handle: 'alexsmith',
+      email: 'alex.smith@example.com',
+      avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=alex',
       role: 'DevOps / Owner',
-      team: 'Root Team'
+      team: 'Engineering Team'
     };
 
     const savedUser = localStorage.getItem(STORAGE_KEY_USER);
@@ -24,6 +24,10 @@ class StateStore {
       try {
         const u = JSON.parse(savedUser);
         if (u && typeof u === 'object' && u.name) {
+          if (u.email && (u.email.includes('admin@') || u.email.includes('company.internal'))) {
+            u.email = 'alex.smith@example.com';
+            localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(u));
+          }
           this.user = u;
         } else {
           this.user = defaultUser;
@@ -56,6 +60,8 @@ class StateStore {
     const cleanServices = (parsedServices || []).filter(s => 
       s && 
       !fakeNames.has(s.name) && 
+      s.id !== 'srv-09f762b9' &&
+      s.name !== 'allodeploy-web-app' &&
       !s.id?.startsWith('srv-nebula') && 
       !s.id?.startsWith('srv-synthwave') && 
       !s.id?.startsWith('srv-zenith') && 
@@ -83,6 +89,7 @@ class StateStore {
     this.activeTab = 'all'; // 'all' | 'applications' | 'databases' | 'services'
     this.currentEnvironment = 'production'; // 'production' | 'staging' | 'development'
     this.selectedServiceId = null;
+    this.selectedDetailTab = 'overview'; // 'overview' | 'env' | 'logs' | 'deployments' | 'settings'
 
     // alloDeploy Workspaces & Projects (Real user deployments only, no dummy data)
     const savedProjects = localStorage.getItem('allodeploy_projects_list') || localStorage.getItem('coolify_projects_list');
@@ -180,10 +187,15 @@ class StateStore {
     this.notify();
   }
 
-  setView(view, serviceId = null) {
+  setView(view, serviceId = null, detailTab = null) {
     this.activeView = view;
     if (serviceId) {
       this.selectedServiceId = serviceId;
+    }
+    if (detailTab) {
+      this.selectedDetailTab = detailTab;
+    } else if (view === 'dashboard') {
+      this.selectedDetailTab = 'overview';
     }
     this.notify();
   }
@@ -737,16 +749,25 @@ class StateStore {
     srv.cloudflarePagesUrl = `https://${srv.name}.pages.dev`;
     srv.url = `https://${srv.name}.pages.dev`;
     srv.liveDomain = `https://${srv.name}.pages.dev`;
+    if (options.customOriginServer !== undefined) srv.customOriginServer = options.customOriginServer;
+    if (options.customOriginSni !== undefined) srv.customOriginSni = options.customOriginSni;
+    if (options.customHostnameId) srv.customHostnameId = options.customHostnameId;
     srv.updatedAt = 'Just now';
     this.persistServices();
     this.notify();
-    this.showToast(`Registering custom domain "${cleanDomain}" with Cloudflare Pages...`, 'info');
+    this.showToast(`Registering custom domain "${cleanDomain}" with Cloudflare Pages & Origin...`, 'info');
 
     try {
       const res = await fetch(`${this.backendUrl}/api/services/${serviceId}/custom-domain`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ domain: cleanDomain })
+        body: JSON.stringify({
+          domain: cleanDomain,
+          customOriginServer: options.customOriginServer,
+          customOriginSni: options.customOriginSni,
+          customHostnameId: options.customHostnameId,
+          zoneId: options.zoneId
+        })
       });
       if (res.ok) {
         const data = await res.json();
@@ -757,6 +778,8 @@ class StateStore {
         }
         if (data.cfResult?.status === 'active') {
           this.showToast(`Domain https://${cleanDomain} connected & SSL active!`, 'success');
+        } else if (data.customHostname) {
+          this.showToast(`Domain "${cleanDomain}" updated with Cloudflare Custom Origin (${options.customOriginServer || 'origin'})!`, 'success');
         } else {
           this.showToast(`Domain "${cleanDomain}" registered! Point CNAME to ${srv.name}.pages.dev`, 'info');
         }
@@ -767,6 +790,137 @@ class StateStore {
     }
     this.showToast(`Domain "${cleanDomain}" registered. Point CNAME to ${srv.name}.pages.dev`, 'info');
     return { success: true, domain: cleanDomain };
+  }
+
+  async updateCustomDomainOrigin(serviceId, { customOriginServer, customOriginSni, customHostnameId, zoneId } = {}) {
+    const srv = this.services.find(s => s.id === serviceId);
+    if (!srv) return null;
+
+    this.showToast(`Updating Cloudflare Custom Hostname origin routing...`, 'info');
+    try {
+      const res = await fetch(`${this.backendUrl}/api/services/${serviceId}/custom-domain/origin`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customOriginServer,
+          customOriginSni,
+          customHostnameId,
+          zoneId
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.service) {
+          Object.assign(srv, data.service);
+          this.persistServices();
+          this.notify();
+        }
+        this.showToast(`Custom Origin updated: ${customOriginServer || 'Default'} (SNI: ${customOriginSni || 'Default'})`, 'success');
+        return data;
+      } else {
+        const err = await res.json();
+        this.showToast(err.error || 'Failed to update custom origin', 'error');
+      }
+    } catch (e) {
+      this.showToast(e.message, 'error');
+    }
+    return null;
+  }
+
+  async regenerateHostname(serviceId) {
+    const srv = this.services.find(s => s.id === serviceId);
+    if (!srv) return null;
+
+    this.showToast('Regenerating unique hostname...', 'info');
+    try {
+      const res = await fetch(`${this.backendUrl}/api/services/${serviceId}/regenerate-hostname`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.service) {
+          Object.assign(srv, data.service);
+          this.persistServices();
+          this.notify();
+        }
+        this.showToast(`New hostname generated: ${data.hostname}`, 'success');
+        return data.hostname;
+      }
+    } catch (e) {
+      console.warn('Backend regenerate hostname error:', e);
+    }
+
+    // Fallback generation matching Picture 5
+    const randomChars = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+    const fallbackHostname = `${randomChars.substring(0, 24)}.72.61.239.30.sslip.io`;
+    srv.generatedHostname = fallbackHostname;
+    this.persistServices();
+    this.notify();
+    this.showToast(`New hostname generated: ${fallbackHostname}`, 'success');
+    return fallbackHostname;
+  }
+
+  async saveDomainSettings(serviceId, settings) {
+    const srv = this.services.find(s => s.id === serviceId);
+    if (!srv) return null;
+
+    this.showToast('Saving domain settings...', 'info');
+    try {
+      const res = await fetch(`${this.backendUrl}/api/services/${serviceId}/domain-settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.service) {
+          Object.assign(srv, data.service);
+          this.persistServices();
+          this.notify();
+        }
+        this.showToast('Domain settings saved successfully!', 'success');
+        return data;
+      }
+    } catch (e) {
+      console.warn('Backend domain settings error:', e);
+    }
+
+    // Optimistic fallback
+    Object.assign(srv, {
+      protocol: settings.protocol,
+      port: parseInt(settings.port, 10) || srv.port || 3000,
+      pathSuffix: settings.path,
+      searchEngineIndexing: settings.indexing,
+      wwwRedirect: settings.wwwRedirect,
+      customDomain: settings.domain || srv.customDomain
+    });
+    this.persistServices();
+    this.notify();
+    this.showToast('Domain settings saved.', 'success');
+    return { success: true };
+  }
+
+  async patchCloudflareCustomHostname(customHostnameId, { customOriginServer, customOriginSni, zoneId } = {}) {
+    this.showToast(`Applying PATCH to Cloudflare Custom Hostname ${customHostnameId}...`, 'info');
+    try {
+      const res = await fetch(`${this.backendUrl}/api/cloudflare/custom-hostnames/${customHostnameId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          custom_origin_server: customOriginServer,
+          custom_origin_sni: customOriginSni,
+          zoneId
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        this.showToast(`Cloudflare Custom Hostname updated successfully!`, 'success');
+        return data;
+      } else {
+        this.showToast(data.error || 'Failed to update custom hostname', 'error');
+      }
+    } catch (e) {
+      this.showToast(e.message, 'error');
+    }
+    return null;
   }
 
   async verifyCustomDomain(serviceId) {
@@ -801,6 +955,9 @@ class StateStore {
 
     const cfUrl = srv.cloudflarePagesUrl || `https://${srv.name}.pages.dev`;
     srv.customDomain = '';
+    srv.customOriginServer = '';
+    srv.customOriginSni = '';
+    srv.customHostnameId = '';
     srv.url = cfUrl;
     srv.liveDomain = cfUrl;
     srv.updatedAt = 'Just now';
@@ -854,6 +1011,77 @@ class StateStore {
       } catch (e) {
         console.warn('Backend config sync error:', e);
       }
+    }
+  }
+
+  async fetchServiceEnv(serviceId) {
+    try {
+      const res = await fetch(`${this.backendUrl}/api/services/${serviceId}/env`);
+      if (res.ok) {
+        const data = await res.json();
+        return data.envVars || [];
+      }
+    } catch (e) {
+      console.warn('Fetch env error:', e);
+    }
+    const srv = this.services.find(s => s.id === serviceId);
+    return srv?.envVars || [];
+  }
+
+  async saveServiceEnv(serviceId, { envVars, rawEnv, order, buildSecrets } = {}) {
+    const srv = this.services.find(s => s.id === serviceId);
+    if (!srv) return null;
+
+    this.showToast('Saving environment variables...', 'info');
+    try {
+      const res = await fetch(`${this.backendUrl}/api/services/${serviceId}/env`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ envVars, rawEnv, order, buildSecrets })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.envVars) {
+          srv.envVars = data.envVars;
+          srv.updatedAt = 'Just now';
+          this.persistServices();
+          this.notify();
+        }
+        this.showToast('Environment variables saved & synced successfully!', 'success');
+        return data;
+      }
+    } catch (e) {
+      console.warn('Save env error:', e);
+    }
+
+    if (Array.isArray(envVars)) {
+      srv.envVars = envVars;
+      srv.updatedAt = 'Just now';
+      this.persistServices();
+      this.notify();
+    }
+    this.showToast('Environment variables saved locally.', 'success');
+    return { success: true };
+  }
+
+  async deleteServiceEnv(serviceId, key) {
+    const srv = this.services.find(s => s.id === serviceId);
+    if (!srv) return null;
+
+    if (Array.isArray(srv.envVars)) {
+      srv.envVars = srv.envVars.filter(e => e.key !== key);
+      srv.updatedAt = 'Just now';
+      this.persistServices();
+      this.notify();
+    }
+
+    try {
+      await fetch(`${this.backendUrl}/api/services/${serviceId}/env/${encodeURIComponent(key)}`, {
+        method: 'DELETE'
+      });
+      this.showToast(`Variable "${key}" removed.`, 'info');
+    } catch (e) {
+      console.warn('Delete env error:', e);
     }
   }
 

@@ -170,7 +170,7 @@ export function renderAuth(container) {
                       type="email" 
                       id="auth-email" 
                       class="auth-input animated-input" 
-                      placeholder="admin@allodeploy.dev" 
+                      placeholder="alex.smith@example.com" 
                       value="${emailVal}" 
                       required 
                       autocomplete="email" 

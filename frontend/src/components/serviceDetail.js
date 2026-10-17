@@ -8,7 +8,12 @@ export function renderServiceDetail(container) {
     return;
   }
 
-  let activeTab = 'overview'; // 'overview' | 'env' | 'logs' | 'deployments' | 'settings'
+  let activeTab = store.selectedDetailTab || 'overview'; // 'overview' | 'env' | 'logs' | 'deployments' | 'settings'
+  let isDevView = false;
+  let envSearchQuery = '';
+  let envOrder = 'creation'; // 'creation' | 'asc' | 'desc'
+  let envBuildSecrets = 'standard'; // 'standard' | 'secret' | 'all'
+  let revealedSecrets = new Set();
 
   async function fetchRealLogs() {
     try {
@@ -115,8 +120,12 @@ export function renderServiceDetail(container) {
               ${icons.zap} Redeploy
             </button>
 
+            <button class="btn btn-secondary btn-sm" id="btn-detail-delete" title="Delete Resource" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.35);">
+              ${icons.trash || '🗑️'} Delete
+            </button>
+
             ${isRunning ? `
-              <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 6px; background: #7c3aed; text-decoration: none;">
+              <a href="${openSiteUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 6px; background: #7c3aed; text-decoration: none;">
                 ${icons.externalLink} Open Site
               </a>
             ` : `
@@ -229,6 +238,18 @@ export function renderServiceDetail(container) {
                 </span>
               </div>
             ` : ''}
+            ${service.customOriginServer ? `
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                <span style="color: var(--text-faint);">Custom Origin Server</span>
+                <span style="color: #c084fc; font-family: var(--font-mono); font-weight: 600;">⚡ ${service.customOriginServer}</span>
+              </div>
+            ` : ''}
+            ${service.customOriginSni ? `
+              <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                <span style="color: var(--text-faint);">Custom Origin SNI</span>
+                <span style="color: #38bdf8; font-family: var(--font-mono);">${service.customOriginSni}</span>
+              </div>
+            ` : ''}
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
               <span style="color: var(--text-faint);">Host Engine</span>
               <span style="color: #cbd5e1;">Docker Engine (Standalone)</span>
@@ -268,40 +289,157 @@ export function renderServiceDetail(container) {
   }
 
   function renderEnvTab() {
-    const envVars = service.envVars || [];
+    let envVars = service.envVars || [];
+
+    // Filter by search query
+    if (envSearchQuery) {
+      const q = envSearchQuery.toLowerCase();
+      envVars = envVars.filter(e => (e.key && e.key.toLowerCase().includes(q)) || (e.value && String(e.value).toLowerCase().includes(q)));
+    }
+
+    // Filter by build secrets dropdown
+    if (envBuildSecrets === 'secret') {
+      envVars = envVars.filter(e => e.isBuildSecret);
+    }
+
+    // Apply ordering
+    if (envOrder === 'asc') {
+      envVars.sort((a, b) => (a.key || '').localeCompare(b.key || ''));
+    } else if (envOrder === 'desc') {
+      envVars.sort((a, b) => (b.key || '').localeCompare(a.key || ''));
+    }
+
+    const rawEnvText = (service.envVars || []).map(e => `${e.key}=${e.value || ''}`).join('\n');
 
     return `
-      <div class="metric-card" style="padding: 24px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-          <div>
-            <h3 style="font-size: 16px; font-weight: 600; color: #f4f4f5; margin: 0 0 4px 0;">Environment Variables (.env)</h3>
-            <p style="font-size: 13px; color: #a1a1aa; margin: 0;">Values are injected into container process runtime on start.</p>
-          </div>
-          <button class="btn btn-secondary btn-sm" id="btn-add-env-var">
-            ${icons.plus} Add Variable
+      <div class="custom-env-panel">
+        <!-- Topbar: Tab underline on left, Developer View on right -->
+        <div class="custom-env-topbar">
+          <div class="custom-env-tab-link">Environment variables</div>
+          <button type="button" class="btn-dev-view-toggle ${isDevView ? 'active' : ''}" id="btn-toggle-dev-view">
+            ${isDevView ? 'Simple View' : 'Developer View'}
           </button>
         </div>
 
-        <div id="env-vars-container" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
-          ${envVars.length === 0 ? `
-            <div style="font-size: 13px; color: var(--text-faint); padding: 14px; background: rgba(0,0,0,0.2); border-radius: 8px; text-align: center;">
-              No custom environment variables defined yet.
-            </div>
-          ` : envVars.map((env, i) => `
-            <div class="env-row" style="display: flex; gap: 10px; align-items: center;" data-index="${i}">
-              <input type="text" class="env-key-input" value="${env.key}" placeholder="KEY" style="flex: 1; font-family: var(--font-mono); font-size: 13px; padding: 8px 12px; background: #070a12; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #38bdf8;" />
-              <span style="color: #71717a;">=</span>
-              <input type="text" class="env-val-input" value="${env.value}" placeholder="VALUE" style="flex: 2; font-family: var(--font-mono); font-size: 13px; padding: 8px 12px; background: #070a12; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #f4f4f5;" />
-              <button class="icon-btn btn-sm btn-remove-env" data-index="${i}" title="Remove variable">
-                ${icons.trash}
-              </button>
-            </div>
-          `).join('')}
+        <!-- Subbar: Environment variable order & Build secrets -->
+        <div class="custom-env-subbar">
+          <div class="env-dropdown-group">
+            <label class="env-dropdown-label">
+              Environment variable order
+              <span class="domain-info-icon" title="Choose the sorting criteria for environment variables">ⓘ</span>
+            </label>
+            <select id="env-order-select" class="env-dropdown-select">
+              <option value="creation" ${envOrder === 'creation' ? 'selected' : ''}>Creation order</option>
+              <option value="asc" ${envOrder === 'asc' ? 'selected' : ''}>Alphabetical (A-Z)</option>
+              <option value="desc" ${envOrder === 'desc' ? 'selected' : ''}>Alphabetical (Z-A)</option>
+            </select>
+          </div>
+
+          <div class="env-dropdown-group">
+            <label class="env-dropdown-label">
+              Build secrets
+              <span class="domain-info-icon" title="Configure how build-time arguments and secrets are passed to build containers">ⓘ</span>
+            </label>
+            <select id="env-build-secrets-select" class="env-dropdown-select">
+              <option value="standard" ${envBuildSecrets === 'standard' ? 'selected' : ''}>Standard build arguments</option>
+              <option value="secret" ${envBuildSecrets === 'secret' ? 'selected' : ''}>Secret build arguments</option>
+              <option value="all" ${envBuildSecrets === 'all' ? 'selected' : ''}>All runtime & build</option>
+            </select>
+          </div>
         </div>
 
-        <button class="btn btn-primary btn-sm" id="btn-save-env-vars" style="background: #7c3aed; font-weight: 600;">
-          Save Environment Variables
-        </button>
+        <!-- Action Row: Search input on left, Filter, Sort, + Add on right -->
+        <div class="custom-env-action-row">
+          <div class="env-search-wrapper">
+            <span class="env-search-icon">🔍</span>
+            <input 
+              type="text" 
+              id="env-search-input" 
+              class="env-search-input" 
+              placeholder="Search environment variables" 
+              value="${envSearchQuery}" 
+            />
+          </div>
+
+          <div class="env-action-buttons">
+            <button type="button" class="btn-env-filter" id="btn-env-filter" title="Toggle Secret Filter">
+              <span style="display: flex; align-items: center;">${icons.filter || '⚲'}</span>
+              <span>Filter</span>
+            </button>
+            <button type="button" class="btn-env-sort" id="btn-env-sort" title="Toggle Sort Order">
+              <span style="display: flex; align-items: center;">${icons.arrowUpDown || '↓↑'}</span>
+              <span>Sort</span>
+            </button>
+            <button type="button" class="btn-env-add" id="btn-add-env-var">
+              <span>+</span> Add
+            </button>
+          </div>
+        </div>
+
+        <!-- Content Area: Developer View (.env) or UI View (Cards) -->
+        ${isDevView ? `
+          <div class="env-dev-editor-wrap">
+            <div style="font-size: 12px; color: #a1a1aa; margin-bottom: 4px;">
+              Developer Raw <code>.env</code> Editor (bulk paste or edit variables):
+            </div>
+            <textarea id="env-dev-raw-text" class="env-dev-textarea" placeholder="PORT=5000\nNODE_ENV=production\nDATABASE_URL=postgres://...">${rawEnvText}</textarea>
+          </div>
+        ` : `
+          <div class="env-list-body" id="env-vars-container">
+            ${envVars.length === 0 ? `
+              <div style="text-align: center; padding: 36px 16px; color: #71717a; font-size: 13px;">
+                ${envSearchQuery ? 'No environment variables match your search query.' : 'No custom environment variables defined yet. Click <strong>"+ Add"</strong> above or switch to <strong>"Developer View"</strong>.'}
+              </div>
+            ` : envVars.map((env, i) => {
+              const isRevealed = revealedSecrets.has(env.key);
+              return `
+                <div class="env-item-row" data-index="${i}">
+                  <input 
+                    type="text" 
+                    class="env-key-field" 
+                    value="${env.key}" 
+                    placeholder="KEY" 
+                    spellcheck="false" 
+                  />
+                  <div class="env-val-field-wrapper">
+                    <input 
+                      type="${isRevealed ? 'text' : 'password'}" 
+                      class="env-val-field" 
+                      value="${env.value || ''}" 
+                      placeholder="VALUE" 
+                      spellcheck="false" 
+                    />
+                    <button type="button" class="btn-env-toggle-eye" data-key="${env.key}" title="${isRevealed ? 'Hide secret' : 'Show secret'}">
+                      ${isRevealed ? icons.eyeOff : icons.eye}
+                    </button>
+                  </div>
+                  <div class="env-badges-wrap">
+                    <label class="env-checkbox-label" title="Inject into Docker / Cloudflare build phase">
+                      <input type="checkbox" class="env-build-checkbox" ${env.isBuildSecret ? 'checked' : ''} />
+                      <span>Build secret</span>
+                    </label>
+                    <button type="button" class="icon-btn btn-sm btn-copy-single-env" data-key="${env.key}" title="Copy KEY=VALUE">
+                      ${icons.copy}
+                    </button>
+                    <button type="button" class="icon-btn btn-sm btn-remove-env" data-index="${i}" title="Delete variable" style="color: #ef4444;">
+                      ${icons.trash}
+                    </button>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `}
+
+        <!-- Footer Bar with Save Button -->
+        <div class="custom-env-footer">
+          <div style="font-size: 12px; color: #71717a;">
+            Variables are securely encrypted and injected at runtime via AlloDeploy API.
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" id="btn-save-env-vars" style="background: #7c3aed; font-weight: 600; padding: 8px 22px;">
+            Save Environment Variables
+          </button>
+        </div>
       </div>
     `;
   }
@@ -500,10 +638,17 @@ export function renderServiceDetail(container) {
       }
     });
 
+    container.querySelector('#btn-detail-delete')?.addEventListener('click', () => {
+      if (confirm(`Are you sure you want to permanently delete resource "${service.name}"?`)) {
+        store.deleteService(service.id);
+      }
+    });
+
     // Tab switcher
     container.querySelectorAll('.detail-tab-item').forEach(tab => {
       tab.addEventListener('click', () => {
         activeTab = tab.getAttribute('data-tab');
+        store.selectedDetailTab = activeTab;
         render();
       });
     });
@@ -534,10 +679,51 @@ export function renderServiceDetail(container) {
       }
     });
 
-    // Environment Variables Actions
+    // Custom Environment Variables Actions
+    container.querySelector('#btn-toggle-dev-view')?.addEventListener('click', () => {
+      isDevView = !isDevView;
+      render();
+    });
+
+    container.querySelector('#env-order-select')?.addEventListener('change', (e) => {
+      envOrder = e.target.value;
+      render();
+    });
+
+    container.querySelector('#env-build-secrets-select')?.addEventListener('change', (e) => {
+      envBuildSecrets = e.target.value;
+      render();
+    });
+
+    container.querySelector('#env-search-input')?.addEventListener('input', (e) => {
+      envSearchQuery = e.target.value.trim();
+      render();
+      const input = container.querySelector('#env-search-input');
+      if (input) {
+        input.focus();
+        input.selectionStart = input.selectionEnd = input.value.length;
+      }
+    });
+
+    container.querySelector('#btn-env-sort')?.addEventListener('click', () => {
+      if (envOrder === 'creation') envOrder = 'asc';
+      else if (envOrder === 'asc') envOrder = 'desc';
+      else envOrder = 'creation';
+      render();
+    });
+
+    container.querySelector('#btn-env-filter')?.addEventListener('click', () => {
+      if (envBuildSecrets === 'standard') envBuildSecrets = 'secret';
+      else if (envBuildSecrets === 'secret') envBuildSecrets = 'all';
+      else envBuildSecrets = 'standard';
+      render();
+    });
+
     container.querySelector('#btn-add-env-var')?.addEventListener('click', () => {
       if (!service.envVars) service.envVars = [];
-      service.envVars.push({ key: 'NEW_VAR', value: '' });
+      const newVarName = `VARIABLE_${(service.envVars.length + 1).toString().padStart(2, '0')}`;
+      service.envVars.push({ key: newVarName, value: '', isSecret: false, isBuildSecret: false });
+      if (isDevView) isDevView = false;
       render();
     });
 
@@ -551,16 +737,48 @@ export function renderServiceDetail(container) {
       });
     });
 
-    container.querySelector('#btn-save-env-vars')?.addEventListener('click', () => {
-      const rows = container.querySelectorAll('.env-row');
-      const updatedVars = [];
-      rows.forEach(r => {
-        const key = r.querySelector('.env-key-input')?.value.trim();
-        const value = r.querySelector('.env-val-input')?.value.trim();
-        if (key) updatedVars.push({ key, value: value || '' });
+    container.querySelectorAll('.btn-env-toggle-eye').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-key');
+        if (revealedSecrets.has(key)) {
+          revealedSecrets.delete(key);
+        } else {
+          revealedSecrets.add(key);
+        }
+        render();
       });
-      service.envVars = updatedVars;
-      store.updateServiceConfig(service.id, { envVars: updatedVars });
+    });
+
+    container.querySelectorAll('.btn-copy-single-env').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-key');
+        const ev = (service.envVars || []).find(e => e.key === key);
+        if (ev) {
+          navigator.clipboard.writeText(`${ev.key}=${ev.value || ''}`).then(() => {
+            store.showToast(`Copied ${ev.key} to clipboard!`, 'success');
+          });
+        }
+      });
+    });
+
+    container.querySelector('#btn-save-env-vars')?.addEventListener('click', async () => {
+      if (isDevView) {
+        const rawEnv = container.querySelector('#env-dev-raw-text')?.value || '';
+        await store.saveServiceEnv(service.id, { rawEnv, order: envOrder, buildSecrets: envBuildSecrets });
+      } else {
+        const rows = container.querySelectorAll('.env-item-row');
+        const updatedVars = [];
+        rows.forEach(r => {
+          const key = r.querySelector('.env-key-field')?.value.trim().toUpperCase();
+          const value = r.querySelector('.env-val-field')?.value || '';
+          const isBuildSecret = r.querySelector('.env-build-checkbox')?.checked || false;
+          if (key) {
+            updatedVars.push({ key, value, isSecret: false, isBuildSecret });
+          }
+        });
+        service.envVars = updatedVars;
+        await store.saveServiceEnv(service.id, { envVars: updatedVars, order: envOrder, buildSecrets: envBuildSecrets });
+      }
       render();
     });
 

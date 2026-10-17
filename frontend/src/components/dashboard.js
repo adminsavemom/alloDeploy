@@ -311,6 +311,12 @@ function openCustomDomainModal(serviceId) {
   const srv = store.services.find(s => s.id === serviceId);
   if (!srv) return;
 
+  const currentProtocol = srv.protocol || 'http';
+  const currentDomain = srv.customDomain || srv.generatedHostname || `${srv.name}.pages.dev`;
+  const currentPort = srv.port || 5000;
+  const currentPath = srv.pathSuffix || '';
+  const currentIndexing = srv.searchEngineIndexing || 'Indexable';
+  const currentWwwRedirect = srv.wwwRedirect || 'No redirect';
   const targetCname = `${srv.name}.pages.dev`;
   const isDomainActive = srv.customDomain && srv.customDomainStatus === 'active';
 
@@ -318,114 +324,124 @@ function openCustomDomainModal(serviceId) {
   modal.className = 'modal-backdrop';
   modal.id = 'custom-domain-modal-backdrop';
   modal.innerHTML = `
-    <div class="deploy-modal" style="max-width: 540px;">
-      <div class="modal-header">
-        <h2 style="display: flex; align-items: center; gap: 8px;">
-          <span style="color: #38bdf8;">🌐</span>
-          Custom Domain — ${srv.name}
-        </h2>
-        <button class="icon-btn" id="btn-close-domain-modal">${icons.close || '✕'}</button>
+    <div class="domain-settings-modal">
+      <!-- Modal Header -->
+      <div class="domain-settings-header">
+        <h2 class="domain-settings-title">Domain settings</h2>
+        <button class="domain-settings-close" id="btn-close-domain-modal" title="Close">✕</button>
       </div>
-      <div class="modal-body" style="gap: 16px;">
-        <p style="color: #94a3b8; font-size: 13px; margin: 0; line-height: 1.5;">
-          Connect your custom domain (e.g. <code>mybrand.com</code> or <code>app.mycompany.org</code>) to this project. The canonical link <a href="https://${targetCname}" target="_blank" rel="noopener noreferrer" style="color: #a78bfa; text-decoration: none; font-weight: 600;">https://${targetCname} ↗</a> remains always live and operational.
-        </p>
 
-        ${srv.customDomain ? `
-          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px 16px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-              <span style="font-size: 11.5px; color: #94a3b8; font-weight: 600; text-transform: uppercase;">Attached Domain Status</span>
-              ${isDomainActive ? `
-                <span class="badge" style="background: rgba(34,197,94,0.18); color: #22c55e; border: 1px solid rgba(34,197,94,0.4); font-size: 11px; padding: 2px 8px;">
-                  ● Active & SSL Ready
-                </span>
-              ` : `
-                <span class="badge" style="background: rgba(245,158,11,0.18); color: #f59e0b; border: 1px solid rgba(245,158,11,0.4); font-size: 11px; padding: 2px 8px;">
-                  ⏳ DNS Verification Pending
-                </span>
-              `}
-            </div>
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-              <a href="https://${srv.customDomain}" target="_blank" rel="noopener noreferrer" style="font-size: 15px; font-weight: 700; color: #38bdf8; font-family: var(--font-mono); text-decoration: none;">
-                https://${srv.customDomain} ↗
-              </a>
-              <button class="btn btn-secondary btn-xs" id="btn-modal-verify-dns" style="color: #38bdf8; border-color: rgba(56,189,248,0.35); font-weight: 600; padding: 3px 9px;">
-                🔍 Check DNS Now
-              </button>
-            </div>
-            ${srv.customDomainError ? `
-              <div style="margin-top: 10px; font-size: 11.5px; color: #f87171; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); border-radius: 4px; padding: 6px 10px;">
-                Cloudflare verification note: ${srv.customDomainError}
-              </div>
-            ` : ''}
+      <!-- Modal Body (Matching Picture 5 Design & Strict Edge Options) -->
+      <div class="domain-settings-body">
+        <!-- Row 1: Protocol, Domain *, Port -->
+        <div class="domain-form-row-3">
+          <div class="domain-form-group">
+            <label class="domain-form-label" for="domain-protocol-select">Protocol</label>
+            <select id="domain-protocol-select" class="domain-select">
+              <option value="http" ${currentProtocol === 'http' ? 'selected' : ''}>http</option>
+              <option value="https" ${currentProtocol === 'https' ? 'selected' : ''}>https</option>
+            </select>
           </div>
-        ` : ''}
 
-        <div class="form-group">
-          <label class="form-label" style="font-weight: 600;">${srv.customDomain ? 'Update Custom Domain' : 'Enter Custom Domain'}</label>
-          <div style="position: relative;">
+          <div class="domain-form-group">
+            <label class="domain-form-label" for="domain-name-input">Domain <span class="required-star">*</span></label>
             <input 
               type="text" 
-              id="custom-domain-input" 
-              class="auth-input" 
-              placeholder="e.g. mydomain.com or app.mydomain.com" 
-              value="${srv.customDomain || ''}" 
-              style="padding-left: 72px; font-family: var(--font-mono); font-size: 13.5px;"
+              id="domain-name-input" 
+              class="domain-input active-highlight" 
+              value="${currentDomain}" 
+              placeholder="e.g. mydomain.com"
+              spellcheck="false"
+              autocomplete="off"
             />
-            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 13px;">https://</span>
           </div>
-          <span style="font-size: 11.5px; color: var(--text-faint); margin-top: 4px; display: block;">
-            Do not enter https://, just type the domain name (e.g. pack2door.com).
-          </span>
-        </div>
 
-        <!-- DNS Configuration Setup Instructions -->
-        <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px; font-size: 12.5px;">
-          <div style="font-weight: 600; color: #f1f5f9; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span style="color: #f6821f;">☁️</span> Required DNS Record (at your Domain Registrar):
-            </div>
-            <button type="button" class="btn btn-secondary btn-xs" id="btn-modal-copy-cname" style="padding: 2px 7px; font-size: 11px;">
-              Copy Target
-            </button>
-          </div>
-          <div style="font-family: var(--font-mono); font-size: 11.5px; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
-            <div style="display: flex; justify-content: space-between;">
-              <span style="color: #64748b;">RECORD TYPE:</span>
-              <span style="color: #38bdf8; font-weight: 600;">CNAME</span>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span style="color: #64748b;">HOST / NAME:</span>
-              <span style="color: #f1f5f9;">@ (or subdomain like www)</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #64748b;">TARGET / VALUE:</span>
-              <span style="color: #4ade80; font-weight: 600;" id="cname-target-val">${targetCname}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span style="color: #64748b;">PROXY / TTL:</span>
-              <span style="color: #f6821f;">DNS Only or Proxied (Auto TTL)</span>
-            </div>
-          </div>
-          <div style="margin-top: 8px; font-size: 11.5px; color: #94a3b8; line-height: 1.4;">
-            Add this CNAME record in your domain registrar (GoDaddy, Namecheap, Cloudflare, etc.). Once saved, click <strong>"Check DNS Now"</strong> above.
+          <div class="domain-form-group">
+            <label class="domain-form-label" for="domain-port-input">Port</label>
+            <input 
+              type="number" 
+              id="domain-port-input" 
+              class="domain-input" 
+              value="${currentPort}" 
+              placeholder="5000"
+            />
           </div>
         </div>
 
-        ${srv.customDomain ? `
-          <div style="display: flex; justify-content: flex-start; margin-top: 4px;">
-            <button class="btn btn-secondary btn-sm" id="btn-remove-custom-domain" style="color: #f87171; border-color: rgba(239,68,68,0.3);">
-              Remove Custom Domain
-            </button>
+        <!-- Row 2: Path -->
+        <div class="domain-form-group">
+          <label class="domain-form-label" for="domain-path-input">Path</label>
+          <input 
+            type="text" 
+            id="domain-path-input" 
+            class="domain-input" 
+            value="${currentPath}" 
+            placeholder="/api/v3"
+            spellcheck="false"
+          />
+          <div class="domain-input-help">Optional path, query, or fragment appended after the domain and port.</div>
+        </div>
+
+        <!-- Row 3: Search engine indexing & www redirect -->
+        <div class="domain-form-row-2">
+          <div class="domain-form-group">
+            <label class="domain-form-label" for="domain-indexing-select">Search engine indexing</label>
+            <select id="domain-indexing-select" class="domain-select">
+              <option value="Indexable" ${currentIndexing === 'Indexable' ? 'selected' : ''}>Indexable</option>
+              <option value="No index" ${currentIndexing === 'No index' ? 'selected' : ''}>No index</option>
+            </select>
           </div>
-        ` : ''}
+
+          <div class="domain-form-group">
+            <label class="domain-form-label" for="domain-redirect-select">
+              www redirect 
+              <span class="domain-info-icon" title="Configure 301 canonical redirects between www and apex domain">ⓘ</span>
+            </label>
+            <select id="domain-redirect-select" class="domain-select">
+              <option value="No redirect" ${currentWwwRedirect === 'No redirect' ? 'selected' : ''}>No redirect</option>
+              <option value="Redirect to www" ${currentWwwRedirect === 'Redirect to www' ? 'selected' : ''}>Redirect to www</option>
+              <option value="Redirect to apex" ${currentWwwRedirect === 'Redirect to apex' ? 'selected' : ''}>Redirect to apex</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Cloudflare Edge & Custom Hostnames SaaS Routing -->
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 12px 14px; font-size: 12px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <span style="font-weight: 600; color: #a1a1aa; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Cloudflare Edge & SaaS Origin Routing</span>
+            ${isDomainActive ? `
+              <span class="badge" style="background: rgba(34,197,94,0.18); color: #22c55e; border: 1px solid rgba(34,197,94,0.4); font-size: 10px; padding: 2px 7px;">
+                ● Active & SSL Ready
+              </span>
+            ` : `
+              <span class="badge" style="background: rgba(245,158,11,0.18); color: #f59e0b; border: 1px solid rgba(245,158,11,0.4); font-size: 10px; padding: 2px 7px;">
+                ⏳ DNS Verification Pending
+              </span>
+            `}
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+            <div>
+              <label style="font-size: 11px; color: #71717a; display: block; margin-bottom: 3px;">Origin Server (<code>custom_origin_server</code>)</label>
+              <input type="text" id="domain-origin-server" class="domain-input" style="font-size: 12px; padding: 6px 10px;" placeholder="e.g. origin.example.com" value="${srv.customOriginServer || ''}" />
+            </div>
+            <div>
+              <label style="font-size: 11px; color: #71717a; display: block; margin-bottom: 3px;">Origin SNI (<code>custom_origin_sni</code>)</label>
+              <input type="text" id="domain-origin-sni" class="domain-input" style="font-size: 12px; padding: 6px 10px;" placeholder="e.g. sni.example.com" value="${srv.customOriginSni || ''}" />
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #71717a; background: rgba(0,0,0,0.3); padding: 6px 10px; border-radius: 4px;">
+            <span>CNAME Target: <strong style="color: #38bdf8;">${targetCname}</strong></span>
+            <button type="button" class="btn btn-secondary btn-xs" id="btn-modal-copy-cname" style="padding: 2px 6px; font-size: 10px;">Copy CNAME</button>
+          </div>
+        </div>
       </div>
 
-      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
-        <button class="btn btn-secondary btn-sm" id="btn-cancel-custom-domain">Cancel</button>
-        <button class="btn btn-coolify-primary btn-sm" id="btn-save-custom-domain">
-          <span>Save & Bind Domain</span>
-        </button>
+      <!-- Modal Footer Matching Picture 5: Regenerate Hostname (Left), Save (Right) -->
+      <div class="domain-settings-footer">
+        <button type="button" class="btn-domain-regenerate" id="btn-regenerate-hostname">Regenerate Hostname</button>
+        <button type="button" class="btn-domain-save" id="btn-save-domain-settings">Save</button>
       </div>
     </div>
   `;
@@ -434,7 +450,6 @@ function openCustomDomainModal(serviceId) {
 
   const close = () => modal.remove();
   modal.querySelector('#btn-close-domain-modal')?.addEventListener('click', close);
-  modal.querySelector('#btn-cancel-custom-domain')?.addEventListener('click', close);
   modal.addEventListener('click', (e) => {
     if (e.target === modal) close();
   });
@@ -445,26 +460,44 @@ function openCustomDomainModal(serviceId) {
     });
   });
 
-  modal.querySelector('#btn-modal-verify-dns')?.addEventListener('click', async () => {
-    const btn = modal.querySelector('#btn-modal-verify-dns');
-    if (btn) btn.innerText = 'Checking...';
-    await store.verifyCustomDomain(serviceId);
-    openCustomDomainModal(serviceId);
+  // Regenerate Hostname handler
+  modal.querySelector('#btn-regenerate-hostname')?.addEventListener('click', async () => {
+    const newHostname = await store.regenerateHostname(serviceId);
+    if (newHostname) {
+      const input = modal.querySelector('#domain-name-input');
+      if (input) input.value = newHostname;
+    }
   });
 
-  modal.querySelector('#btn-save-custom-domain')?.addEventListener('click', async () => {
-    const rawVal = modal.querySelector('#custom-domain-input').value.trim();
-    if (!rawVal) {
-      store.showToast('Please enter a custom domain name.', 'error');
+  // Save handler
+  modal.querySelector('#btn-save-domain-settings')?.addEventListener('click', async () => {
+    const protocol = modal.querySelector('#domain-protocol-select')?.value || 'http';
+    const rawDomain = modal.querySelector('#domain-name-input')?.value.trim() || '';
+    const port = modal.querySelector('#domain-port-input')?.value.trim() || '5000';
+    const path = modal.querySelector('#domain-path-input')?.value.trim() || '';
+    const indexing = modal.querySelector('#domain-indexing-select')?.value || 'Indexable';
+    const wwwRedirect = modal.querySelector('#domain-redirect-select')?.value || 'No redirect';
+    const customOriginServer = modal.querySelector('#domain-origin-server')?.value.trim() || '';
+    const customOriginSni = modal.querySelector('#domain-origin-sni')?.value.trim() || '';
+
+    if (!rawDomain) {
+      store.showToast('Please enter a domain name.', 'error');
       return;
     }
-    const cleanDomain = rawVal.replace(/^https?:\/\//i, '').replace(/\/.*$/, '').toLowerCase();
-    await store.addCustomDomain(serviceId, cleanDomain);
-    close();
-  });
 
-  modal.querySelector('#btn-remove-custom-domain')?.addEventListener('click', async () => {
-    await store.removeCustomDomain(serviceId);
+    const cleanDomain = rawDomain.replace(/^https?:\/\//i, '').replace(/\/.*$/, '').toLowerCase();
+
+    await store.saveDomainSettings(serviceId, {
+      protocol,
+      domain: cleanDomain,
+      port,
+      path,
+      indexing,
+      wwwRedirect,
+      customOriginServer,
+      customOriginSni
+    });
+
     close();
   });
 }
@@ -727,6 +760,11 @@ function renderProjectsView(container) {
                           ` : `
                             <span class="badge" style="background: rgba(245,158,11,0.18); color: #f59e0b; border: 1px solid rgba(245,158,11,0.35); font-size: 9.5px; padding: 1px 5px; flex-shrink: 0;" title="${srv.customDomainError || 'CNAME not yet resolving'}">⏳ DNS Pending</span>
                           `}
+                          ${srv.customOriginServer ? `
+                            <span class="badge" style="background: rgba(168,85,247,0.18); color: #c084fc; border: 1px solid rgba(168,85,247,0.35); font-size: 9.5px; padding: 1px 5px; flex-shrink: 0;" title="Origin: ${srv.customOriginServer}${srv.customOriginSni ? ` (SNI: ${srv.customOriginSni})` : ''}">
+                              ⚡ ${srv.customOriginServer}
+                            </span>
+                          ` : ''}
                         </div>
                         <div style="display: flex; gap: 4px; flex-shrink: 0;">
                           <button class="btn btn-secondary btn-xs btn-open-custom-domain-modal" data-id="${srv.id}" title="Manage Custom Domain">
@@ -773,22 +811,31 @@ function renderProjectsView(container) {
                   </div>
                 </div>
 
-                <!-- Card Actions Toolbar (Start/Stop, Restart, Logs, Config, Open Site) -->
-                <div class="coolify-card-actions">
-                  <div style="display: flex; gap: 6px;">
-                    <button class="btn btn-secondary btn-sm" data-action="toggle-status" data-id="${srv.id}" title="${isRunning ? 'Stop Project' : 'Start Project'}" style="${!isRunning ? 'color: #34d399;' : 'color: #f87171;'}">
-                      <span>${isRunning ? '⏹ Stop' : '▶ Start'}</span>
+                <!-- Card Actions Toolbar (Stop, Restart, Delete, Config, Open Site) -->
+                <div class="coolify-card-actions" style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                    ${isRunning ? `
+                      <button class="btn btn-secondary btn-sm" data-action="stop-project" data-id="${srv.id}" title="Stop Project" style="color: #f87171; border-color: rgba(248, 113, 113, 0.35);">
+                        <span>⏹ Stop</span>
+                      </button>
+                    ` : `
+                      <button class="btn btn-secondary btn-sm" data-action="start-project" data-id="${srv.id}" title="Start Project" style="color: #34d399; border-color: rgba(52, 211, 153, 0.35);">
+                        <span>▶ Start</span>
+                      </button>
+                    `}
+                    <button class="btn btn-secondary btn-sm" data-action="restart-project" data-id="${srv.id}" title="Restart Project" style="display: inline-flex; align-items: center; gap: 4px;">
+                      ${icons.refresh} <span>Restart</span>
                     </button>
-                    <button class="btn btn-secondary btn-sm" data-action="restart" data-id="${srv.id}" title="Restart Project">
-                      ${icons.refresh}
-                    </button>
-                    <button class="btn btn-secondary btn-sm" data-action="view-logs" data-id="${srv.id}" title="View Terminal Logs">
-                      ${icons.terminal}
+                    <button class="btn btn-secondary btn-sm" data-action="delete-project" data-id="${srv.id}" title="Delete Project" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.35); display: inline-flex; align-items: center; gap: 4px;">
+                      ${icons.trash || '🗑️'} <span>Delete</span>
                     </button>
                   </div>
 
-                  <div style="display: flex; gap: 6px;">
-                    <button class="btn btn-secondary btn-sm" data-action="view-detail" data-id="${srv.id}" title="Settings & Environment Variables">
+                  <div style="display: flex; gap: 6px; align-items: center;">
+                    <button class="btn btn-secondary btn-sm" data-action="view-env" data-id="${srv.id}" title="Custom Environment Variables" style="color: #c084fc; border-color: rgba(192, 132, 252, 0.35);">
+                      <span>Env</span>
+                    </button>
+                    <button class="btn btn-secondary btn-sm" data-action="view-detail" data-id="${srv.id}" title="Settings & Overview">
                       <span>Config</span>
                     </button>
                     ${!isDb ? (
@@ -1031,11 +1078,11 @@ let currentSettingsTab = 'cloudflare'; // 'cloudflare' | 'github' | 'server' | '
 function renderSettingsView(container, initialTab = null) {
   if (initialTab) currentSettingsTab = initialTab;
   const user = store.user || {
-    name: 'Enterprise Admin',
-    handle: 'admin',
-    email: 'admin@company.internal',
-    team: 'Production Infrastructure',
-    role: 'Owner / Infrastructure Lead'
+    name: 'Alex Smith',
+    handle: 'alexsmith',
+    email: 'alex.smith@example.com',
+    team: 'Engineering Team',
+    role: 'Lead Infrastructure Engineer'
   };
   const cf = store.cloudflareConfig || store.edgeConfig || {};
   const isCfConfigured = !!(cf.apiToken || cf.configured);
@@ -1216,9 +1263,13 @@ function renderSettingsView(container, initialTab = null) {
             <button class="btn btn-secondary btn-sm" id="btn-view-cf-dns">
               🌐 View Active DNS Records
             </button>
+            <button class="btn btn-secondary btn-sm" id="btn-view-cf-hostnames" style="color: #38bdf8; border-color: rgba(56,189,248,0.35);">
+              ⚡ View Custom Hostnames (SaaS Origins)
+            </button>
           </div>
 
           <div id="cf-dns-table-container" style="display: none; margin-top: 18px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;"></div>
+          <div id="cf-hostnames-table-container" style="display: none; margin-top: 18px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;"></div>
         </div>
       </div>
 
@@ -1480,7 +1531,7 @@ function renderSettingsView(container, initialTab = null) {
 
           <div class="auth-form-group">
             <label class="auth-form-label">Corporate Email Address (Read-Only)</label>
-            <input type="text" class="auth-input" value="${user.email || 'admin@company.internal'}" readonly style="opacity: 0.7; cursor: not-allowed;" />
+            <input type="text" class="auth-input" value="${user.email || 'alex.smith@example.com'}" readonly style="opacity: 0.7; cursor: not-allowed;" />
           </div>
 
           <button class="btn btn-coolify-primary btn-sm" id="btn-save-settings-profile">
@@ -1675,6 +1726,86 @@ function renderSettingsView(container, initialTab = null) {
     });
   });
 
+  container.querySelector('#btn-view-cf-hostnames')?.addEventListener('click', async () => {
+    const hostnamesContainer = container.querySelector('#cf-hostnames-table-container');
+    if (hostnamesContainer.style.display === 'block') {
+      hostnamesContainer.style.display = 'none';
+      return;
+    }
+
+    hostnamesContainer.style.display = 'block';
+    hostnamesContainer.innerHTML = '<div style="font-size: 13px; color: #a1a1aa; padding: 8px;">Fetching Cloudflare Custom Hostnames (SaaS Origins)...</div>';
+
+    try {
+      const res = await fetch(`${store.backendUrl}/api/cloudflare/custom-hostnames`);
+      const data = await res.json();
+      const hostnames = data.hostnames || [];
+
+      if (!hostnames || hostnames.length === 0) {
+        hostnamesContainer.innerHTML = `
+          <div style="font-size: 12.5px; color: #94a3b8; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px dashed rgba(255,255,255,0.1);">
+            <div style="font-weight: 600; color: #cbd5e1; margin-bottom: 4px;">No Cloudflare Custom Hostnames Found</div>
+            <div>Configure a domain on any resource to register and PATCH a Custom Hostname with custom origin routing (<code>custom_origin_server</code> & <code>custom_origin_sni</code>).</div>
+          </div>
+        `;
+        return;
+      }
+
+      hostnamesContainer.innerHTML = `
+        <div style="font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="display: flex; align-items: center; gap: 6px;">
+            <span>⚡</span> Cloudflare Custom Hostnames (${hostnames.length})
+          </span>
+          <span style="font-size: 11px; color: #38bdf8;">Cloudflare for SaaS / Origin Routing</span>
+        </div>
+        <div style="max-height: 280px; overflow-y: auto; background: rgba(0,0,0,0.35); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+          <table style="width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--font-mono);">
+            <thead>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--text-faint); text-align: left;">
+                <th style="padding: 8px 12px;">Hostname</th>
+                <th style="padding: 8px 12px;">Custom Origin Server</th>
+                <th style="padding: 8px 12px;">Origin SNI</th>
+                <th style="padding: 8px 12px;">Status</th>
+                <th style="padding: 8px 12px;">Hostname ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${hostnames.map(h => `
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                  <td style="padding: 8px 12px; color: #38bdf8; font-weight: 600;">${h.hostname}</td>
+                  <td style="padding: 8px 12px; color: #c084fc;">${h.custom_origin_server || '<span style="color:#64748b;">(Default Fallback)</span>'}</td>
+                  <td style="padding: 8px 12px; color: #e2e8f0;">${h.custom_origin_sni || '<span style="color:#64748b;">(Default SNI)</span>'}</td>
+                  <td style="padding: 8px 12px;">
+                    <span class="badge" style="font-size: 10px; padding: 1px 6px; ${h.status === 'active' ? 'background: rgba(34,197,94,0.15); color: #22c55e;' : 'background: rgba(245,158,11,0.15); color: #f59e0b;'}">
+                      ${h.status || 'pending'}
+                    </span>
+                  </td>
+                  <td style="padding: 8px 12px; color: #94a3b8; font-size: 11px;">
+                    <span title="${h.id}">${h.id ? h.id.substring(0, 8) + '...' : ''}</span>
+                    <button class="btn-copy-cf-id" data-id="${h.id}" style="margin-left: 4px; padding: 1px 5px; font-size: 9.5px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; color: #cbd5e1; cursor: pointer;">
+                      Copy
+                    </button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      hostnamesContainer.querySelectorAll('.btn-copy-cf-id').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const id = e.currentTarget.dataset.id;
+          navigator.clipboard.writeText(id).then(() => {
+            store.showToast(`Copied Hostname ID: ${id}`, 'success');
+          });
+        });
+      });
+    } catch (err) {
+      hostnamesContainer.innerHTML = `<div style="font-size: 12.5px; color: #f87171; padding: 10px;">Error fetching custom hostnames: ${err.message}</div>`;
+    }
+  });
+
   // Bind GitHub Listeners
   container.querySelector('#btn-connect-gh-gmail')?.addEventListener('click', async () => {
     const emailVal = container.querySelector('#gh-gmail-input')?.value.trim();
@@ -1767,6 +1898,17 @@ function bindProjectsEvents(container) {
     });
   });
 
+  // Card view environment variables directly
+  container.querySelectorAll('[data-action="view-env"]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = e.currentTarget.dataset.id;
+      if (id) {
+        store.setView('service-detail', id, 'env');
+      }
+    });
+  });
+
   // Copy URL
   container.querySelectorAll('[data-action="copy-url"]').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -1790,37 +1932,42 @@ function bindProjectsEvents(container) {
     });
   });
 
-  // Start / Stop toggle
-  container.querySelectorAll('[data-action="toggle-status"]').forEach(btn => {
+  // Stop project
+  container.querySelectorAll('[data-action="stop-project"]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = e.currentTarget.dataset.id;
+      if (id) await store.stopService(id);
+    });
+  });
+
+  // Start project
+  container.querySelectorAll('[data-action="start-project"]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = e.currentTarget.dataset.id;
+      if (id) await store.startService(id);
+    });
+  });
+
+  // Restart project
+  container.querySelectorAll('[data-action="restart-project"]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = e.currentTarget.dataset.id;
+      if (id) await store.restartService(id);
+    });
+  });
+
+  // Delete project
+  container.querySelectorAll('[data-action="delete-project"]').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
       const id = e.currentTarget.dataset.id;
       const srv = store.services.find(s => s.id === id);
-      if (srv) {
-        if (srv.status === 'running' || srv.status === 'live') {
-          await store.stopService(id);
-        } else {
-          await store.startService(id);
-        }
+      if (id && confirm(`Are you sure you want to permanently delete project "${srv ? srv.name : id}"? This will delete the service and all hosting configurations.`)) {
+        await store.deleteService(id);
       }
-    });
-  });
-
-  // Restart
-  container.querySelectorAll('[data-action="restart"]').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      const id = e.currentTarget.dataset.id;
-      await store.restartService(id);
-    });
-  });
-
-  // View Logs
-  container.querySelectorAll('[data-action="view-logs"]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const id = e.currentTarget.dataset.id;
-      store.setView('service-detail', id);
     });
   });
 

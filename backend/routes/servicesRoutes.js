@@ -1,5 +1,7 @@
 import express from 'express';
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 import { storageService } from '../services/storageService.js';
 import { buildEngineService } from '../services/buildEngineService.js';
 import { nginxService } from '../services/nginxService.js';
@@ -140,17 +142,133 @@ servicesRouter.post('/:id/stop', async (req, res) => {
   res.json({ success: true, service: srv });
 });
 
-// BIND CUSTOM DOMAIN (Cloudflare Pages Project Domain Binding)
+// RESTART service
+servicesRouter.post('/:id/restart', async (req, res) => {
+  const services = await storageService.getServices();
+  const srv = services.find(s => s.id === req.params.id);
+  if (!srv) return res.status(404).json({ error: 'Service not found' });
+
+  srv.status = 'running';
+  srv.updatedAt = 'Just now';
+  if (!Array.isArray(srv.deploys)) srv.deploys = [];
+  srv.deploys.unshift({
+    id: `dep-${Date.now().toString(16).substring(4)}`,
+    date: 'Just now',
+    hash: 'restart',
+    status: 'running',
+    message: 'Manual restart triggered via AlloDeploy API',
+    duration: '1.2s'
+  });
+  await storageService.addOrUpdateService(srv);
+  console.log(`🔄 [Service Restarted] Resource "${srv.name}" restarted successfully.`);
+  res.json({ success: true, service: srv });
+});
+
+// REGENERATE HOSTNAME (matches Picture 5 format: hash.ip.sslip.io)
+servicesRouter.post('/:id/regenerate-hostname', async (req, res) => {
+  const services = await storageService.getServices();
+  const srv = services.find(s => s.id === req.params.id);
+  if (!srv) return res.status(404).json({ error: 'Service not found' });
+
+  // Generate random hash matching format in Picture 5: fvt2dr7dd0q5gphtw5iu1nha.72.61.239.30.sslip.io
+  const randomChars = Math.random().toString(36).substring(2, 10) + 
+                      Math.random().toString(36).substring(2, 10) + 
+                      Math.random().toString(36).substring(2, 10);
+  const serverIp = cloudflareService.getConfig().serverIp || '72.61.239.30';
+  const newHostname = `${randomChars.substring(0, 24)}.${serverIp}.sslip.io`;
+
+  srv.generatedHostname = newHostname;
+  srv.updatedAt = 'Just now';
+  await storageService.addOrUpdateService(srv);
+  res.json({ success: true, hostname: newHostname, service: srv });
+});
+
+// PUT /:id/domain-settings (Full support for Picture 5 domain settings + Cloudflare Custom Hostnames)
+servicesRouter.put('/:id/domain-settings', async (req, res) => {
+  const services = await storageService.getServices();
+  const srv = services.find(s => s.id === req.params.id);
+  if (!srv) return res.status(404).json({ error: 'Service not found' });
+
+  const {
+    protocol,
+    domain,
+    port,
+    path: pathSuffix,
+    indexing,
+    wwwRedirect,
+    customOriginServer,
+    customOriginSni,
+    customHostnameId,
+    zoneId
+  } = req.body;
+
+  if (protocol) srv.protocol = protocol;
+  if (port) srv.port = parseInt(port, 10) || srv.port || 3000;
+  if (pathSuffix !== undefined) srv.pathSuffix = pathSuffix;
+  if (indexing) srv.searchEngineIndexing = indexing;
+  if (wwwRedirect) srv.wwwRedirect = wwwRedirect;
+
+  const cleanDomain = domain ? domain.trim().toLowerCase().replace(/^https?:\/\//i, '').replace(/\/.*$/, '') : '';
+  if (cleanDomain) {
+    srv.customDomain = cleanDomain;
+    const proto = srv.protocol || 'https';
+    const portPart = (proto === 'http' && srv.port === 80) || (proto === 'https' && srv.port === 443) ? '' : `:${srv.port}`;
+    const pathPart = srv.pathSuffix ? (srv.pathSuffix.startsWith('/') ? srv.pathSuffix : `/${srv.pathSuffix}`) : '';
+    srv.liveDomain = `${proto}://${cleanDomain}${portPart}${pathPart}`;
+    srv.url = srv.liveDomain;
+
+    // Call Cloudflare APIs if configured
+    if (cloudflareService.isConfigured()) {
+      try {
+        await cloudflareService.addPagesProjectDomain(srv.name, cleanDomain).catch(() => {});
+        const cfHost = await cloudflareService.syncCustomHostnameForDomain({
+          zoneId: zoneId || null,
+          domain: cleanDomain,
+          customOriginServer: customOriginServer || srv.customOriginServer,
+          customOriginSni: customOriginSni || srv.customOriginSni,
+          customHostnameId: customHostnameId || srv.customHostnameId
+        }).catch(() => {});
+        if (cfHost?.id) srv.customHostnameId = cfHost.id;
+      } catch (cfErr) {
+        console.warn('Notice syncing domain settings with Cloudflare:', cfErr.message);
+      }
+    }
+  }
+
+  if (customOriginServer !== undefined) srv.customOriginServer = customOriginServer;
+  if (customOriginSni !== undefined) srv.customOriginSni = customOriginSni;
+  srv.updatedAt = 'Just now';
+
+  await storageService.addOrUpdateService(srv);
+  res.json({ success: true, service: srv });
+});
+
+
+// BIND / CHANGE CUSTOM DOMAIN (Cloudflare Pages & Custom Hostnames PATCH)
 servicesRouter.post('/:id/custom-domain', async (req, res) => {
   const services = await storageService.getServices();
   const srv = services.find(s => s.id === req.params.id);
   if (!srv) return res.status(404).json({ error: 'Service not found' });
 
-  const { domain } = req.body;
+  const {
+    domain,
+    customOriginServer,
+    custom_origin_server,
+    customOriginSni,
+    custom_origin_sni,
+    customHostnameId,
+    custom_hostname_id,
+    zoneId
+  } = req.body;
+
   if (!domain) return res.status(400).json({ error: 'Domain name is required' });
 
   const cleanDomain = domain.trim().toLowerCase().replace(/^https?:\/\//i, '').replace(/\/.*$/, '');
+  const originServer = customOriginServer !== undefined ? customOriginServer : (custom_origin_server || srv.customOriginServer || '');
+  const originSni = customOriginSni !== undefined ? customOriginSni : (custom_origin_sni || srv.customOriginSni || '');
+  let targetHostnameId = customHostnameId || custom_hostname_id || srv.customHostnameId || null;
 
+  // 1. Cloudflare Pages Project Domain Binding
   let cfResult = null;
   if (cloudflareService.isConfigured()) {
     try {
@@ -160,19 +278,112 @@ servicesRouter.post('/:id/custom-domain', async (req, res) => {
     }
   }
 
+  // 2. Cloudflare Custom Hostname API (PATCH /zones/:zone_id/custom_hostnames/:custom_hostname_id)
+  let cfHostnameResult = null;
+  if (cloudflareService.isConfigured() && (originServer || originSni || targetHostnameId)) {
+    try {
+      const syncRes = await cloudflareService.syncCustomHostnameForDomain({
+        zoneId: zoneId || null,
+        domain: cleanDomain,
+        customOriginServer: originServer,
+        customOriginSni: originSni,
+        customHostnameId: targetHostnameId
+      });
+      cfHostnameResult = syncRes;
+      if (syncRes?.id) {
+        targetHostnameId = syncRes.id;
+      }
+    } catch (hostErr) {
+      console.warn('[Cloudflare Custom Hostname PATCH Notice]:', hostErr.message);
+    }
+  }
+
   srv.customDomain = cleanDomain;
   srv.customDomainStatus = cfResult?.status || 'pending';
   srv.customDomainCname = `${srv.name}.pages.dev`;
   srv.customDomainError = cfResult?.dnsStatus?.error || (cfResult?.status === 'pending' ? 'CNAME record pending' : '');
+  srv.customOriginServer = originServer;
+  srv.customOriginSni = originSni;
+  if (targetHostnameId) srv.customHostnameId = targetHostnameId;
   srv.cloudflarePagesUrl = `https://${srv.name}.pages.dev`;
   srv.url = `https://${srv.name}.pages.dev`;
   srv.liveDomain = `https://${srv.name}.pages.dev`;
   srv.sslEnabled = true;
   srv.updatedAt = 'Just now';
 
+  // Also sync with srv.domains array if present
+  if (Array.isArray(srv.domains)) {
+    const existingDom = srv.domains.find(d => (typeof d === 'string' ? d : d.domain) === cleanDomain);
+    if (existingDom && typeof existingDom === 'object') {
+      existingDom.customOriginServer = originServer;
+      existingDom.customOriginSni = originSni;
+      if (targetHostnameId) existingDom.customHostnameId = targetHostnameId;
+    }
+  }
+
   await storageService.addOrUpdateService(srv);
-  console.log(`🌐 [Custom Domain Bound] Resource "${srv.name}" bound domain ${cleanDomain} (Status: ${srv.customDomainStatus})`);
-  res.json({ success: true, service: srv, domain: cleanDomain, cfResult });
+  console.log(`🌐 [Custom Domain Bound] Resource "${srv.name}" bound domain ${cleanDomain} (Status: ${srv.customDomainStatus})${originServer ? ` with custom origin: ${originServer}` : ''}`);
+  res.json({
+    success: true,
+    service: srv,
+    domain: cleanDomain,
+    cfResult,
+    customHostname: cfHostnameResult
+  });
+});
+
+// PATCH /api/services/:id/custom-domain/origin - Direct PATCH update to Custom Hostname origin & SNI
+servicesRouter.patch('/:id/custom-domain/origin', async (req, res) => {
+  const services = await storageService.getServices();
+  const srv = services.find(s => s.id === req.params.id);
+  if (!srv) return res.status(404).json({ error: 'Service not found' });
+
+  const {
+    customOriginServer,
+    custom_origin_server,
+    customOriginSni,
+    custom_origin_sni,
+    customHostnameId,
+    custom_hostname_id,
+    zoneId
+  } = req.body;
+
+  const originServer = customOriginServer !== undefined ? customOriginServer : custom_origin_server;
+  const originSni = customOriginSni !== undefined ? customOriginSni : custom_origin_sni;
+  const hostnameId = customHostnameId || custom_hostname_id || srv.customHostnameId;
+
+  if (!srv.customDomain && !hostnameId) {
+    return res.status(400).json({ error: 'No custom domain or custom hostname ID found for service' });
+  }
+
+  let cfHostnameResult = null;
+  if (cloudflareService.isConfigured()) {
+    try {
+      cfHostnameResult = await cloudflareService.syncCustomHostnameForDomain({
+        zoneId: zoneId || null,
+        domain: srv.customDomain,
+        customOriginServer: originServer,
+        customOriginSni: originSni,
+        customHostnameId: hostnameId
+      });
+      if (cfHostnameResult?.id) srv.customHostnameId = cfHostnameResult.id;
+    } catch (cfErr) {
+      console.warn('Cloudflare custom hostname PATCH error:', cfErr.message);
+      return res.status(500).json({ error: cfErr.message });
+    }
+  }
+
+  if (originServer !== undefined) srv.customOriginServer = originServer;
+  if (originSni !== undefined) srv.customOriginSni = originSni;
+  srv.updatedAt = 'Just now';
+
+  await storageService.addOrUpdateService(srv);
+  res.json({
+    success: true,
+    message: 'Custom origin routing updated successfully',
+    service: srv,
+    customHostname: cfHostnameResult
+  });
 });
 
 // VERIFY / CHECK CUSTOM DOMAIN STATUS
@@ -206,10 +417,17 @@ servicesRouter.delete('/:id/custom-domain', async (req, res) => {
     await cloudflareService.deletePagesProjectDomain(srv.name, srv.customDomain).catch(() => {});
   }
 
+  if (srv.customHostnameId && cloudflareService.isConfigured()) {
+    await cloudflareService.deleteCustomHostname({ customHostnameId: srv.customHostnameId }).catch(() => {});
+  }
+
   srv.customDomain = '';
   srv.customDomainStatus = '';
   srv.customDomainError = '';
   srv.customDomainCname = '';
+  srv.customHostnameId = '';
+  srv.customOriginServer = '';
+  srv.customOriginSni = '';
   const cfUrl = `https://${srv.name}.pages.dev`;
   srv.url = cfUrl;
   srv.liveDomain = cfUrl;
@@ -293,10 +511,24 @@ servicesRouter.post('/:id/domains', async (req, res) => {
   const srv = services.find(s => s.id === req.params.id);
   if (!srv) return res.status(404).json({ error: 'Service not found' });
 
-  const { domain, email, forceHttps = true } = req.body;
+  const {
+    domain,
+    email,
+    forceHttps = true,
+    customOriginServer,
+    custom_origin_server,
+    customOriginSni,
+    custom_origin_sni,
+    customHostnameId,
+    custom_hostname_id,
+    zoneId
+  } = req.body;
   if (!domain) return res.status(400).json({ error: 'Domain name is required' });
 
   const cleanDomain = domain.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+  const originServer = customOriginServer !== undefined ? customOriginServer : (custom_origin_server || srv.customOriginServer || '');
+  const originSni = customOriginSni !== undefined ? customOriginSni : (custom_origin_sni || srv.customOriginSni || '');
+  let targetHostnameId = customHostnameId || custom_hostname_id || srv.customHostnameId || null;
 
   try {
     // 1. Verify DNS resolution
@@ -305,7 +537,7 @@ servicesRouter.post('/:id/domains', async (req, res) => {
     // 2. Issue Let's Encrypt SSL certificate via Certbot
     const certificate = await certbotService.issueCertificate({
       domain: cleanDomain,
-      email: email || 'admin@allodeploy.dev',
+      email: email || 'alex.smith@example.com',
       serviceId: srv.id,
       serviceName: srv.name
     });
@@ -316,6 +548,8 @@ servicesRouter.post('/:id/domains', async (req, res) => {
     srv.sslStatus = 'active';
     srv.liveDomain = `https://${cleanDomain}`;
     srv.forceHttps = forceHttps;
+    if (originServer) srv.customOriginServer = originServer;
+    if (originSni) srv.customOriginSni = originSni;
 
     const currentDomains = Array.isArray(srv.domains) ? [...srv.domains] : [];
     const idx = currentDomains.findIndex(d => (typeof d === 'string' ? d : d.domain) === cleanDomain);
@@ -323,6 +557,8 @@ servicesRouter.post('/:id/domains', async (req, res) => {
       domain: cleanDomain,
       sslStatus: 'active',
       forceHttps,
+      customOriginServer: originServer,
+      customOriginSni: originSni,
       issuedAt: certificate.issuedAt,
       expiresAt: certificate.expiresAt
     };
@@ -365,15 +601,36 @@ servicesRouter.post('/:id/domains', async (req, res) => {
       }
     }
 
+    // 6. Cloudflare Custom Hostname API (PATCH /zones/:zone_id/custom_hostnames/:custom_hostname_id)
+    let customHostnameResult = null;
+    if (cloudflareService.isConfigured() && (originServer || originSni || targetHostnameId)) {
+      try {
+        customHostnameResult = await cloudflareService.syncCustomHostnameForDomain({
+          zoneId: zoneId || null,
+          domain: cleanDomain,
+          customOriginServer: originServer,
+          customOriginSni: originSni,
+          customHostnameId: targetHostnameId
+        });
+        if (customHostnameResult?.id) {
+          srv.customHostnameId = customHostnameResult.id;
+          domainItem.customHostnameId = customHostnameResult.id;
+        }
+      } catch (hostErr) {
+        console.warn('Cloudflare custom hostname sync error:', hostErr.message);
+      }
+    }
+
     await storageService.addOrUpdateService(srv);
 
     res.status(201).json({
       success: true,
-      message: `Domain ${cleanDomain} added, SSL certificate issued, and Nginx reverse proxy configured.${cloudflareSync?.success ? ' Synced with AlloDeploy Edge DNS.' : ''}`,
+      message: `Domain ${cleanDomain} added, SSL certificate issued, and Nginx reverse proxy configured.${cloudflareSync?.success ? ' Synced with AlloDeploy Edge DNS.' : ''}${customHostnameResult ? ' Custom origin routing applied.' : ''}`,
       service: srv,
       certificate,
       dnsCheck,
-      edge: cloudflareSync
+      edge: cloudflareSync,
+      customHostname: customHostnameResult
     });
   } catch (err) {
     console.error('Domain add error:', err);
@@ -627,6 +884,131 @@ servicesRouter.put('/:id/config', async (req, res) => {
   res.json({ success: true, service: srv });
 });
 
+// =========================================================================
+// CUSTOM ENVIRONMENT VARIABLES API (UI & Developer View .env Sync)
+// =========================================================================
+
+// GET /api/services/:id/env - Get custom environment variables
+servicesRouter.get('/:id/env', async (req, res) => {
+  const services = await storageService.getServices();
+  const srv = services.find(s => s.id === req.params.id);
+  if (!srv) return res.status(404).json({ error: 'Service not found' });
+  res.json({ success: true, envVars: srv.envVars || [] });
+});
+
+// PUT /api/services/:id/env - Update custom environment variables (supports JSON array or raw .env string)
+servicesRouter.put('/:id/env', async (req, res) => {
+  const services = await storageService.getServices();
+  const srv = services.find(s => s.id === req.params.id);
+  if (!srv) return res.status(404).json({ error: 'Service not found' });
+
+  const { envVars, rawEnv, order, buildSecrets } = req.body;
+  let parsedEnv = [];
+
+  if (Array.isArray(envVars)) {
+    parsedEnv = envVars.filter(ev => ev && ev.key).map(ev => ({
+      key: ev.key.trim().toUpperCase().replace(/[^A-Z0-9_]/g, '_'),
+      value: ev.value !== undefined ? String(ev.value) : '',
+      isSecret: !!ev.isSecret,
+      isBuildSecret: !!ev.isBuildSecret
+    }));
+  } else if (typeof rawEnv === 'string') {
+    // Parse raw .env format from Developer View
+    const lines = rawEnv.split(/\r?\n/);
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const eqIdx = trimmed.indexOf('=');
+      if (eqIdx !== -1) {
+        const key = trimmed.slice(0, eqIdx).trim().toUpperCase().replace(/[^A-Z0-9_]/g, '_');
+        let value = trimmed.slice(eqIdx + 1).trim();
+        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+          value = value.slice(1, -1);
+        }
+        if (key) {
+          parsedEnv.push({ key, value, isSecret: false, isBuildSecret: false });
+        }
+      }
+    }
+  }
+
+  srv.envVars = parsedEnv;
+  if (order) srv.envOrder = order;
+  if (buildSecrets) srv.envBuildSecrets = buildSecrets;
+  srv.updatedAt = 'Just now';
+
+  // Write .env to service site directory if on disk
+  try {
+    const siteDir = storageService.getSiteDir(srv.name);
+    if (siteDir && fs.existsSync(siteDir)) {
+      const envContent = parsedEnv.map(e => `${e.key}=${e.value}`).join('\n');
+      fs.writeFileSync(path.join(siteDir, '.env'), envContent, 'utf8');
+    }
+  } catch (fsErr) {
+    console.warn('Notice writing .env file to disk:', fsErr.message);
+  }
+
+  // Sync to Cloudflare Pages deployment configs if configured
+  if (cloudflareService.isConfigured()) {
+    try {
+      await cloudflareService.updatePagesEnvironmentVariables(srv.name, parsedEnv);
+    } catch (cfErr) {
+      console.warn('Notice syncing Pages env vars:', cfErr.message);
+    }
+  }
+
+  await storageService.addOrUpdateService(srv);
+  console.log(`🔐 [Custom Environment API] Saved ${parsedEnv.length} variables for resource "${srv.name}"`);
+  res.json({ success: true, service: srv, envVars: parsedEnv });
+});
+
+// POST /api/services/:id/env - Add or update a single environment variable
+servicesRouter.post('/:id/env', async (req, res) => {
+  const services = await storageService.getServices();
+  const srv = services.find(s => s.id === req.params.id);
+  if (!srv) return res.status(404).json({ error: 'Service not found' });
+
+  const { key, value, isSecret, isBuildSecret } = req.body;
+  if (!key) return res.status(400).json({ error: 'Variable key is required' });
+
+  const cleanKey = key.trim().toUpperCase().replace(/[^A-Z0-9_]/g, '_');
+  if (!Array.isArray(srv.envVars)) srv.envVars = [];
+
+  const existingIdx = srv.envVars.findIndex(e => e.key === cleanKey);
+  const newEntry = {
+    key: cleanKey,
+    value: value !== undefined ? String(value) : '',
+    isSecret: !!isSecret,
+    isBuildSecret: !!isBuildSecret
+  };
+
+  if (existingIdx !== -1) {
+    srv.envVars[existingIdx] = newEntry;
+  } else {
+    srv.envVars.push(newEntry);
+  }
+
+  srv.updatedAt = 'Just now';
+  await storageService.addOrUpdateService(srv);
+  res.json({ success: true, service: srv, envVars: srv.envVars });
+});
+
+// DELETE /api/services/:id/env/:key - Delete an environment variable by key
+servicesRouter.delete('/:id/env/:key', async (req, res) => {
+  const services = await storageService.getServices();
+  const srv = services.find(s => s.id === req.params.id);
+  if (!srv) return res.status(404).json({ error: 'Service not found' });
+
+  const targetKey = req.params.key.toUpperCase();
+  if (Array.isArray(srv.envVars)) {
+    srv.envVars = srv.envVars.filter(e => e.key !== targetKey);
+    srv.updatedAt = 'Just now';
+    await storageService.addOrUpdateService(srv);
+  }
+
+  res.json({ success: true, service: srv, envVars: srv.envVars || [] });
+});
+
 // GET LOGS
 servicesRouter.get('/:id/logs', async (req, res) => {
   const services = await storageService.getServices();
@@ -647,11 +1029,29 @@ servicesRouter.get('/:id/logs', async (req, res) => {
   res.json({ logs });
 });
 
-// DELETE
+// DELETE project
 servicesRouter.delete('/:id', async (req, res) => {
+  const services = await storageService.getServices();
+  const srv = services.find(s => s.id === req.params.id);
+  if (!srv) return res.status(404).json({ error: 'Service not found' });
+
+  // Clean up from Cloudflare Pages & Custom Hostnames if configured
+  if (cloudflareService.isConfigured()) {
+    try {
+      if (srv.customDomain) {
+        await cloudflareService.deletePagesProjectDomain(srv.name, srv.customDomain).catch(() => {});
+      }
+      if (srv.customHostnameId) {
+        await cloudflareService.deleteCustomHostname({ customHostnameId: srv.customHostnameId }).catch(() => {});
+      }
+    } catch (cfErr) {
+      console.warn('Notice cleaning up Cloudflare resources:', cfErr.message);
+    }
+  }
+
   const deleted = await storageService.deleteService(req.params.id);
-  if (!deleted) return res.status(404).json({ error: 'Service not found' });
-  nginxService.deleteConfig(deleted.name);
+  nginxService.deleteConfig(srv.name);
   await nginxService.reloadNginx();
-  res.json({ success: true, message: `Resource ${deleted.name} and Nginx virtual host removed successfully` });
+  res.json({ success: true, message: `Resource "${srv.name}" and associated configs deleted successfully` });
 });
+

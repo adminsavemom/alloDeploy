@@ -228,3 +228,150 @@ cloudflareRouter.post('/sync-service/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ===========================================================================
+// CLOUDFLARE CUSTOM HOSTNAMES (Cloudflare for SaaS / Origin & SNI Routing)
+// ===========================================================================
+
+// PATCH /api/cloudflare/custom-hostnames/:customHostnameId - Update custom origin server & SNI
+cloudflareRouter.patch('/custom-hostnames/:customHostnameId', async (req, res) => {
+  try {
+    const { customHostnameId } = req.params;
+    const { zoneId, custom_origin_server, custom_origin_sni, customOriginServer, customOriginSni, ssl } = req.body;
+
+    const originServer = customOriginServer || custom_origin_server;
+    const originSni = customOriginSni || custom_origin_sni;
+
+    const result = await cloudflareService.updateCustomHostname({
+      zoneId,
+      customHostnameId,
+      customOriginServer: originServer,
+      customOriginSni: originSni,
+      ssl
+    });
+
+    res.json({
+      success: true,
+      message: `Custom hostname ${customHostnameId} origin routing updated successfully`,
+      result
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/cloudflare/custom-hostnames - List custom hostnames
+cloudflareRouter.get('/custom-hostnames', async (req, res) => {
+  try {
+    const { zoneId, hostname, page, perPage } = req.query;
+    const hostnames = await cloudflareService.getCustomHostnames({
+      zoneId,
+      hostname,
+      page: page ? parseInt(page, 10) : 1,
+      perPage: perPage ? parseInt(perPage, 10) : 50
+    });
+    res.json({ success: true, hostnames });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/cloudflare/custom-hostnames/:customHostnameId - Get single custom hostname
+cloudflareRouter.get('/custom-hostnames/:customHostnameId', async (req, res) => {
+  try {
+    const { customHostnameId } = req.params;
+    const { zoneId } = req.query;
+    const customHostname = await cloudflareService.getCustomHostname({ zoneId, customHostnameId });
+    res.json({ success: true, customHostname });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/cloudflare/custom-hostnames - Create new custom hostname
+cloudflareRouter.post('/custom-hostnames', async (req, res) => {
+  try {
+    const { zoneId, hostname, custom_origin_server, custom_origin_sni, customOriginServer, customOriginSni, ssl } = req.body;
+    if (!hostname) return res.status(400).json({ error: 'Hostname is required' });
+
+    const result = await cloudflareService.createCustomHostname({
+      zoneId,
+      hostname,
+      customOriginServer: customOriginServer || custom_origin_server,
+      customOriginSni: customOriginSni || custom_origin_sni,
+      ssl
+    });
+
+    res.status(201).json({ success: true, message: 'Custom hostname created successfully', result });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/cloudflare/custom-hostnames/:customHostnameId - Delete custom hostname
+cloudflareRouter.delete('/custom-hostnames/:customHostnameId', async (req, res) => {
+  try {
+    const { customHostnameId } = req.params;
+    const zoneId = req.query.zoneId || req.body?.zoneId;
+    const result = await cloudflareService.deleteCustomHostname({ zoneId, customHostnameId });
+    res.json({ success: true, message: 'Custom hostname removed successfully', result });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /api/cloudflare/custom-hostnames/:customHostnameId - Replace custom hostname
+cloudflareRouter.put('/custom-hostnames/:customHostnameId', async (req, res) => {
+  try {
+    const { customHostnameId } = req.params;
+    const { zoneId, hostname, custom_origin_server, custom_origin_sni, ssl, custom_metadata } = req.body;
+    const result = await cloudflareService.replaceCustomHostname({
+      zoneId,
+      customHostnameId,
+      hostname,
+      customOriginServer: custom_origin_server,
+      customOriginSni: custom_origin_sni,
+      ssl,
+      customMetadata: custom_metadata
+    });
+    res.json({ success: true, message: 'Custom hostname replaced successfully', result });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/cloudflare/fallback-origin - Get fallback origin
+cloudflareRouter.get('/fallback-origin', async (req, res) => {
+  try {
+    const { zoneId } = req.query;
+    const fallback = await cloudflareService.getFallbackOrigin({ zoneId });
+    res.json({ success: true, fallback });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /api/cloudflare/fallback-origin - Set fallback origin
+cloudflareRouter.put('/fallback-origin', async (req, res) => {
+  try {
+    const { zoneId, origin } = req.body;
+    if (!origin) return res.status(400).json({ error: 'Origin is required' });
+    const result = await cloudflareService.updateFallbackOrigin({ zoneId, origin });
+    res.json({ success: true, message: 'Fallback origin set successfully', result });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/cloudflare/fallback-origin - Delete fallback origin
+cloudflareRouter.delete('/fallback-origin', async (req, res) => {
+  try {
+    const { zoneId } = req.query;
+    const result = await cloudflareService.deleteFallbackOrigin({ zoneId });
+    res.json({ success: true, message: 'Fallback origin removed successfully', result });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+

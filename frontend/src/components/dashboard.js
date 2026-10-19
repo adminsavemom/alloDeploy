@@ -701,7 +701,7 @@ function renderProjectsView(container) {
             const openSiteUrl = customUrl || exactPagesUrl;
 
             return `
-              <div class="coolify-card" data-id="${srv.id}">
+              <div class="coolify-card coolify-project-card-clickable" data-id="${srv.id}" style="cursor: pointer;" title="Click to view and manage ${srv.name}">
                 <!-- Card Header -->
                 <div class="coolify-card-header">
                   <div class="card-title-group">
@@ -709,7 +709,7 @@ function renderProjectsView(container) {
                       ${isDb ? icons.server : (srv.gitRepo ? icons.github : icons.fileCode)}
                     </div>
                     <div>
-                      <div class="resource-name" data-action="view-detail" data-id="${srv.id}" title="Inspect Configuration">
+                      <div class="resource-name" data-id="${srv.id}">
                         ${srv.name}
                       </div>
                       <div class="resource-meta-label">
@@ -726,129 +726,45 @@ function renderProjectsView(container) {
                   </div>
                 </div>
 
-                <!-- Deployment Link -->
-                <div class="coolify-url-row">
+                <!-- Deployment Link Row -->
+                <div class="coolify-url-row" style="margin-top: 4px;">
                   <div style="display: flex; align-items: center; gap: 6px; overflow: hidden; flex: 1; min-width: 0;">
-                    <span class="badge" style="background: rgba(246, 130, 31, 0.18); color: #f6821f; border: 1px solid rgba(246, 130, 31, 0.4); font-size: 10px; padding: 1px 6px; flex-shrink: 0;">${srv.customDomain ? '🌐 Domain' : '☁️ Pages'}</span>
-                    <a href="${openSiteUrl}" target="_blank" rel="noopener noreferrer" class="resource-url-text" style="text-decoration: none; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-mono); font-size: 12px; color: #a78bfa;" title="${openSiteUrl}">${srv.customDomain || exactPagesUrl}</a>
+                    <span class="badge" style="background: rgba(246, 130, 31, 0.18); color: #f6821f; border: 1px solid rgba(246, 130, 31, 0.4); font-size: 10px; padding: 1px 6px; flex-shrink: 0;">
+                      ${srv.customDomain ? '🌐 Domain' : '☁️ Pages'}
+                    </span>
+                    <span class="resource-url-text" style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-mono); font-size: 12px; color: #a78bfa;" title="${openSiteUrl}">
+                      ${srv.customDomain || exactPagesUrl}
+                    </span>
+                    ${srv.customDomain ? (
+                      srv.customDomainStatus === 'active' ? `
+                        <span class="badge" style="background: rgba(34,197,94,0.18); color: #22c55e; border: 1px solid rgba(34,197,94,0.35); font-size: 9px; padding: 1px 5px; flex-shrink: 0;">● SSL Active</span>
+                      ` : `
+                        <span class="badge" style="background: rgba(245,158,11,0.18); color: #f59e0b; border: 1px solid rgba(245,158,11,0.35); font-size: 9px; padding: 1px 5px; flex-shrink: 0;" title="${srv.customDomainError || 'CNAME setup required in your domain registrar'}">⏳ DNS Setup</span>
+                      `
+                    ) : ''}
                   </div>
                   <div class="url-action-btns">
-                    <button class="icon-btn btn-xs" data-action="copy-url" data-url="${openSiteUrl}" title="Copy Live URL">
+                    <button class="icon-btn btn-xs" data-action="copy-url" data-url="${openSiteUrl}" title="Copy Link">
                       ${icons.copy}
                     </button>
                     ${!isDb ? `
-                      <a href="${openSiteUrl}" target="_blank" rel="noopener noreferrer" class="icon-btn btn-xs" title="Open Live Site (${openSiteUrl})">
+                      <a href="${openSiteUrl}" target="_blank" rel="noopener noreferrer" class="icon-btn btn-xs" data-action="open-link-prevent" title="Open Site (${openSiteUrl})">
                         ${icons.externalLink}
                       </a>
                     ` : ''}
                   </div>
                 </div>
 
-                <!-- Custom Domain Attachment Section -->
-                <div class="coolify-custom-domain-row" style="margin-top: 10px; padding: 7px 10px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px;">
-                  ${srv.customDomain ? `
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                        <div style="display: flex; align-items: center; gap: 6px; overflow: hidden; min-width: 0;">
-                          <span style="color: #38bdf8; font-size: 13px;">🌐</span>
-                          <span style="font-size: 11px; color: #94a3b8; font-weight: 500;">Domain:</span>
-                          <a href="https://${srv.customDomain}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; font-family: var(--font-mono); font-size: 12px; font-weight: 600; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="https://${srv.customDomain}">
-                            ${srv.customDomain}
-                          </a>
-                          ${srv.customDomainStatus === 'active' ? `
-                            <span class="badge" style="background: rgba(34,197,94,0.18); color: #22c55e; border: 1px solid rgba(34,197,94,0.35); font-size: 9.5px; padding: 1px 5px; flex-shrink: 0;">● SSL Active</span>
-                          ` : `
-                            <span class="badge" style="background: rgba(245,158,11,0.18); color: #f59e0b; border: 1px solid rgba(245,158,11,0.35); font-size: 9.5px; padding: 1px 5px; flex-shrink: 0;" title="${srv.customDomainError || 'CNAME not yet resolving'}">⏳ DNS Pending</span>
-                          `}
-                          ${srv.customOriginServer ? `
-                            <span class="badge" style="background: rgba(168,85,247,0.18); color: #c084fc; border: 1px solid rgba(168,85,247,0.35); font-size: 9.5px; padding: 1px 5px; flex-shrink: 0;" title="Origin: ${srv.customOriginServer}${srv.customOriginSni ? ` (SNI: ${srv.customOriginSni})` : ''}">
-                              ⚡ ${srv.customOriginServer}
-                            </span>
-                          ` : ''}
-                        </div>
-                        <div style="display: flex; gap: 4px; flex-shrink: 0;">
-                          <button class="btn btn-secondary btn-xs btn-open-custom-domain-modal" data-id="${srv.id}" title="Manage Custom Domain">
-                            Edit
-                          </button>
-                        </div>
-                      </div>
-                      ${srv.customDomainStatus !== 'active' ? `
-                        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 10.5px; color: #94a3b8; background: rgba(0,0,0,0.25); padding: 4px 8px; border-radius: 4px; gap: 6px;">
-                          <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                            CNAME <strong style="color: #cbd5e1;">${srv.customDomain}</strong> → <strong style="color: #4ade80;">${srv.name}.pages.dev</strong>
-                          </span>
-                          <div style="display: flex; gap: 4px; flex-shrink: 0;">
-                            <button class="btn btn-secondary btn-xs btn-copy-cname" data-cname="${srv.name}.pages.dev" style="padding: 1px 5px; font-size: 10px;" title="Copy CNAME target">
-                              Copy CNAME
-                            </button>
-                            <button class="btn btn-secondary btn-xs btn-verify-domain" data-id="${srv.id}" style="padding: 1px 5px; font-size: 10px; color: #38bdf8;" title="Check DNS resolution & Cloudflare Pages status">
-                              Check DNS
-                            </button>
-                          </div>
-                        </div>
-                      ` : ''}
-                    </div>
-                  ` : `
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                      <button class="btn btn-secondary btn-xs btn-open-custom-domain-modal" data-id="${srv.id}" style="font-size: 11.5px; padding: 3px 9px; border-style: dashed; border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; display: inline-flex; align-items: center; gap: 5px;">
-                        <span>🌐</span>
-                        <span>+ Add Custom Domain</span>
-                      </button>
-                      <span style="font-size: 11px; color: var(--text-faint);">Connect own domain</span>
-                    </div>
-                  `}
-                </div>
-
-                <!-- Resource Specifications -->
-                <div class="coolify-specs-row" style="margin-top: 10px;">
-                  <div class="spec-col">
-                    <span class="spec-label">SOURCE</span>
-                    <span class="spec-value">${srv.source || 'Local Docker Container'}</span>
+                <!-- Clean Footer: Source/Updated & Click-to-Manage CTA -->
+                <div class="coolify-card-footer" style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); font-size: 11.5px; color: #64748b;">
+                  <div style="display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span>${srv.source || 'Manual Upload'}</span>
+                    <span>•</span>
+                    <span>${srv.updatedAt || 'Just now'}</span>
                   </div>
-                  <div class="spec-col">
-                    <span class="spec-label">LAST UPDATED</span>
-                    <span class="spec-value">${srv.updatedAt || 'Just now'}</span>
-                  </div>
-                </div>
-
-                <!-- Card Actions Toolbar (Stop, Restart, Delete, Config, Open Site) -->
-                <div class="coolify-card-actions" style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
-                  <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                    ${isRunning ? `
-                      <button class="btn btn-secondary btn-sm" data-action="stop-project" data-id="${srv.id}" title="Stop Project" style="color: #f87171; border-color: rgba(248, 113, 113, 0.35);">
-                        <span>⏹ Stop</span>
-                      </button>
-                    ` : `
-                      <button class="btn btn-secondary btn-sm" data-action="start-project" data-id="${srv.id}" title="Start Project" style="color: #34d399; border-color: rgba(52, 211, 153, 0.35);">
-                        <span>▶ Start</span>
-                      </button>
-                    `}
-                    <button class="btn btn-secondary btn-sm" data-action="restart-project" data-id="${srv.id}" title="Restart Project" style="display: inline-flex; align-items: center; gap: 4px;">
-                      ${icons.refresh} <span>Restart</span>
-                    </button>
-                    <button class="btn btn-secondary btn-sm" data-action="delete-project" data-id="${srv.id}" title="Delete Project" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.35); display: inline-flex; align-items: center; gap: 4px;">
-                      ${icons.trash || '🗑️'} <span>Delete</span>
-                    </button>
-                  </div>
-
-                  <div style="display: flex; gap: 6px; align-items: center;">
-                    <button class="btn btn-secondary btn-sm" data-action="view-env" data-id="${srv.id}" title="Custom Environment Variables" style="color: #c084fc; border-color: rgba(192, 132, 252, 0.35);">
-                      <span>Env</span>
-                    </button>
-                    <button class="btn btn-secondary btn-sm" data-action="view-detail" data-id="${srv.id}" title="Settings & Overview">
-                      <span>Config</span>
-                    </button>
-                    ${!isDb ? (
-                      isRunning ? `
-                        <a href="${openSiteUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="Open live site (${openSiteUrl})">
-                          <span>Open Site ↗</span>
-                        </a>
-                      ` : `
-                        <button class="btn btn-secondary btn-sm btn-stopped-site" data-id="${srv.id}" style="opacity: 0.65; cursor: not-allowed; display: inline-flex; align-items: center; gap: 4px;" title="Project is stopped. Click '▶ Start' to resume.">
-                          <span>Offline (Stopped)</span>
-                        </button>
-                      `
-                    ) : ''}
+                  <div style="display: flex; align-items: center; gap: 4px; color: #a78bfa; font-weight: 600; font-size: 11.5px;">
+                    <span>Manage Project</span>
+                    <span style="font-size: 13px;">→</span>
                   </div>
                 </div>
               </div>
@@ -1885,6 +1801,19 @@ function bindProjectsEvents(container) {
   container.querySelectorAll('.filter-tab').forEach(btn => {
     btn.addEventListener('click', (e) => {
       store.setTab(e.currentTarget.dataset.tab);
+    });
+  });
+
+  // Card click to open project view
+  container.querySelectorAll('.coolify-project-card-clickable').forEach(card => {
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('[data-action="copy-url"]') || e.target.closest('[data-action="open-link-prevent"]') || e.target.closest('a') || e.target.closest('button')) {
+        return;
+      }
+      const id = card.dataset.id;
+      if (id) {
+        store.setView('service-detail', id);
+      }
     });
   });
 

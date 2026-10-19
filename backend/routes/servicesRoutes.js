@@ -458,16 +458,20 @@ servicesRouter.get('/:id/custom-domain/verify', async (req, res) => {
     }
   }
 
-  // Also verify DNS resolution for self-hosted / direct server use
+  // Verify public DNS resolution
   const dnsRes = await certbotService.verifyDns(srv.customDomain);
+  statusInfo.dns = dnsRes;
+  statusInfo.dnsResolved = dnsRes.resolved;
+  srv.dnsResolved = dnsRes.resolved;
+
   if (dnsRes.resolved) {
     statusInfo.status = 'active';
-    statusInfo.dns = dnsRes;
     srv.customDomainStatus = 'active';
-  } else if (!cloudflareService.isConfigured()) {
-    statusInfo.status = 'pending';
-    statusInfo.dns = dnsRes;
-    srv.customDomainStatus = 'pending';
+    srv.customDomainError = '';
+  } else {
+    statusInfo.status = 'dns_pending';
+    srv.customDomainStatus = 'dns_pending';
+    srv.customDomainError = dnsRes.message || 'CNAME/A record not yet configured in your domain registrar DNS.';
   }
 
   await storageService.addOrUpdateService(srv);

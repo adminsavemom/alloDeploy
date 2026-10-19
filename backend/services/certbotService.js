@@ -84,6 +84,20 @@ export const certbotService = {
         message: `DNS resolved successfully to: ${addresses.join(', ')}`
       };
     } catch (err) {
+      // Also check CNAME record
+      try {
+        const cnames = await dns.promises.resolveCname(cleanDomain);
+        if (cnames && cnames.length > 0) {
+          return {
+            resolved: true,
+            domain: cleanDomain,
+            records: cnames,
+            isCname: true,
+            message: `DNS CNAME verified pointing to: ${cnames.join(', ')}`
+          };
+        }
+      } catch (cnameErr) {}
+
       const isLocal = cleanDomain.endsWith('.local') || cleanDomain.endsWith('.test') || cleanDomain === 'localhost';
       return {
         resolved: isLocal,
@@ -92,7 +106,7 @@ export const certbotService = {
         isLocal,
         message: isLocal 
           ? 'Local development hostname recognized.' 
-          : `DNS resolution check failed: ${err.message}. Point an A record or CNAME to your server IP.`
+          : `DNS resolution check failed: ${err.message}. Add a CNAME or A record at your domain registrar.`
       };
     }
   },

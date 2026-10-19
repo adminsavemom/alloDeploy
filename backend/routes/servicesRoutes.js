@@ -11,17 +11,46 @@ import { cloudflareService } from '../services/cloudflareService.js';
 
 export const servicesRouter = express.Router();
 
-// GET all services
+// Helper to extract requesting user from headers/query/body
+function getRequestingUser(req) {
+  const userId = req.headers['x-user-id'] || req.query.userId || req.body?.userId || '';
+  const userEmail = (req.headers['x-user-email'] || req.query.userEmail || req.body?.userEmail || '').toLowerCase().trim();
+  return { userId, userEmail };
+}
+
+function checkServiceOwnership(service, { userId, userEmail }) {
+  if (!userId && !userEmail) return true; // Internal or unrestricted
+  if (userId && service.userId && service.userId === userId) return true;
+  if (userEmail && service.userEmail && service.userEmail.toLowerCase() === userEmail) return true;
+  // Legacy projects without assigned owner default to primary developer account
+  if (!service.userId && !service.userEmail) {
+    return userId === 'usr_enterprise_dev' || userEmail === 'alex.smith@example.com' || userEmail.includes('kathir');
+  }
+  return false;
+}
+
+// GET all services (isolated per user)
 servicesRouter.get('/', async (req, res) => {
-  const services = (await storageService.getServices()) || [];
+  const { userId, userEmail } = getRequestingUser(req);
+  let services = (await storageService.getServices()) || [];
+
+  if (userId || userEmail) {
+    services = services.filter(s => checkServiceOwnership(s, { userId, userEmail }));
+  }
   res.json({ services });
 });
 
 // GET single service
 servicesRouter.get('/:id', async (req, res) => {
+  const { userId, userEmail } = getRequestingUser(req);
   const services = await storageService.getServices();
   const service = services.find(s => s.id === req.params.id);
   if (!service) return res.status(404).json({ error: 'Service not found' });
+
+  if ((userId || userEmail) && !checkServiceOwnership(service, { userId, userEmail })) {
+    return res.status(403).json({ error: 'Access denied. You do not have permission to view this project.' });
+  }
+
   res.json({ service });
 });
 
@@ -68,9 +97,15 @@ servicesRouter.post('/create', async (req, res) => {
 
     storageService.saveCustomHtmlSite(cleanName, defaultHtml);
 
+    const { userId, userEmail } = getRequestingUser(req);
+    const assignedUserId = userId || 'usr_enterprise_dev';
+    const assignedUserEmail = userEmail || 'alex.smith@example.com';
+
     const newResource = {
       id: 'srv-' + crypto.randomBytes(4).toString('hex'),
       name: cleanName,
+      userId: assignedUserId,
+      userEmail: assignedUserEmail,
       type: type || 'Application',
       status: 'running',
       url: serviceUrl,
@@ -1112,9 +1147,14 @@ servicesRouter.get('/:id/logs', async (req, res) => {
 
 // DELETE project
 servicesRouter.delete('/:id', async (req, res) => {
+  const { userId, userEmail } = getRequestingUser(req);
   const services = await storageService.getServices();
   const srv = services.find(s => s.id === req.params.id);
   if (!srv) return res.status(404).json({ error: 'Service not found' });
+
+  if ((userId || userEmail) && !checkServiceOwnership(srv, { userId, userEmail })) {
+    return res.status(403).json({ error: 'Access denied. You cannot delete another user\'s project.' });
+  }
 
   // Clean up from Cloudflare Pages & Custom Hostnames if configured
   if (cloudflareService.isConfigured()) {

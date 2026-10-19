@@ -63,6 +63,8 @@
     },
     "backups": [],
     "templateType": "",
+    "userId": "usr_enterprise_dev",
+    "userEmail": "alex.smith@example.com",
     "cloudflarePagesUrl": "https://neon-crest-982.pages.dev",
     "cloudflareConnected": true
   },
@@ -145,6 +147,8 @@
     },
     "backups": [],
     "templateType": "",
+    "userId": "usr_enterprise_dev",
+    "userEmail": "alex.smith@example.com",
     "cloudflarePagesUrl": "https://uyir-portal.pages.dev",
     "cloudflareConnected": true
   },
@@ -212,6 +216,8 @@
     },
     "backups": [],
     "templateType": "",
+    "userId": "usr_enterprise_dev",
+    "userEmail": "alex.smith@example.com",
     "cloudflarePagesUrl": "https://sonic-breeze-139.pages.dev",
     "cloudflareConnected": true
   },
@@ -271,6 +277,8 @@
     },
     "backups": [],
     "templateType": "",
+    "userId": "usr_enterprise_dev",
+    "userEmail": "alex.smith@example.com",
     "cloudflarePagesUrl": "https://allodeploy-test-demo.pages.dev",
     "cloudflareConnected": true
   },
@@ -336,6 +344,8 @@
     },
     "backups": [],
     "templateType": "",
+    "userId": "usr_enterprise_dev",
+    "userEmail": "alex.smith@example.com",
     "cloudflarePagesUrl": "https://dist.pages.dev",
     "cloudflareConnected": true
   }

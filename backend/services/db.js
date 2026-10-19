@@ -90,7 +90,9 @@ export function rowToService(row) {
     deploys: Array.isArray(row.deploys) ? row.deploys : [],
     healthcheck: row.healthcheck || { path: '/', expectedStatus: 200, intervalSeconds: 30 },
     backups: Array.isArray(row.backups) ? row.backups : [],
-    templateType: row.template_type || ''
+    templateType: row.template_type || '',
+    userId: row.user_id || '',
+    userEmail: row.user_email || ''
   };
 }
 
@@ -131,7 +133,9 @@ export function serviceToRowParams(s) {
     JSON.stringify(s.deploys || []),
     JSON.stringify(s.healthcheck || { path: '/', expectedStatus: 200, intervalSeconds: 30 }),
     JSON.stringify(s.backups || []),
-    s.templateType || ''
+    s.templateType || '',
+    s.userId || '',
+    s.userEmail || ''
   ];
 }
 
@@ -198,6 +202,8 @@ export const db = {
           ALTER TABLE services ADD COLUMN IF NOT EXISTS port INT DEFAULT 3000;
           ALTER TABLE services ADD COLUMN IF NOT EXISTS healthcheck JSONB DEFAULT '{"path": "/", "expectedStatus": 200, "intervalSeconds": 30}'::jsonb;
           ALTER TABLE services ADD COLUMN IF NOT EXISTS backups JSONB DEFAULT '[]'::jsonb;
+          ALTER TABLE services ADD COLUMN IF NOT EXISTS user_id TEXT DEFAULT '';
+          ALTER TABLE services ADD COLUMN IF NOT EXISTS user_email TEXT DEFAULT '';
 
           CREATE TABLE IF NOT EXISTS users (
             id TEXT PRIMARY KEY,
@@ -261,8 +267,8 @@ export const db = {
         git_repo, git_url, git_branch, git_commit, git_commit_msg, git_author,
         build_command, publish_dir, auto_deploy, files_count, size, framework,
         updated_at, created_at, deploy_count, metrics, env_vars, sample_files,
-        deploys, healthcheck, backups, template_type
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35)
+        deploys, healthcheck, backups, template_type, user_id, user_email
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37)
       ON CONFLICT (name) DO UPDATE SET
         type = EXCLUDED.type,
         status = EXCLUDED.status,
@@ -296,7 +302,9 @@ export const db = {
         deploys = EXCLUDED.deploys,
         healthcheck = EXCLUDED.healthcheck,
         backups = EXCLUDED.backups,
-        template_type = EXCLUDED.template_type
+        template_type = EXCLUDED.template_type,
+        user_id = COALESCE(NULLIF(EXCLUDED.user_id, ''), services.user_id),
+        user_email = COALESCE(NULLIF(EXCLUDED.user_email, ''), services.user_email)
       RETURNING *;
     `;
 

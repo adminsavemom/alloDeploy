@@ -2243,8 +2243,14 @@ export function renderDeployModal(container) {
             const repoUrl = selectedGithubRepo?.html_url || (selectedGithubRepo?.full_name ? `https://github.com/${selectedGithubRepo.full_name}` : `https://github.com/${store.githubUser?.login || 'enterprise'}/${serviceName}`);
             const res = await fetch(`${store.backendUrl}/api/deploy/github`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 
+                'Content-Type': 'application/json',
+                'x-user-id': store.user?.id || '',
+                'x-user-email': store.user?.email || ''
+              },
               body: JSON.stringify({
+                userId: store.user?.id,
+                userEmail: store.user?.email,
                 deployId,
                 repoUrl,
                 branch: selectedBranch,
@@ -2274,6 +2280,8 @@ export function renderDeployModal(container) {
             const htmlToSave = droppedFilesInfo?.customHtml || (htmlEntry ? htmlEntry.content : null);
 
             const formData = new FormData();
+            formData.append('userId', store.user?.id || '');
+            formData.append('userEmail', store.user?.email || '');
             formData.append('deployId', deployId);
             formData.append('serviceName', serviceName);
             formData.append('region', region);
@@ -2297,6 +2305,10 @@ export function renderDeployModal(container) {
 
             const res = await fetch(`${store.backendUrl}/api/deploy/upload`, {
               method: 'POST',
+              headers: {
+                'x-user-id': store.user?.id || '',
+                'x-user-email': store.user?.email || ''
+              },
               body: formData
             });
             let data = null;

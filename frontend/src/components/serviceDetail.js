@@ -19,24 +19,6 @@ export function renderServiceDetail(container) {
   let envBuildSecrets = 'standard'; // 'standard' | 'secret' | 'all'
   let revealedSecrets = new Set();
 
-  async function fetchRealLogs() {
-    try {
-      const res = await fetch(`${store.backendUrl}/api/services/${service.id}/logs`);
-      if (res.ok) {
-        const data = await res.json();
-        return data.logs || [];
-      }
-    } catch {
-      // Fallback
-    }
-    return [
-      `[${new Date().toLocaleTimeString()}] [allodeploy-engine] Container initialized for ${service.name}`,
-      `[${new Date().toLocaleTimeString()}] [proxy] Listening on internal bridge network for port ${service.port || 3000}`,
-      `[${new Date().toLocaleTimeString()}] [runtime] Service status: ${service.status.toUpperCase()}`,
-      `[${new Date().toLocaleTimeString()}] [healthcheck] HTTP probe 200 OK via localhost reverse proxy`
-    ];
-  }
-
   let exactPagesUrl = '';
   let customSiteUrl = null;
   let openSiteUrl = '';
@@ -179,27 +161,7 @@ export function renderServiceDetail(container) {
   }
 
   function renderOverviewTab() {
-    const isRunning = service.status === 'running';
-
     return `
-      <!-- Container Status -->
-      <div style="margin-bottom: 22px;">
-        <div class="metric-card" style="padding: 16px 20px; display: inline-flex; align-items: center; gap: 20px; min-width: 320px;">
-          <div>
-            <div style="font-size: 11px; font-weight: 600; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">
-              Container Status
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700; color: ${isRunning ? '#34d399' : '#f87171'};">
-              <span class="coolify-dot ${isRunning ? 'dot-running' : 'dot-stopped'}"></span>
-              ${isRunning ? 'Online & Proxying' : 'Stopped (Offline)'}
-            </div>
-          </div>
-          <div style="font-size: 12px; color: var(--text-faint); margin-left: auto; border-left: 1px solid rgba(255,255,255,0.08); padding-left: 16px;">
-            ${isRunning ? 'Serving live traffic' : 'Halted by operator'}
-          </div>
-        </div>
-      </div>
-
       <!-- Network and Destination Details -->
       <div class="config-grid">
         <div class="metric-card" style="padding: 20px;">
@@ -442,151 +404,6 @@ export function renderServiceDetail(container) {
     `;
   }
 
-  function renderLogsTab() {
-    return `
-      <div class="terminal-window" style="min-height: 400px; background: #070a12; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden;">
-        <div class="terminal-titlebar" style="background: #0d1220; padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div class="terminal-dots">
-              <span class="t-dot red"></span>
-              <span class="t-dot yellow"></span>
-              <span class="t-dot green"></span>
-            </div>
-            <span style="font-size: 12px; font-family: var(--font-mono); color: #cbd5e1;">stdout/stderr -- ${service.name} (live container stream)</span>
-          </div>
-
-          <div style="display: flex; gap: 8px;">
-            <button class="btn btn-secondary btn-sm" id="btn-refresh-tab-logs" title="Refresh Logs" style="padding: 4px 10px; font-size: 11px;">
-              ${icons.refresh} Refresh
-            </button>
-            <button class="icon-btn btn-sm" id="btn-copy-tab-logs" title="Copy Logs">
-              ${icons.copy}
-            </button>
-            <button class="icon-btn btn-sm" id="btn-clear-tab-logs" title="Clear View">
-              ${icons.trash}
-            </button>
-          </div>
-        </div>
-
-        <div class="terminal-logs" id="detail-log-stream" style="padding: 16px; font-family: var(--font-mono); font-size: 12px; line-height: 1.6; max-height: 420px; overflow-y: auto; color: #a1a1aa;">
-          <div class="log-line"><span style="color: #64748b;">[00:00.01]</span> <span style="color: #818cf8;">==> AlloDeploy container runtime attached to ID ${service.id}</span></div>
-          <div class="log-line"><span style="color: #64748b;">[00:00.04]</span> <span style="color: #34d399;">✔ Internal bridge network connected: 172.18.0.24:${service.port || 3000}</span></div>
-          <div class="log-line"><span style="color: #64748b;">[00:00.08]</span> <span style="color: #cbd5e1;">==> Proxy routing table updated for http://localhost:5000/sites/${service.name}/</span></div>
-          <div class="log-line"><span style="color: #64748b;">[00:00.12]</span> <span style="color: #34d399;">✔ Container process state: ${service.status.toUpperCase()}</span></div>
-          <div class="log-line"><span style="color: #64748b;">[00:00.15]</span> <span style="color: #a78bfa;">[app-runtime] ready on internal port ${service.port || 3000}</span></div>
-        </div>
-      </div>
-    `;
-  }
-
-  function renderDeploymentsTab() {
-    const deploys = service.deploys || [
-      { id: 'dep-01', hash: '8f1e29c', message: 'Initial deployment via AlloDeploy', duration: '2.4s', date: 'Just now', status: service.status }
-    ];
-
-    return `
-      <div class="metric-card" style="padding: 0; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;">
-        <table class="deployments-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
-          <thead>
-            <tr style="border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.3); text-align: left;">
-              <th style="padding: 12px 18px; color: #a1a1aa; font-weight: 600;">Status</th>
-              <th style="padding: 12px 18px; color: #a1a1aa; font-weight: 600;">Deployment ID</th>
-              <th style="padding: 12px 18px; color: #a1a1aa; font-weight: 600;">Message</th>
-              <th style="padding: 12px 18px; color: #a1a1aa; font-weight: 600;">Duration</th>
-              <th style="padding: 12px 18px; color: #a1a1aa; font-weight: 600;">Created</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${deploys.map(dep => `
-              <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
-                <td style="padding: 12px 18px;">
-                  <span class="coolify-chip ${dep.status === 'running' || dep.status === 'live' ? 'chip-running' : 'chip-stopped'}">
-                    <span class="coolify-dot ${dep.status === 'running' || dep.status === 'live' ? 'dot-running' : 'dot-stopped'}"></span>
-                    ${dep.status === 'running' || dep.status === 'live' ? 'RUNNING' : 'STOPPED'}
-                  </span>
-                </td>
-                <td style="padding: 12px 18px; font-family: var(--font-mono); color: #a78bfa;">
-                  ${dep.id}
-                </td>
-                <td style="padding: 12px 18px; color: #f4f4f5; font-weight: 500;">
-                  ${dep.message || 'Build update'}
-                </td>
-                <td style="padding: 12px 18px; font-family: var(--font-mono); color: #cbd5e1;">
-                  ${dep.duration || '2.1s'}
-                </td>
-                <td style="padding: 12px 18px; color: #71717a;">
-                  ${dep.date || 'Today'}
-                </td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-    `;
-  }
-
-  function renderSettingsTab() {
-    return `
-      <div style="display: flex; flex-direction: column; gap: 24px;">
-        <!-- General Service Settings -->
-        <div class="metric-card" style="padding: 22px;">
-          <h3 style="font-size: 16px; font-weight: 600; color: #f4f4f5; margin: 0 0 16px 0;">Resource Configuration</h3>
-          
-          <div class="form-group" style="margin-bottom: 16px;">
-            <label class="form-label" for="edit-srv-name">Resource Name</label>
-            <input type="text" id="edit-srv-name" value="${service.name}" style="max-width: 440px;" />
-          </div>
-
-
-          <div class="form-group" style="margin-bottom: 16px;">
-            <label class="form-label" for="edit-srv-domain">Custom Domain / FQDN</label>
-            <div style="display: flex; gap: 8px; max-width: 540px;">
-              <input type="text" id="edit-srv-domain" value="${service.customDomain || service.liveDomain || ''}" placeholder="e.g. app.yourdomain.com" style="flex: 1;" />
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-cf-sync-domain" title="Sync this domain with Cloudflare API" style="border-color: #f6821f; color: #f6821f; white-space: nowrap;">
-                ☁️ Sync Cloudflare DNS
-              </button>
-            </div>
-            <span style="font-size: 12px; color: var(--text-faint); margin-top: 4px; display: block;">Creates Cloudflare DNS CNAME/A records and enables Orange Cloud edge proxy & SSL.</span>
-          </div>
-
-          <div style="display: flex; gap: 10px; align-items: center; margin-top: 18px;">
-            <button class="btn btn-primary btn-sm" id="btn-save-settings" style="background: #7c3aed; font-weight: 600;">
-              Save Resource Settings
-            </button>
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-cf-purge-domain" title="Purge Cloudflare Edge Cache for this service">
-              ⚡ Purge Cloudflare Cache
-            </button>
-          </div>
-        </div>
-
-        <!-- Danger Zone -->
-        <div class="metric-card" style="border-color: rgba(239, 68, 68, 0.35); background: rgba(239, 68, 68, 0.03); padding: 22px;">
-          <h3 style="font-size: 16px; color: #f87171; margin: 0 0 8px 0;">Danger Zone</h3>
-          <p style="font-size: 13px; color: #a1a1aa; margin: 0 0 16px 0; max-width: 600px;">
-            Stopping this resource halts the container and stops proxying web traffic. Deleting permanently destroys the local directory, environment secrets, and routing tables.
-          </p>
-
-          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-            ${service.status === 'running' ? `
-              <button class="btn btn-secondary btn-sm" id="btn-danger-stop" style="color: #fca5a5; border-color: rgba(239,68,68,0.4);">
-                ${icons.pause} Stop Container
-              </button>
-            ` : `
-              <button class="btn btn-secondary btn-sm" id="btn-danger-start" style="color: #86efac; border-color: rgba(34,197,94,0.4);">
-                ${icons.play} Start Container
-              </button>
-            `}
-
-            <button class="btn btn-danger btn-sm" id="btn-delete-service-action">
-              ${icons.trash}
-              <span>Delete Resource Permanently</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
   function bindEvents() {
     // Back to dashboard
     container.querySelector('#btn-back-dashboard')?.addEventListener('click', () => {
@@ -616,23 +433,6 @@ export function renderServiceDetail(container) {
     container.querySelector('#btn-detail-redeploy')?.addEventListener('click', () => {
       store.redeployService(service.id);
       render();
-    });
-
-    // Danger Zone controls
-    container.querySelector('#btn-danger-stop')?.addEventListener('click', () => {
-      store.stopService(service.id);
-      render();
-    });
-
-    container.querySelector('#btn-danger-start')?.addEventListener('click', () => {
-      store.startService(service.id);
-      render();
-    });
-
-    container.querySelector('#btn-delete-service-action')?.addEventListener('click', () => {
-      if (confirm(`Are you sure you want to permanently delete resource "${service.name}"?`)) {
-        store.deleteService(service.id);
-      }
     });
 
     container.querySelector('#btn-detail-delete')?.addEventListener('click', () => {
@@ -794,42 +594,6 @@ export function renderServiceDetail(container) {
         await store.saveServiceEnv(service.id, { envVars: updatedVars, order: envOrder, buildSecrets: envBuildSecrets });
       }
       render();
-    });
-
-    // Save Settings
-    container.querySelector('#btn-save-settings')?.addEventListener('click', async () => {
-      const newName = container.querySelector('#edit-srv-name')?.value.trim();
-      const portInput = container.querySelector('#edit-srv-port');
-      const newPort = portInput ? (parseInt(portInput.value, 10) || service.port || 3000) : (service.port || 3000);
-      const newDomain = container.querySelector('#edit-srv-domain')?.value.trim();
-
-      if (newName) {
-        service.name = newName;
-        service.port = newPort;
-        const cfUrl = service.cloudflarePagesUrl || `https://${newName}.pages.dev`;
-        service.url = cfUrl;
-        service.cloudflarePagesUrl = cfUrl;
-        if (newDomain) {
-          await store.addCustomDomain(service.id, newDomain);
-        }
-        store.updateServiceConfig(service.id, { name: newName, port: newPort, url: cfUrl, cloudflarePagesUrl: cfUrl });
-        render();
-      }
-    });
-
-    // Cloudflare Edge DNS Actions on Service
-    container.querySelector('#btn-cf-sync-domain')?.addEventListener('click', async () => {
-      const targetDomain = container.querySelector('#edit-srv-domain')?.value.trim() || service.customDomain || service.liveDomain;
-      if (!targetDomain) {
-        store.showToast('Please enter a custom domain to sync with Cloudflare.', 'error');
-        return;
-      }
-      await store.syncServiceWithCloudflare(service.id, targetDomain);
-      render();
-    });
-
-    container.querySelector('#btn-cf-purge-domain')?.addEventListener('click', async () => {
-      await store.purgeCloudflareCache();
     });
   }
 

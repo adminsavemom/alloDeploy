@@ -101,9 +101,14 @@ deployRouter.post('/upload', upload.any(), async (req, res) => {
       ? (targetDomainInit.startsWith('http') ? targetDomainInit : `https://${targetDomainInit}`) 
       : (existing?.url || cfPagesUrl);
 
+    const requestingUserId = req.headers['x-user-id'] || req.body.userId || (existing?.userId || 'usr_enterprise_dev');
+    const requestingUserEmail = req.headers['x-user-email'] || req.body.userEmail || (existing?.userEmail || 'alex.smith@example.com');
+
     const newService = {
       ...(existing || {}),
       id: existing ? existing.id : ('srv-' + crypto.randomBytes(4).toString('hex')),
+      userId: requestingUserId,
+      userEmail: requestingUserEmail,
       name: serviceName,
       type: framework.includes('API') || framework.includes('Node') ? 'Web Service' : (existing?.type || 'Application'),
       status: 'running',
@@ -259,9 +264,14 @@ deployRouter.post('/github', async (req, res) => {
       ? (targetDomainInit.startsWith('http') ? targetDomainInit : `https://${targetDomainInit}`) 
       : (existing?.url || cfPagesUrl);
 
+    const requestingUserId = req.headers['x-user-id'] || req.body.userId || (existing?.userId || 'usr_enterprise_dev');
+    const requestingUserEmail = req.headers['x-user-email'] || req.body.userEmail || (existing?.userEmail || 'alex.smith@example.com');
+
     const newService = {
       ...(existing || {}),
       id: existing ? existing.id : ('srv-' + crypto.randomBytes(4).toString('hex')),
+      userId: requestingUserId,
+      userEmail: requestingUserEmail,
       name: cleanServiceName,
       type: repoInfo.language === 'JavaScript' || repoInfo.language === 'TypeScript' ? 'Application' : 'Web Service',
       status: 'building',

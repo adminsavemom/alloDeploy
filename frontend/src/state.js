@@ -40,48 +40,9 @@ class StateStore {
       localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(this.user));
     }
 
-    // Purge legacy mock services from localStorage
-    localStorage.removeItem('coolify_resources_list');
-    const savedServices = localStorage.getItem(STORAGE_KEY_SERVICES);
-    let parsedServices = null;
-    try {
-      parsedServices = savedServices ? JSON.parse(savedServices) : null;
-    } catch (e) {}
-
-    const fakeNames = new Set([
-      'my-cool-site--',
-      'nextjs-saas-starter',
-      'nebula-cloud-docs',
-      'synthwave-edge-api',
-      'zenith-dashboard-ui',
-      'supabase-pg-vault',
-      'test-git-app'
-    ]);
-    const cleanServices = (parsedServices || []).filter(s => 
-      s && 
-      !fakeNames.has(s.name) && 
-      s.id !== 'srv-09f762b9' &&
-      s.name !== 'allodeploy-web-app' &&
-      !s.id?.startsWith('srv-nebula') && 
-      !s.id?.startsWith('srv-synthwave') && 
-      !s.id?.startsWith('srv-zenith') && 
-      !s.id?.startsWith('srv-uqey') && 
-      !s.id?.startsWith('srv-winek') &&
-      !s.id?.startsWith('srv-postgres')
-    );
-    cleanServices.forEach(s => {
-      const cfUrl = `https://${s.name}.pages.dev`;
-      if (!s.url || s.url.includes('localhost') || s.url.includes('allodeploy.app')) {
-        s.url = s.customDomain 
-          ? (s.customDomain.startsWith('http') ? s.customDomain : `https://${s.customDomain}`)
-          : (s.cloudflarePagesUrl || cfUrl);
-      }
-      s.cloudflarePagesUrl = s.cloudflarePagesUrl || cfUrl;
-      s.cloudflareConnected = true;
-      s.liveDomain = s.url;
-    });
-    this.services = cleanServices;
-    this.persistServices();
+    // Load user-scoped resources and projects
+    this.services = [];
+    this.loadUserScopedData();
 
     // Navigation State
     this.activeView = 'dashboard'; // 'dashboard' | 'service-detail'
@@ -160,6 +121,97 @@ class StateStore {
     return () => this.listeners.delete(listener);
   }
 
+  getAuthHeaders() {
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    if (this.user?.id) {
+      headers['x-user-id'] = this.user.id;
+    }
+    if (this.user?.email) {
+      headers['x-user-email'] = this.user.email;
+    }
+    const token = localStorage.getItem('allodeploy_auth_token');
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  }
+
+  loadUserScopedData() {
+    const userKey = this.user?.id || 'usr_enterprise_dev';
+    const isPrimaryUser = userKey === 'usr_enterprise_dev' || this.user?.email === 'alex.smith@example.com' || (this.user?.email && this.user.email.includes('kathir'));
+
+    // 1. Scoped Services
+    const scopedServicesKey = `${STORAGE_KEY_SERVICES}_${userKey}`;
+    const rawSaved = localStorage.getItem(scopedServicesKey) || (isPrimaryUser ? localStorage.getItem(STORAGE_KEY_SERVICES) : null);
+    let parsedServices = null;
+    try {
+      parsedServices = rawSaved ? JSON.parse(rawSaved) : null;
+    } catch (e) {}
+
+    const fakeNames = new Set([
+      'my-cool-site--',
+      'nextjs-saas-starter',
+      'nebula-cloud-docs',
+      'synthwave-edge-api',
+      'zenith-dashboard-ui',
+      'supabase-pg-vault',
+      'test-git-app'
+    ]);
+    const cleanServices = (parsedServices || []).filter(s => 
+      s && 
+      !fakeNames.has(s.name) && 
+      s.id !== 'srv-09f762b9' &&
+      s.name !== 'allodeploy-web-app' &&
+      !s.id?.startsWith('srv-nebula') && 
+      !s.id?.startsWith('srv-synthwave') && 
+      !s.id?.startsWith('srv-zenith') && 
+      !s.id?.startsWith('srv-uqey') && 
+      !s.id?.startsWith('srv-winek') &&
+      !s.id?.startsWith('srv-postgres') &&
+      (
+        (s.userId && s.userId === this.user?.id) ||
+        (s.userEmail && this.user?.email && s.userEmail.toLowerCase() === this.user.email.toLowerCase()) ||
+        (!s.userId && isPrimaryUser)
+      )
+    );
+
+    cleanServices.forEach(s => {
+      const cfUrl = `https://${s.name}.pages.dev`;
+      if (!s.url || s.url.includes('localhost') || s.url.includes('allodeploy.app')) {
+        s.url = s.customDomain 
+          ? (s.customDomain.startsWith('http') ? s.customDomain : `https://${s.customDomain}`)
+          : (s.cloudflarePagesUrl || cfUrl);
+      }
+      s.cloudflarePagesUrl = s.cloudflarePagesUrl || cfUrl;
+      s.cloudflareConnected = true;
+      s.liveDomain = s.url;
+    });
+
+    this.services = cleanServices;
+
+    // 2. Scoped Projects
+    const rawProjects = localStorage.getItem(`allodeploy_projects_list_${userKey}`) || 
+      (isPrimaryUser ? localStorage.getItem('allodeploy_projects_list') : null);
+    try {
+      const pList = rawProjects ? JSON.parse(rawProjects) : [];
+      this.projects = Array.isArray(pList) ? pList.filter(p => !p.userId || p.userId === this.user?.id || isPrimaryUser) : [];
+    } catch (e) {
+      this.projects = [];
+    }
+
+    // 3. Scoped Recent Deployments
+    const rawRecent = localStorage.getItem(`allodeploy_recent_deployments_${userKey}`) || 
+      (isPrimaryUser ? localStorage.getItem('allodeploy_recent_deployments') : null);
+    try {
+      const rList = rawRecent ? JSON.parse(rawRecent) : [];
+      this.recentDeployments = Array.isArray(rList) ? rList.filter(d => !d.userId || d.userId === this.user?.id || isPrimaryUser) : [];
+    } catch (e) {
+      this.recentDeployments = [];
+    }
+  }
+
   notify() {
     this.listeners.forEach(fn => fn(this));
   }
@@ -218,6 +270,9 @@ class StateStore {
       role: userPayload.role || 'Admin / Owner'
     };
     localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(this.user));
+    this.services = [];
+    this.loadUserScopedData();
+    this.fetchServicesFromBackend();
     this.notify();
     this.showToast(`Welcome back, ${this.user.name}!`, 'success');
   }
@@ -301,6 +356,9 @@ class StateStore {
     this.user = null;
     localStorage.removeItem(STORAGE_KEY_USER);
     localStorage.removeItem('allodeploy_auth_token');
+    this.services = [];
+    this.projects = [];
+    this.recentDeployments = [];
     this.activeView = 'dashboard';
     this.activeNav = 'projects';
     this.selectedServiceId = null;
@@ -382,7 +440,9 @@ class StateStore {
 
   async fetchServicesFromBackend() {
     try {
-      const res = await fetch(`${this.backendUrl}/api/services`);
+      const res = await fetch(`${this.backendUrl}/api/services`, {
+        headers: this.getAuthHeaders()
+      });
       if (res.ok) {
         const data = await res.json();
         const fakeNames = new Set([
@@ -672,8 +732,12 @@ class StateStore {
     try {
       const res = await fetch(`${this.backendUrl}/api/services/create`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(resourceData)
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({
+          ...resourceData,
+          userId: this.user?.id,
+          userEmail: this.user?.email
+        })
       });
       if (res.ok) {
         const data = await res.json();
@@ -694,6 +758,8 @@ class StateStore {
     const newService = {
       id: 'srv-' + Math.random().toString(36).substr(2, 7),
       name: (resourceData.name || 'resource-' + Math.random().toString(36).substr(2, 5)).toLowerCase().replace(/[^a-z0-9-]/g, '-'),
+      userId: this.user?.id || 'usr_enterprise_dev',
+      userEmail: this.user?.email || 'alex.smith@example.com',
       type: resourceData.type || 'Application',
       status: 'running',
       url: resourceData.customDomain ? (resourceData.customDomain.startsWith('http') ? resourceData.customDomain : `https://${resourceData.customDomain}`) : cfPagesUrl,
@@ -994,7 +1060,10 @@ class StateStore {
     this.showToast(`Resource "${target ? target.name : serviceId}" removed.`, 'info');
 
     try {
-      await fetch(`${this.backendUrl}/api/services/${serviceId}`, { method: 'DELETE' });
+      await fetch(`${this.backendUrl}/api/services/${serviceId}`, {
+        method: 'DELETE',
+        headers: this.getAuthHeaders()
+      });
     } catch (e) {
       console.warn('Backend delete sync error:', e);
     }
@@ -1647,18 +1716,33 @@ class StateStore {
 
   persistServices() {
     try {
-      localStorage.setItem(STORAGE_KEY_SERVICES, JSON.stringify(this.services));
+      const userKey = this.user?.id || 'usr_enterprise_dev';
+      const isPrimary = userKey === 'usr_enterprise_dev' || this.user?.email === 'alex.smith@example.com' || (this.user?.email && this.user.email.includes('kathir'));
+      localStorage.setItem(`${STORAGE_KEY_SERVICES}_${userKey}`, JSON.stringify(this.services));
+      if (isPrimary) {
+        localStorage.setItem(STORAGE_KEY_SERVICES, JSON.stringify(this.services));
+      }
     } catch (e) {
       console.warn('Failed to persist services to localStorage:', e);
     }
   }
 
   persistProjects() {
-    localStorage.setItem('allodeploy_projects_list', JSON.stringify(this.projects));
+    const userKey = this.user?.id || 'usr_enterprise_dev';
+    const isPrimary = userKey === 'usr_enterprise_dev' || this.user?.email === 'alex.smith@example.com' || (this.user?.email && this.user.email.includes('kathir'));
+    localStorage.setItem(`allodeploy_projects_list_${userKey}`, JSON.stringify(this.projects));
+    if (isPrimary) {
+      localStorage.setItem('allodeploy_projects_list', JSON.stringify(this.projects));
+    }
   }
 
   persistRecentDeployments() {
-    localStorage.setItem('allodeploy_recent_deployments', JSON.stringify(this.recentDeployments));
+    const userKey = this.user?.id || 'usr_enterprise_dev';
+    const isPrimary = userKey === 'usr_enterprise_dev' || this.user?.email === 'alex.smith@example.com' || (this.user?.email && this.user.email.includes('kathir'));
+    localStorage.setItem(`allodeploy_recent_deployments_${userKey}`, JSON.stringify(this.recentDeployments));
+    if (isPrimary) {
+      localStorage.setItem('allodeploy_recent_deployments', JSON.stringify(this.recentDeployments));
+    }
   }
 
   addProject(project) {
@@ -1669,6 +1753,8 @@ class StateStore {
       foldersCount: project.foldersCount || 1,
       resourcesCount: project.resourcesCount || 0,
       environment: project.environment || this.currentEnvironment || 'production',
+      userId: this.user?.id || 'usr_enterprise_dev',
+      userEmail: this.user?.email || 'alex.smith@example.com',
       createdAt: new Date().toISOString()
     };
     this.projects.unshift(cleanProj);
@@ -1686,6 +1772,8 @@ class StateStore {
       server: dep.server || 'localhost',
       status: dep.status || 'Success',
       started: dep.started || 'Just now',
+      userId: this.user?.id || 'usr_enterprise_dev',
+      userEmail: this.user?.email || 'alex.smith@example.com',
       timestamp: Date.now()
     };
     this.recentDeployments.unshift(record);

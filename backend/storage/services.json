@@ -4,13 +4,21 @@
     "name": "uyir-portal",
     "type": "Application",
     "status": "running",
-    "url": "https://uyir-portal.pages.dev",
-    "liveDomain": "https://uyir-portal.pages.dev",
-    "customDomain": "",
-    "domains": [],
+    "url": "https://testuyir.allokonnect.com",
+    "liveDomain": "https://testuyir.allokonnect.com",
+    "customDomain": "testuyir.allokonnect.com",
+    "domains": [
+      {
+        "domain": "testuyir.allokonnect.com",
+        "sslStatus": "disabled",
+        "forceHttps": false,
+        "customOriginSni": "",
+        "customOriginServer": ""
+      }
+    ],
     "sslEnabled": false,
     "forceHttps": true,
-    "port": 4995,
+    "port": 7667,
     "region": "Frankfurt (eu-central-1)",
     "source": "Manual Upload (Direct Drop)",
     "gitRepo": "",
@@ -26,8 +34,8 @@
     "size": "12 KB",
     "framework": "Static Site",
     "updatedAt": "Just now",
-    "createdAt": "2026-10-16 05:57",
-    "deployCount": 2,
+    "createdAt": "2026-10-19 03:40",
+    "deployCount": 4,
     "metrics": {
       "cpu": "0.2%",
       "memory": "12 KB",
@@ -39,10 +47,18 @@
     ],
     "deploys": [
       {
-        "id": "dep-41034e43",
+        "id": "dep-c924a5c8",
         "date": "Just now",
-        "hash": "d6dc49",
+        "hash": "df6a6c",
         "status": "running",
+        "message": "Deploy from bundle (1 files, 12 KB)",
+        "duration": "2.4s"
+      },
+      {
+        "id": "dep-b2b033a8",
+        "date": "Just now",
+        "hash": "b1712e",
+        "status": "superseded",
         "message": "Deploy from bundle (1 files, 12 KB)",
         "duration": "2.4s"
       }
@@ -55,6 +71,73 @@
     "backups": [],
     "templateType": "",
     "cloudflarePagesUrl": "https://uyir-portal.pages.dev",
+    "cloudflareConnected": true
+  },
+  {
+    "id": "srv-ac2b5ef4",
+    "name": "sonic-breeze-139",
+    "type": "Application",
+    "status": "running",
+    "url": "https://sonic-breeze-139.pages.dev",
+    "liveDomain": "https://sonic-breeze-139.pages.dev",
+    "customDomain": "",
+    "domains": [],
+    "sslEnabled": false,
+    "forceHttps": true,
+    "port": 5354,
+    "region": "Frankfurt (eu-central-1)",
+    "source": "Manual Upload (204 folder files)",
+    "gitRepo": "",
+    "gitUrl": "",
+    "gitBranch": "main",
+    "gitCommit": "",
+    "gitCommitMsg": "",
+    "gitAuthor": "",
+    "buildCommand": "",
+    "publishDir": "",
+    "autoDeploy": false,
+    "filesCount": 204,
+    "size": "7.7 MB",
+    "framework": "Static HTML Bundle",
+    "updatedAt": "Just now",
+    "createdAt": "2026-10-17 08:31",
+    "deployCount": 2,
+    "metrics": {
+      "cpu": "0.2%",
+      "memory": "7.7 MB",
+      "uptime": "100%"
+    },
+    "envVars": [],
+    "sampleFiles": [
+      "index.html",
+      "next.svg",
+      "vercel.svg",
+      "images/illustrations/characters-with-objects/1.png",
+      "images/illustrations/characters-with-objects/13.png",
+      "images/illustrations/characters-with-objects/7.png",
+      "images/illustrations/characters-with-objects/images.png",
+      "images/illustrations/characters-with-objects/Login.png",
+      "images/illustrations/characters-with-objects/Portal.png",
+      "images/avatars/1.png"
+    ],
+    "deploys": [
+      {
+        "id": "dep-1792225866606-hcl2d2",
+        "date": "Just now",
+        "hash": "03cb26",
+        "status": "running",
+        "message": "Deploy from bundle (204 files, 7.7 MB)",
+        "duration": "2.4s"
+      }
+    ],
+    "healthcheck": {
+      "path": "/",
+      "expectedStatus": 200,
+      "intervalSeconds": 30
+    },
+    "backups": [],
+    "templateType": "",
+    "cloudflarePagesUrl": "https://sonic-breeze-139.pages.dev",
     "cloudflareConnected": true
   },
   {
@@ -114,55 +197,6 @@
     "backups": [],
     "templateType": "",
     "cloudflarePagesUrl": "https://allodeploy-test-demo.pages.dev",
-    "cloudflareConnected": true
-  },
-  {
-    "id": "srv-1cfc53ac",
-    "name": "pack2door-frontend",
-    "type": "Application",
-    "status": "running",
-    "url": "http://pack2door.com:7246",
-    "liveDomain": "http://pack2door.com:7246",
-    "customDomain": "pack2door.com",
-    "domains": [],
-    "sslEnabled": true,
-    "forceHttps": true,
-    "port": 7246,
-    "region": "Frankfurt (eu-central-1)",
-    "source": "Manual Upload (Direct Drop)",
-    "gitRepo": "",
-    "gitUrl": "",
-    "gitBranch": "main",
-    "gitCommit": "",
-    "gitCommitMsg": "",
-    "gitAuthor": "",
-    "buildCommand": "",
-    "publishDir": "",
-    "autoDeploy": false,
-    "filesCount": 1,
-    "size": "12 KB",
-    "framework": "Static Site",
-    "updatedAt": "Just now",
-    "createdAt": "2026-10-13 15:09",
-    "deployCount": 1,
-    "metrics": {
-      "cpu": "0.2%",
-      "memory": "12 KB",
-      "uptime": "100%"
-    },
-    "envVars": [],
-    "sampleFiles": [
-      "index.html"
-    ],
-    "deploys": [],
-    "healthcheck": {
-      "path": "/",
-      "expectedStatus": 200,
-      "intervalSeconds": 30
-    },
-    "backups": [],
-    "templateType": "",
-    "cloudflarePagesUrl": "https://pack2door-frontend.pages.dev",
     "cloudflareConnected": true
   },
   {

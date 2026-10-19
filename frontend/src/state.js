@@ -320,8 +320,14 @@ class StateStore {
     this.notify();
   }
 
+  openDeployModalWithService(serviceName, tab = 'drop') {
+    this.targetServiceName = serviceName;
+    this.openDeployModal(tab);
+  }
+
   closeDeployModal() {
     this.isDeployModalOpen = false;
+    this.targetServiceName = null;
     this.notify();
   }
 
@@ -738,24 +744,25 @@ class StateStore {
     this.showToast(`Resource "${newService.name}" deployed and running!`, 'success');
   }
 
-  async addCustomDomain(serviceId, domain) {
+  async addCustomDomain(serviceId, domain, options = {}) {
     const cleanDomain = domain.trim().toLowerCase().replace(/^https?:\/\//i, '').replace(/\/.*$/, '');
     const srv = this.services.find(s => s.id === serviceId);
     if (!srv) return null;
 
+    const proto = srv.protocol || 'https';
     srv.customDomain = cleanDomain;
     srv.customDomainStatus = 'pending';
     srv.customDomainCname = `${srv.name}.pages.dev`;
     srv.cloudflarePagesUrl = `https://${srv.name}.pages.dev`;
-    srv.url = `https://${srv.name}.pages.dev`;
-    srv.liveDomain = `https://${srv.name}.pages.dev`;
-    if (options.customOriginServer !== undefined) srv.customOriginServer = options.customOriginServer;
-    if (options.customOriginSni !== undefined) srv.customOriginSni = options.customOriginSni;
-    if (options.customHostnameId) srv.customHostnameId = options.customHostnameId;
+    srv.url = `${proto}://${cleanDomain}`;
+    srv.liveDomain = `${proto}://${cleanDomain}`;
+    if (options && options.customOriginServer !== undefined) srv.customOriginServer = options.customOriginServer;
+    if (options && options.customOriginSni !== undefined) srv.customOriginSni = options.customOriginSni;
+    if (options && options.customHostnameId) srv.customHostnameId = options.customHostnameId;
     srv.updatedAt = 'Just now';
     this.persistServices();
     this.notify();
-    this.showToast(`Registering custom domain "${cleanDomain}" with Cloudflare Pages & Origin...`, 'info');
+    this.showToast(`Registering custom domain "${cleanDomain}"...`, 'info');
 
     try {
       const res = await fetch(`${this.backendUrl}/api/services/${serviceId}/custom-domain`, {
@@ -763,10 +770,10 @@ class StateStore {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           domain: cleanDomain,
-          customOriginServer: options.customOriginServer,
-          customOriginSni: options.customOriginSni,
-          customHostnameId: options.customHostnameId,
-          zoneId: options.zoneId
+          customOriginServer: options?.customOriginServer,
+          customOriginSni: options?.customOriginSni,
+          customHostnameId: options?.customHostnameId,
+          zoneId: options?.zoneId
         })
       });
       if (res.ok) {
@@ -776,19 +783,19 @@ class StateStore {
           this.persistServices();
           this.notify();
         }
-        if (data.cfResult?.status === 'active') {
-          this.showToast(`Domain https://${cleanDomain} connected & SSL active!`, 'success');
+        if (data.cfResult?.status === 'active' || data.service?.customDomainStatus === 'active') {
+          this.showToast(`Domain https://${cleanDomain} connected & active!`, 'success');
         } else if (data.customHostname) {
-          this.showToast(`Domain "${cleanDomain}" updated with Cloudflare Custom Origin (${options.customOriginServer || 'origin'})!`, 'success');
+          this.showToast(`Domain "${cleanDomain}" updated with Custom Origin (${options?.customOriginServer || 'origin'})!`, 'success');
         } else {
-          this.showToast(`Domain "${cleanDomain}" registered! Point CNAME to ${srv.name}.pages.dev`, 'info');
+          this.showToast(`Domain "${cleanDomain}" configured successfully!`, 'success');
         }
         return data;
       }
     } catch (e) {
       console.warn('Backend custom domain error:', e);
     }
-    this.showToast(`Domain "${cleanDomain}" registered. Point CNAME to ${srv.name}.pages.dev`, 'info');
+    this.showToast(`Domain "${cleanDomain}" registered.`, 'info');
     return { success: true, domain: cleanDomain };
   }
 

@@ -41,10 +41,10 @@ export function renderServiceDetail(container) {
           ? service.url
           : `https://${service.name}.pages.dev`);
 
-    const isCustomActive = service.customDomain && service.customDomainStatus === 'active';
-    const openSiteUrl = (isCustomActive && service.customDomain)
-      ? (service.customDomain.startsWith('http') ? service.customDomain : `https://${service.customDomain}`)
-      : exactPagesUrl;
+    const customSiteUrl = service.customDomain 
+      ? (service.customDomain.startsWith('http') ? service.customDomain : `${service.protocol || 'https'}://${service.customDomain}${service.pathSuffix || ''}`)
+      : null;
+    const openSiteUrl = customSiteUrl || exactPagesUrl;
 
     container.innerHTML = `
       <div class="detail-container">
@@ -88,8 +88,8 @@ export function renderServiceDetail(container) {
                 </a>
                 ${service.customDomain ? `
                   <span>•</span>
-                  <a href="https://${service.customDomain}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; font-family: var(--font-mono); display: inline-flex; align-items: center; gap: 4px; text-decoration: none;" title="Custom domain: https://${service.customDomain}">
-                    🌐 ${service.customDomain} (${service.customDomainStatus === 'active' ? 'SSL Active' : 'DNS Pending'})
+                  <a href="${customSiteUrl}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; font-family: var(--font-mono); display: inline-flex; align-items: center; gap: 4px; text-decoration: none;" title="Custom domain: ${customSiteUrl}">
+                    🌐 ${service.customDomain} (${service.customDomainStatus === 'active' ? 'SSL Active' : 'Active'})
                   </a>
                 ` : ''}
                 <span>•</span>
@@ -118,6 +118,10 @@ export function renderServiceDetail(container) {
 
             <button class="btn btn-secondary btn-sm" id="btn-detail-redeploy" title="Redeploy Container">
               ${icons.zap} Redeploy
+            </button>
+
+            <button class="btn btn-secondary btn-sm" id="btn-detail-upload" title="Deploy or upload new web page files directly into this project" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.4); display: inline-flex; align-items: center; gap: 6px;">
+              ${icons.cloudUpload || '⬆️'} Deploy Files
             </button>
 
             <button class="btn btn-secondary btn-sm" id="btn-detail-delete" title="Delete Resource" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.35);">
@@ -614,6 +618,10 @@ export function renderServiceDetail(container) {
     container.querySelector('#btn-detail-restart')?.addEventListener('click', () => {
       store.restartService(service.id);
       render();
+    });
+
+    container.querySelector('#btn-detail-upload')?.addEventListener('click', () => {
+      store.openDeployModalWithService(service.name);
     });
 
     container.querySelector('#btn-detail-redeploy')?.addEventListener('click', () => {

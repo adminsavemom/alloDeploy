@@ -212,10 +212,43 @@ servicesRouter.put('/:id/domain-settings', async (req, res) => {
   if (cleanDomain) {
     srv.customDomain = cleanDomain;
     const proto = srv.protocol || 'https';
-    const portPart = (proto === 'http' && srv.port === 80) || (proto === 'https' && srv.port === 443) ? '' : `:${srv.port}`;
+    // Only append port if explicitly specified as non-standard public port (not 80, 443, 5000, 3000, or internal port)
+    const numPort = parseInt(port, 10);
+    const isStandardWebPort = !numPort || numPort === 80 || numPort === 443 || numPort === 5000 || numPort === 3000 || numPort === srv.port;
+    const portPart = isStandardWebPort ? '' : `:${numPort}`;
     const pathPart = srv.pathSuffix ? (srv.pathSuffix.startsWith('/') ? srv.pathSuffix : `/${srv.pathSuffix}`) : '';
     srv.liveDomain = `${proto}://${cleanDomain}${portPart}${pathPart}`;
     srv.url = srv.liveDomain;
+    srv.sslEnabled = proto === 'https';
+
+    // Sync into srv.domains
+    if (!Array.isArray(srv.domains)) srv.domains = [];
+    const domIdx = srv.domains.findIndex(d => (typeof d === 'string' ? d : d.domain) === cleanDomain);
+    const domObj = {
+      domain: cleanDomain,
+      sslStatus: proto === 'https' ? 'active' : 'disabled',
+      forceHttps: proto === 'https',
+      customOriginServer: customOriginServer || srv.customOriginServer || '',
+      customOriginSni: customOriginSni || srv.customOriginSni || ''
+    };
+    if (domIdx >= 0) {
+      srv.domains[domIdx] = { ...srv.domains[domIdx], ...domObj };
+    } else {
+      srv.domains.push(domObj);
+    }
+
+    // Automatically update Nginx virtual host configuration
+    try {
+      const nginxConf = nginxService.generateConfig(srv, {
+        domain: cleanDomain,
+        ssl: proto === 'https',
+        forceHttps: proto === 'https'
+      });
+      nginxService.saveConfig(srv.name, nginxConf);
+      await nginxService.reloadNginx();
+    } catch (ngErr) {
+      console.warn('Nginx virtual host sync notice:', ngErr.message);
+    }
 
     // Call Cloudflare APIs if configured
     if (cloudflareService.isConfigured()) {
@@ -299,26 +332,49 @@ servicesRouter.post('/:id/custom-domain', async (req, res) => {
   }
 
   srv.customDomain = cleanDomain;
-  srv.customDomainStatus = cfResult?.status || 'pending';
+  srv.customDomainStatus = cfResult?.status || 'active';
   srv.customDomainCname = `${srv.name}.pages.dev`;
-  srv.customDomainError = cfResult?.dnsStatus?.error || (cfResult?.status === 'pending' ? 'CNAME record pending' : '');
+  srv.customDomainError = cfResult?.dnsStatus?.error || '';
   srv.customOriginServer = originServer;
   srv.customOriginSni = originSni;
   if (targetHostnameId) srv.customHostnameId = targetHostnameId;
+  const proto = srv.protocol || 'https';
   srv.cloudflarePagesUrl = `https://${srv.name}.pages.dev`;
-  srv.url = `https://${srv.name}.pages.dev`;
-  srv.liveDomain = `https://${srv.name}.pages.dev`;
-  srv.sslEnabled = true;
+  srv.url = `${proto}://${cleanDomain}`;
+  srv.liveDomain = `${proto}://${cleanDomain}`;
+  srv.sslEnabled = proto === 'https';
   srv.updatedAt = 'Just now';
 
   // Also sync with srv.domains array if present
-  if (Array.isArray(srv.domains)) {
-    const existingDom = srv.domains.find(d => (typeof d === 'string' ? d : d.domain) === cleanDomain);
-    if (existingDom && typeof existingDom === 'object') {
-      existingDom.customOriginServer = originServer;
-      existingDom.customOriginSni = originSni;
-      if (targetHostnameId) existingDom.customHostnameId = targetHostnameId;
-    }
+  if (!Array.isArray(srv.domains)) srv.domains = [];
+  const existingDom = srv.domains.find(d => (typeof d === 'string' ? d : d.domain) === cleanDomain);
+  if (existingDom && typeof existingDom === 'object') {
+    existingDom.customOriginServer = originServer;
+    existingDom.customOriginSni = originSni;
+    if (targetHostnameId) existingDom.customHostnameId = targetHostnameId;
+    existingDom.sslStatus = 'active';
+  } else if (!existingDom) {
+    srv.domains.push({
+      domain: cleanDomain,
+      sslStatus: 'active',
+      forceHttps: true,
+      customOriginServer: originServer,
+      customOriginSni: originSni,
+      customHostnameId: targetHostnameId
+    });
+  }
+
+  // Generate / update Nginx virtual host configuration
+  try {
+    const nginxConf = nginxService.generateConfig(srv, {
+      domain: cleanDomain,
+      ssl: proto === 'https',
+      forceHttps: proto === 'https'
+    });
+    nginxService.saveConfig(srv.name, nginxConf);
+    await nginxService.reloadNginx();
+  } catch (ngErr) {
+    console.warn('Nginx virtual host sync notice:', ngErr.message);
   }
 
   await storageService.addOrUpdateService(srv);
@@ -386,7 +442,6 @@ servicesRouter.patch('/:id/custom-domain/origin', async (req, res) => {
   });
 });
 
-// VERIFY / CHECK CUSTOM DOMAIN STATUS
 servicesRouter.get('/:id/custom-domain/verify', async (req, res) => {
   const services = await storageService.getServices();
   const srv = services.find(s => s.id === req.params.id);
@@ -398,12 +453,24 @@ servicesRouter.get('/:id/custom-domain/verify', async (req, res) => {
     try {
       statusInfo = await cloudflareService.getPagesProjectDomainStatus(srv.name, srv.customDomain);
       srv.customDomainStatus = statusInfo.status;
-      await storageService.addOrUpdateService(srv);
     } catch (err) {
-      console.warn('Domain verify error:', err.message);
+      console.warn('Cloudflare verify error:', err.message);
     }
   }
 
+  // Also verify DNS resolution for self-hosted / direct server use
+  const dnsRes = await certbotService.verifyDns(srv.customDomain);
+  if (dnsRes.resolved) {
+    statusInfo.status = 'active';
+    statusInfo.dns = dnsRes;
+    srv.customDomainStatus = 'active';
+  } else if (!cloudflareService.isConfigured()) {
+    statusInfo.status = 'pending';
+    statusInfo.dns = dnsRes;
+    srv.customDomainStatus = 'pending';
+  }
+
+  await storageService.addOrUpdateService(srv);
   res.json({ success: true, service: srv, statusInfo });
 });
 
@@ -421,6 +488,7 @@ servicesRouter.delete('/:id/custom-domain', async (req, res) => {
     await cloudflareService.deleteCustomHostname({ customHostnameId: srv.customHostnameId }).catch(() => {});
   }
 
+  const removedDomain = srv.customDomain;
   srv.customDomain = '';
   srv.customDomainStatus = '';
   srv.customDomainError = '';
@@ -428,11 +496,20 @@ servicesRouter.delete('/:id/custom-domain', async (req, res) => {
   srv.customHostnameId = '';
   srv.customOriginServer = '';
   srv.customOriginSni = '';
+  if (Array.isArray(srv.domains)) {
+    srv.domains = srv.domains.filter(d => (typeof d === 'string' ? d : d.domain) !== removedDomain);
+  }
   const cfUrl = `https://${srv.name}.pages.dev`;
   srv.url = cfUrl;
   srv.liveDomain = cfUrl;
   srv.cloudflarePagesUrl = cfUrl;
   srv.updatedAt = 'Just now';
+
+  try {
+    const nginxConf = nginxService.generateConfig(srv);
+    nginxService.saveConfig(srv.name, nginxConf);
+    await nginxService.reloadNginx();
+  } catch (ngErr) {}
 
   await storageService.addOrUpdateService(srv);
   console.log(`🌐 [Custom Domain Removed] Resource "${srv.name}" reverted to ${cfUrl}`);

@@ -695,10 +695,10 @@ function renderProjectsView(container) {
                   ? srv.url
                   : `https://${srv.name}.pages.dev`);
 
-            const isCustomActive = srv.customDomain && srv.customDomainStatus === 'active';
-            const openSiteUrl = (isCustomActive && srv.customDomain)
-              ? (srv.customDomain.startsWith('http') ? srv.customDomain : `https://${srv.customDomain}`)
-              : exactPagesUrl;
+            const customUrl = srv.customDomain 
+              ? (srv.customDomain.startsWith('http') ? srv.customDomain : `${srv.protocol || 'https'}://${srv.customDomain}${srv.pathSuffix || ''}`)
+              : null;
+            const openSiteUrl = customUrl || exactPagesUrl;
 
             return `
               <div class="coolify-card" data-id="${srv.id}">
@@ -726,18 +726,18 @@ function renderProjectsView(container) {
                   </div>
                 </div>
 
-                <!-- Exact Cloudflare Pages Deployment Link -->
+                <!-- Deployment Link -->
                 <div class="coolify-url-row">
                   <div style="display: flex; align-items: center; gap: 6px; overflow: hidden; flex: 1; min-width: 0;">
-                    <span class="badge" style="background: rgba(246, 130, 31, 0.18); color: #f6821f; border: 1px solid rgba(246, 130, 31, 0.4); font-size: 10px; padding: 1px 6px; flex-shrink: 0;">☁️ Pages</span>
-                    <a href="${exactPagesUrl}" target="_blank" rel="noopener noreferrer" class="resource-url-text" style="text-decoration: none; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-mono); font-size: 12px; color: #a78bfa;" title="${exactPagesUrl}">${exactPagesUrl}</a>
+                    <span class="badge" style="background: rgba(246, 130, 31, 0.18); color: #f6821f; border: 1px solid rgba(246, 130, 31, 0.4); font-size: 10px; padding: 1px 6px; flex-shrink: 0;">${srv.customDomain ? '🌐 Domain' : '☁️ Pages'}</span>
+                    <a href="${openSiteUrl}" target="_blank" rel="noopener noreferrer" class="resource-url-text" style="text-decoration: none; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-mono); font-size: 12px; color: #a78bfa;" title="${openSiteUrl}">${srv.customDomain || exactPagesUrl}</a>
                   </div>
                   <div class="url-action-btns">
-                    <button class="icon-btn btn-xs" data-action="copy-url" data-url="${exactPagesUrl}" title="Copy Exact Pages URL">
+                    <button class="icon-btn btn-xs" data-action="copy-url" data-url="${openSiteUrl}" title="Copy Live URL">
                       ${icons.copy}
                     </button>
                     ${!isDb ? `
-                      <a href="${exactPagesUrl}" target="_blank" rel="noopener noreferrer" class="icon-btn btn-xs" title="Open Live Edge Site (${exactPagesUrl})">
+                      <a href="${openSiteUrl}" target="_blank" rel="noopener noreferrer" class="icon-btn btn-xs" title="Open Live Site (${openSiteUrl})">
                         ${icons.externalLink}
                       </a>
                     ` : ''}

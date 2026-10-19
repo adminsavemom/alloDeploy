@@ -92,33 +92,40 @@ deployRouter.post('/upload', upload.any(), async (req, res) => {
 
     const assignedPort = parseInt(req.body.port, 10) || (3000 + Math.floor(Math.random() * 5000));
 
+    const existingServices = await storageService.getServices();
+    const existing = existingServices.find(s => s.name === serviceName || (req.body.serviceId && s.id === req.body.serviceId));
+
+    const targetDomainInit = req.body.cloudflareDomain || req.body.customDomain || (existing?.customDomain || '');
     const cfPagesUrl = `https://${serviceName}.pages.dev`;
-    const targetDomainInit = req.body.cloudflareDomain || req.body.customDomain || '';
-    const initialUrl = targetDomainInit ? (targetDomainInit.startsWith('http') ? targetDomainInit : `https://${targetDomainInit}`) : cfPagesUrl;
+    const initialUrl = targetDomainInit 
+      ? (targetDomainInit.startsWith('http') ? targetDomainInit : `https://${targetDomainInit}`) 
+      : (existing?.url || cfPagesUrl);
 
     const newService = {
-      id: 'srv-' + crypto.randomBytes(4).toString('hex'),
+      ...(existing || {}),
+      id: existing ? existing.id : ('srv-' + crypto.randomBytes(4).toString('hex')),
       name: serviceName,
-      type: framework.includes('API') || framework.includes('Node') ? 'Web Service' : 'Application',
+      type: framework.includes('API') || framework.includes('Node') ? 'Web Service' : (existing?.type || 'Application'),
       status: 'running',
       url: initialUrl,
       liveDomain: initialUrl,
       cloudflarePagesUrl: cfPagesUrl,
       cloudflareConnected: true,
       customDomain: targetDomainInit,
-      region,
+      domains: existing?.domains?.length ? existing.domains : (targetDomainInit ? [{ domain: targetDomainInit, sslStatus: 'active', forceHttps: true }] : []),
+      region: region || existing?.region || 'Frankfurt (eu-central-1)',
       source: `Manual Upload (${req.files && req.files.length > 1 ? `${filesCount} folder files` : (req.files && req.files[0] ? req.files[0].originalname : 'Direct Drop')})`,
       filesCount,
       size: sizeStr,
-      framework,
+      framework: framework || existing?.framework || 'Static Site',
       port: assignedPort,
       updatedAt: 'Just now',
-      createdAt: new Date().toISOString().replace('T', ' ').substr(0, 16),
-      deployCount: 1,
+      createdAt: existing?.createdAt || new Date().toISOString().replace('T', ' ').substr(0, 16),
+      deployCount: (existing?.deployCount || 0) + 1,
       metrics: { cpu: '0.2%', memory: sizeStr, uptime: '100%' },
-      envVars: [],
+      envVars: existing?.envVars || [],
       sampleFiles,
-      deploys: []
+      deploys: existing?.deploys || []
     };
 
     // Auto-sync Cloudflare DNS & Edge Hosting if domain specified
@@ -243,12 +250,18 @@ deployRouter.post('/github', async (req, res) => {
     const filesCount = extractedSource?.filesCount || 1;
     const sampleFiles = extractedSource?.sampleFiles || ['index.html'];
 
+    const existingServices = await storageService.getServices();
+    const existing = existingServices.find(s => s.name === cleanServiceName);
+
     const cfPagesUrl = `https://${cleanServiceName}.pages.dev`;
-    const targetDomainInit = req.body.cloudflareDomain || req.body.customDomain || '';
-    const initialUrl = targetDomainInit ? (targetDomainInit.startsWith('http') ? targetDomainInit : `https://${targetDomainInit}`) : cfPagesUrl;
+    const targetDomainInit = req.body.cloudflareDomain || req.body.customDomain || (existing?.customDomain || '');
+    const initialUrl = targetDomainInit 
+      ? (targetDomainInit.startsWith('http') ? targetDomainInit : `https://${targetDomainInit}`) 
+      : (existing?.url || cfPagesUrl);
 
     const newService = {
-      id: 'srv-' + crypto.randomBytes(4).toString('hex'),
+      ...(existing || {}),
+      id: existing ? existing.id : ('srv-' + crypto.randomBytes(4).toString('hex')),
       name: cleanServiceName,
       type: repoInfo.language === 'JavaScript' || repoInfo.language === 'TypeScript' ? 'Application' : 'Web Service',
       status: 'building',
@@ -257,6 +270,7 @@ deployRouter.post('/github', async (req, res) => {
       cloudflarePagesUrl: cfPagesUrl,
       cloudflareConnected: true,
       customDomain: targetDomainInit,
+      domains: existing?.domains?.length ? existing.domains : (targetDomainInit ? [{ domain: targetDomainInit, sslStatus: 'active', forceHttps: true }] : []),
       region: chosenRegion,
       source: `GitHub (${repoInfo.full_name}:${chosenBranch})`,
       gitRepo: repoInfo.full_name,

@@ -82,7 +82,13 @@ export const storageService = {
         const cfPagesUrl = `https://${s.name}.pages.dev`;
         s.cloudflarePagesUrl = s.cloudflarePagesUrl || cfPagesUrl;
         s.cloudflareConnected = true;
-        if (!s.url || s.url.includes('localhost') || s.url.includes('allodeploy.app') || (s.customDomain && s.url === `https://${s.customDomain}`)) {
+        if (s.customDomain) {
+          const proto = s.protocol || 'https';
+          const cleanDom = s.customDomain.replace(/^https?:\/\//i, '').replace(/\/.*$/, '');
+          const customUrl = s.customDomain.startsWith('http') ? s.customDomain : `${proto}://${cleanDom}${s.pathSuffix || ''}`;
+          s.url = customUrl;
+          s.liveDomain = customUrl;
+        } else if (!s.url || s.url.includes('localhost') || s.url.includes('allodeploy.app')) {
           s.url = cfPagesUrl;
           s.liveDomain = cfPagesUrl;
         }
@@ -111,8 +117,7 @@ export const storageService = {
       list = this.getServicesSync();
     }
 
-    // Canonical transform: Any service with localhost URL, missing cloudflarePagesUrl,
-    // or overwritten by unverified customDomain is automatically restored to its Cloudflare Pages URL
+    // Canonical transform: ensure cloudflarePagesUrl exists and preserve customDomain URLs
     let hasUpdates = false;
     list.forEach(s => {
       const cfPagesUrl = `https://${s.name}.pages.dev`;
@@ -121,7 +126,16 @@ export const storageService = {
         s.cloudflareConnected = true;
         hasUpdates = true;
       }
-      if (!s.url || s.url.includes('localhost') || s.url.includes('allodeploy.app') || (s.customDomain && s.url === `https://${s.customDomain}`)) {
+      if (s.customDomain) {
+        const proto = s.protocol || 'https';
+        const cleanDom = s.customDomain.replace(/^https?:\/\//i, '').replace(/\/.*$/, '');
+        const customUrl = s.customDomain.startsWith('http') ? s.customDomain : `${proto}://${cleanDom}${s.pathSuffix || ''}`;
+        if (s.url !== customUrl || s.liveDomain !== customUrl) {
+          s.url = customUrl;
+          s.liveDomain = customUrl;
+          hasUpdates = true;
+        }
+      } else if (!s.url || s.url.includes('localhost') || s.url.includes('allodeploy.app')) {
         s.url = cfPagesUrl;
         s.liveDomain = cfPagesUrl;
         s.cloudflareConnected = true;
@@ -276,10 +290,14 @@ export const storageService = {
     if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
       return candidate;
     }
-    // Fallback to index.html for SPAs
-    const fallback = path.join(SITES_DIR, siteName, 'index.html');
-    if (fs.existsSync(fallback)) {
-      return fallback;
+    // Only fallback to index.html for extensionless paths or index.html requests (SPA routing)
+    // Do NOT fallback for missing images, CSS, JS, fonts, etc.
+    const ext = path.extname(cleanPath);
+    if (!ext || ext === '.html') {
+      const fallback = path.join(SITES_DIR, siteName, 'index.html');
+      if (fs.existsSync(fallback)) {
+        return fallback;
+      }
     }
     return null;
   },

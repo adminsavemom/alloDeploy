@@ -73,7 +73,7 @@ export function resetDeployModalState() {
   githubSearchQuery = '';
   unsupportedFileAlert = null;
   droppedFilesInfo = null;
-  serviceName = generateRandomProjectName();
+  serviceName = store.targetServiceName || generateRandomProjectName();
   region = 'Frankfurt (eu-central-1)';
   publishDir = './dist';
   framework = 'Vite / Single-Page App';
@@ -280,8 +280,17 @@ export function renderDeployModal(container) {
       <div style="background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius-md); padding: 16px 18px; margin-bottom: 16px;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
           <label for="project-name-input" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #cbd5e1; display: flex; align-items: center; gap: 6px; margin: 0;">
-            Project Name
+            Project Name ${store.targetServiceName ? `<span style="color: #38bdf8; text-transform: none; font-size: 11px;">(Updating: ${store.targetServiceName})</span>` : ''}
           </label>
+          ${store.services && store.services.length > 0 ? `
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 11px; color: var(--text-faint);">Or target project:</span>
+              <select id="select-existing-project" class="auth-input" style="font-size: 11px; padding: 4px 8px; width: auto; max-width: 170px; height: auto; background: rgba(0,0,0,0.5);">
+                <option value="">-- New Project --</option>
+                ${store.services.map(s => `<option value="${s.name}" ${s.name === serviceName ? 'selected' : ''}>${s.name}</option>`).join('')}
+              </select>
+            </div>
+          ` : ''}
         </div>
 
         <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
@@ -1357,6 +1366,20 @@ export function renderDeployModal(container) {
             }
           }
         });
+      });
+    }
+
+    const selectExisting = container.querySelector('#select-existing-project');
+    if (selectExisting) {
+      selectExisting.addEventListener('change', (e) => {
+        if (e.target.value) {
+          const chosen = e.target.value.toLowerCase().trim();
+          serviceName = chosen;
+          if (projectNameInput) projectNameInput.value = chosen;
+          const preview = container.querySelector('#project-url-preview');
+          if (preview) preview.textContent = chosen;
+          projectNameInput?.dispatchEvent(new Event('input'));
+        }
       });
     }
 

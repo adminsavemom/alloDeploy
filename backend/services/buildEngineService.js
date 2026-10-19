@@ -144,23 +144,29 @@ export const buildEngineService = {
         if (cfDeploy.success) {
           service.cloudflareConnected = true;
           service.cloudflarePagesUrl = cfDeploy.url;
-          service.url = cfDeploy.url;
-          service.liveDomain = cfDeploy.url;
+          if (!service.customDomain) {
+            service.url = cfDeploy.url;
+            service.liveDomain = cfDeploy.url;
+          }
           addLog('SUCCESS', `==> Cloudflare Pages deployment verified & active across 300+ Anycast POPs!`);
           addLog('SUCCESS', `==> Cloudflare Live URL: ${cfDeploy.url}`);
         } else {
           service.cloudflareConnected = false;
           service.cloudflarePagesUrl = `https://${service.name}.pages.dev`;
-          service.url = localUrl;
-          service.liveDomain = localUrl;
+          if (!service.customDomain) {
+            service.url = localUrl;
+            service.liveDomain = localUrl;
+          }
           addLog('WARN', `==> Cloudflare Pages notice: ${cfDeploy.message || cfDeploy.error || 'Deployment incomplete'}`);
           addLog('INFO', `==> Serving live on server runtime: ${localUrl}`);
         }
       } catch (cfErr) {
         service.cloudflareConnected = false;
         service.cloudflarePagesUrl = `https://${service.name}.pages.dev`;
-        service.url = localUrl;
-        service.liveDomain = localUrl;
+        if (!service.customDomain) {
+          service.url = localUrl;
+          service.liveDomain = localUrl;
+        }
         addLog('WARN', `==> Cloudflare API notice: ${cfErr.message}`);
         addLog('INFO', `==> Serving live on server runtime: ${localUrl}`);
       }

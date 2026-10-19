@@ -67,6 +67,98 @@ app.use('/api/ssl', sslRouter);
 app.use('/api/edge', cloudflareRouter);
 app.use('/api/cloudflare', cloudflareRouter);
 
+// ==============================================================================
+// Host-Based Custom Domain & Subdomain Virtual Gateway
+// Intercepts requests by Host/domain header to serve the matching deployed website
+// ==============================================================================
+app.use(async (req, res, next) => {
+  // Pass through internal API endpoints and explicit /sites/ proxy paths
+  if (req.path.startsWith('/api') || req.path.startsWith('/sites')) {
+    return next();
+  }
+
+  const rawHost = req.headers['x-forwarded-host'] || req.headers.host || req.hostname || '';
+  const host = rawHost.split(':')[0].toLowerCase().trim();
+
+  if (!host) return next();
+
+  const services = (await storageService.getServices()) || [];
+
+  // Match service by customDomain, domains array, or subdomain prefix
+  let srv = services.find(s => {
+    if (s.customDomain) {
+      const cleanCustom = s.customDomain.toLowerCase().replace(/^https?:\/\//i, '').replace(/\/.*$/, '').trim();
+      if (cleanCustom === host) return true;
+    }
+    if (Array.isArray(s.domains)) {
+      return s.domains.some(d => {
+        const dom = (typeof d === 'string' ? d : d.domain || '').toLowerCase().replace(/^https?:\/\//i, '').replace(/\/.*$/, '').trim();
+        return dom === host;
+      });
+    }
+    return false;
+  });
+
+  const isDefaultHost = host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0' || host === 'allodeploy.app' || host === 'app.allodeploy.local';
+  if (!srv && !isDefaultHost && host.includes('.')) {
+    const sub = host.split('.')[0].toLowerCase();
+    srv = services.find(s => s.name.toLowerCase() === sub);
+  }
+
+  // If request is not for a registered custom domain, proceed to dashboard frontend
+  if (!srv) {
+    return next();
+  }
+
+  // Handle stopped / paused resource status
+  if (srv.status === 'stopped') {
+    return res.status(503).send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Service Stopped · AlloDeploy</title>
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #090d16; color: #f8fafc; padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; margin: 0;">
+        <div style="background: #111726; border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 36px; text-align: center; max-width: 480px; box-shadow: 0 16px 40px rgba(0,0,0,0.6);">
+          <div style="width: 44px; height: 44px; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: #f87171; font-size: 20px;">⏹</div>
+          <h2 style="margin: 0 0 10px; color: #fff; font-size: 20px;">Resource Stopped</h2>
+          <p style="color: #94a3b8; font-size: 14px; margin-bottom: 24px; line-height: 1.5;">The service <strong>${srv.name}</strong> (${host}) is currently paused in the AlloDeploy engine.</p>
+          <a href="http://localhost:5173" style="display: inline-block; background: #7c3aed; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600;">Go to AlloDeploy Dashboard</a>
+        </div>
+      </body>
+      </html>
+    `);
+  }
+
+  // Serve static assets for the custom domain
+  const reqUrl = req.url.split('?')[0];
+  const relativeFile = (reqUrl === '/' || !reqUrl) ? 'index.html' : reqUrl.replace(/^\//, '');
+
+  const filePath = storageService.getSiteFilePath(srv.name, relativeFile);
+  if (filePath) {
+    return res.sendFile(filePath);
+  }
+
+  // Single Page Application (SPA) client-side routing fallback
+  const ext = path.extname(relativeFile);
+  if (!ext || ext === '.html') {
+    const indexPath = storageService.getSiteFilePath(srv.name, 'index.html');
+    if (indexPath) {
+      return res.sendFile(indexPath);
+    }
+  }
+
+  return res.status(404).send(`
+    <html>
+      <body style="font-family: sans-serif; background: #080a11; color: #f8fafc; padding: 40px; text-align: center;">
+        <h2>404 - Not Found</h2>
+        <p style="color: #94a3b8;">The requested asset for <code>${srv.name}</code> (${host}) does not exist on this server.</p>
+      </body>
+    </html>
+  `);
+});
+
 // Edge Static Hosting Endpoint: /sites/:subdomain/*
 app.use('/sites/:subdomain', async (req, res) => {
   const subdomain = req.params.subdomain;

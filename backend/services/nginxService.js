@@ -29,7 +29,10 @@ export const nginxService = {
   // Generate a production-ready, AlloDeploy Nginx server configuration block
   generateConfig(service, options = {}) {
     const serviceName = service.name || 'app';
-    const port = options.port || service.port || 3000;
+    const backendPort = process.env.PORT || 5000;
+    const port = (service.type === 'Container' || service.isCustomProcess)
+      ? (options.port || service.port || backendPort)
+      : (options.port || backendPort);
     
     // Support single domain or array of domains
     let primaryDomain = options.domain || service.customDomain;

@@ -9,7 +9,10 @@ export function renderServiceDetail(container) {
     return;
   }
 
-  let activeTab = store.selectedDetailTab || 'overview'; // 'overview' | 'env' | 'logs' | 'deployments' | 'settings'
+  let activeTab = store.selectedDetailTab || 'overview'; // 'overview' | 'env'
+  if (!['overview', 'env'].includes(activeTab)) {
+    activeTab = 'overview';
+  }
   let isDevView = false;
   let envSearchQuery = '';
   let envOrder = 'creation'; // 'creation' | 'asc' | 'desc'
@@ -138,9 +141,6 @@ export function renderServiceDetail(container) {
               Env
             </button>
 
-            <button class="btn btn-secondary btn-sm" id="btn-detail-config" title="Settings & Danger Zone">
-              Config
-            </button>
 
             <button class="btn btn-secondary btn-sm" id="btn-detail-delete" title="Delete Resource" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.35);">
               ${icons.trash || '🗑️'} Delete
@@ -165,18 +165,12 @@ export function renderServiceDetail(container) {
         <div class="detail-tabs-nav" style="display: flex; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 22px;">
           <button class="detail-tab-item ${activeTab === 'overview' ? 'active' : ''}" data-tab="overview">General</button>
           <button class="detail-tab-item ${activeTab === 'env' ? 'active' : ''}" data-tab="env">Environment Variables (${service.envVars ? service.envVars.length : 0})</button>
-          <button class="detail-tab-item ${activeTab === 'logs' ? 'active' : ''}" data-tab="logs">Live Logs</button>
-          <button class="detail-tab-item ${activeTab === 'deployments' ? 'active' : ''}" data-tab="deployments">Deployments (${service.deploys ? service.deploys.length : 1})</button>
-          <button class="detail-tab-item ${activeTab === 'settings' ? 'active' : ''}" data-tab="settings">Settings & Danger Zone</button>
         </div>
 
         <!-- Tab Body -->
         <div class="detail-tab-body">
           ${activeTab === 'overview' ? renderOverviewTab() : ''}
           ${activeTab === 'env' ? renderEnvTab() : ''}
-          ${activeTab === 'logs' ? renderLogsTab() : ''}
-          ${activeTab === 'deployments' ? renderDeploymentsTab() : ''}
-          ${activeTab === 'settings' ? renderSettingsTab() : ''}
         </div>
       </div>
     `;
@@ -188,54 +182,20 @@ export function renderServiceDetail(container) {
     const isRunning = service.status === 'running';
 
     return `
-      <!-- Status & Container Specs Grid -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px;">
-        <div class="metric-card" style="padding: 18px;">
-          <div style="font-size: 11px; font-weight: 600; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
-            Container Status
+      <!-- Container Status -->
+      <div style="margin-bottom: 22px;">
+        <div class="metric-card" style="padding: 16px 20px; display: inline-flex; align-items: center; gap: 20px; min-width: 320px;">
+          <div>
+            <div style="font-size: 11px; font-weight: 600; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">
+              Container Status
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700; color: ${isRunning ? '#34d399' : '#f87171'};">
+              <span class="coolify-dot ${isRunning ? 'dot-running' : 'dot-stopped'}"></span>
+              ${isRunning ? 'Online & Proxying' : 'Stopped (Offline)'}
+            </div>
           </div>
-          <div style="display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 700; color: ${isRunning ? '#34d399' : '#f87171'};">
-            <span class="coolify-dot ${isRunning ? 'dot-running' : 'dot-stopped'}"></span>
-            ${isRunning ? 'Online & Proxying' : 'Stopped (Offline)'}
-          </div>
-          <div style="font-size: 12px; color: var(--text-faint); margin-top: 6px;">
-            ${isRunning ? 'Serving live edge traffic' : 'Halted by operator'}
-          </div>
-        </div>
-
-        <div class="metric-card" style="padding: 18px;">
-          <div style="font-size: 11px; font-weight: 600; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
-            Global Edge CDN
-          </div>
-          <div style="font-size: 18px; font-weight: 700; color: #a78bfa;">
-            Cloudflare Edge
-          </div>
-          <div style="font-size: 12px; color: var(--text-faint); margin-top: 6px;">
-            Anycast routing & SSL active
-          </div>
-        </div>
-
-        <div class="metric-card" style="padding: 18px;">
-          <div style="font-size: 11px; font-weight: 600; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
-            Memory Footprint (RSS)
-          </div>
-          <div style="font-size: 18px; font-weight: 700; color: #f4f4f5;">
-            ${service.metrics?.memory || '48 MB'}
-          </div>
-          <div style="font-size: 12px; color: var(--text-faint); margin-top: 6px;">
-            Live process memory consumption
-          </div>
-        </div>
-
-        <div class="metric-card" style="padding: 18px;">
-          <div style="font-size: 11px; font-weight: 600; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
-            CPU Core Usage
-          </div>
-          <div style="font-size: 18px; font-weight: 700; color: #f4f4f5;">
-            ${service.metrics?.cpu || '0.2%'}
-          </div>
-          <div style="font-size: 12px; color: var(--text-faint); margin-top: 6px;">
-            Docker container core load
+          <div style="font-size: 12px; color: var(--text-faint); margin-left: auto; border-left: 1px solid rgba(255,255,255,0.08); padding-left: 16px;">
+            ${isRunning ? 'Serving live traffic' : 'Halted by operator'}
           </div>
         </div>
       </div>
@@ -688,11 +648,6 @@ export function renderServiceDetail(container) {
       render();
     });
 
-    container.querySelector('#btn-detail-config')?.addEventListener('click', () => {
-      activeTab = 'settings';
-      store.selectedDetailTab = 'settings';
-      render();
-    });
 
     // Custom Domain modal triggers
     container.querySelectorAll('.btn-open-custom-domain-modal').forEach(btn => {

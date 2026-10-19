@@ -1,5 +1,72 @@
 [
   {
+    "id": "srv-d55a3f9c",
+    "name": "neon-crest-982",
+    "type": "Application",
+    "status": "running",
+    "url": "https://neon-crest-982.pages.dev",
+    "liveDomain": "https://neon-crest-982.pages.dev",
+    "customDomain": "",
+    "domains": [],
+    "sslEnabled": false,
+    "forceHttps": true,
+    "port": 7622,
+    "region": "Frankfurt (eu-central-1)",
+    "source": "Manual Upload (204 folder files)",
+    "gitRepo": "",
+    "gitUrl": "",
+    "gitBranch": "main",
+    "gitCommit": "",
+    "gitCommitMsg": "",
+    "gitAuthor": "",
+    "buildCommand": "",
+    "publishDir": "",
+    "autoDeploy": false,
+    "filesCount": 204,
+    "size": "7.7 MB",
+    "framework": "Static HTML Bundle",
+    "updatedAt": "Just now",
+    "createdAt": "2026-10-19 11:06",
+    "deployCount": 2,
+    "metrics": {
+      "cpu": "0.2%",
+      "memory": "7.7 MB",
+      "uptime": "100%"
+    },
+    "envVars": [],
+    "sampleFiles": [
+      "index.html",
+      "next.svg",
+      "vercel.svg",
+      "images/illustrations/characters-with-objects/1.png",
+      "images/illustrations/characters-with-objects/13.png",
+      "images/illustrations/characters-with-objects/7.png",
+      "images/illustrations/characters-with-objects/images.png",
+      "images/illustrations/characters-with-objects/Login.png",
+      "images/illustrations/characters-with-objects/Portal.png",
+      "images/avatars/1.png"
+    ],
+    "deploys": [
+      {
+        "id": "dep-1792407989824-syo9in",
+        "date": "Just now",
+        "hash": "3bb445",
+        "status": "running",
+        "message": "Deploy from bundle (204 files, 7.7 MB)",
+        "duration": "2.4s"
+      }
+    ],
+    "healthcheck": {
+      "path": "/",
+      "expectedStatus": 200,
+      "intervalSeconds": 30
+    },
+    "backups": [],
+    "templateType": "",
+    "cloudflarePagesUrl": "https://neon-crest-982.pages.dev",
+    "cloudflareConnected": true
+  },
+  {
     "id": "srv-0fd2b9db",
     "name": "uyir-portal",
     "type": "Application",
@@ -35,7 +102,7 @@
     "framework": "React / Vite Admin Portal",
     "updatedAt": "Just now",
     "createdAt": "2026-10-19 03:40",
-    "deployCount": 4,
+    "deployCount": 5,
     "metrics": {
       "cpu": "0.2%",
       "memory": "7.7 MB",
@@ -47,10 +114,18 @@
     ],
     "deploys": [
       {
+        "id": "dep-a8e6fe77",
+        "date": "Just now",
+        "hash": "b279c0",
+        "status": "running",
+        "message": "Manual container redeploy triggered",
+        "duration": "2.4s"
+      },
+      {
         "id": "dep-c924a5c8",
         "date": "Just now",
         "hash": "df6a6c",
-        "status": "running",
+        "status": "superseded",
         "message": "Deploy from bundle (1 files, 12 KB)",
         "duration": "2.4s"
       },

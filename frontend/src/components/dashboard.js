@@ -357,42 +357,7 @@ export function openCustomDomainModal(serviceId) {
           </div>
         </div>
 
-        <!-- Row 2: Path -->
-        <div class="domain-form-group">
-          <label class="domain-form-label" for="domain-path-input">Path</label>
-          <input 
-            type="text" 
-            id="domain-path-input" 
-            class="domain-input" 
-            value="${currentPath}" 
-            placeholder="/api/v3"
-            spellcheck="false"
-          />
-          <div class="domain-input-help">Optional path, query, or fragment appended after the domain and port.</div>
-        </div>
 
-        <!-- Row 3: Search engine indexing & www redirect -->
-        <div class="domain-form-row-2">
-          <div class="domain-form-group">
-            <label class="domain-form-label" for="domain-indexing-select">Search engine indexing</label>
-            <select id="domain-indexing-select" class="domain-select">
-              <option value="Indexable" ${currentIndexing === 'Indexable' ? 'selected' : ''}>Indexable</option>
-              <option value="No index" ${currentIndexing === 'No index' ? 'selected' : ''}>No index</option>
-            </select>
-          </div>
-
-          <div class="domain-form-group">
-            <label class="domain-form-label" for="domain-redirect-select">
-              www redirect 
-              <span class="domain-info-icon" title="Configure 301 canonical redirects between www and apex domain">ⓘ</span>
-            </label>
-            <select id="domain-redirect-select" class="domain-select">
-              <option value="No redirect" ${currentWwwRedirect === 'No redirect' ? 'selected' : ''}>No redirect</option>
-              <option value="Redirect to www" ${currentWwwRedirect === 'Redirect to www' ? 'selected' : ''}>Redirect to www</option>
-              <option value="Redirect to apex" ${currentWwwRedirect === 'Redirect to apex' ? 'selected' : ''}>Redirect to apex</option>
-            </select>
-          </div>
-        </div>
 
         <!-- Cloudflare Edge & Custom Hostnames SaaS Routing -->
         <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 12px 14px; font-size: 12px;">

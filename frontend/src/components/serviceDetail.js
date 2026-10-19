@@ -1,5 +1,6 @@
 import { icons } from '../icons.js';
 import { store } from '../state.js';
+import { openCustomDomainModal } from './dashboard.js';
 
 export function renderServiceDetail(container) {
   let service = store.getSelectedService();
@@ -33,18 +34,27 @@ export function renderServiceDetail(container) {
     ];
   }
 
-  function render() {
-    const isRunning = service.status === 'running' || service.status === 'live';
-    const exactPagesUrl = service.cloudflarePagesUrl && !service.cloudflarePagesUrl.includes('localhost')
+  let exactPagesUrl = '';
+  let customSiteUrl = null;
+  let openSiteUrl = '';
+
+  function computeUrls() {
+    exactPagesUrl = service.cloudflarePagesUrl && !service.cloudflarePagesUrl.includes('localhost')
       ? service.cloudflarePagesUrl
       : (service.url && !service.url.includes('localhost') && service.url.includes('.pages.dev')
           ? service.url
           : `https://${service.name}.pages.dev`);
 
-    const customSiteUrl = service.customDomain 
+    customSiteUrl = service.customDomain 
       ? (service.customDomain.startsWith('http') ? service.customDomain : `${service.protocol || 'https'}://${service.customDomain}${service.pathSuffix || ''}`)
       : null;
-    const openSiteUrl = customSiteUrl || exactPagesUrl;
+
+    openSiteUrl = customSiteUrl || exactPagesUrl;
+  }
+
+  function render() {
+    computeUrls();
+    const isRunning = service.status === 'running' || service.status === 'live';
 
     container.innerHTML = `
       <div class="detail-container">
@@ -77,8 +87,8 @@ export function renderServiceDetail(container) {
                 <span class="badge badge-tag" style="background: rgba(255,255,255,0.06); color: #cbd5e1; font-size: 11px;">
                   ${service.type || 'Application'}
                 </span>
-                <span class="badge badge-tag" style="background: rgba(124, 58, 237, 0.12); color: #c4b5fd; font-size: 11px;">
-                  Port ${service.port || 3000}
+                <span class="badge badge-tag" style="background: rgba(16, 185, 129, 0.12); color: #6ee7b7; font-size: 11px;">
+                  ${service.framework || 'React / Vite'}
                 </span>
               </div>
 
@@ -140,11 +150,9 @@ export function renderServiceDetail(container) {
               <a href="${exactPagesUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 6px; background: #7c3aed; text-decoration: none;" title="Open live web page on Pages.dev (${exactPagesUrl})">
                 ${icons.externalLink} Open Site
               </a>
-              ${service.customDomain ? `
-                <a href="${customSiteUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" id="btn-header-custom-domain" style="display: inline-flex; align-items: center; gap: 6px; border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; text-decoration: none;" title="Open Custom Domain: ${customSiteUrl}">
-                  🌐 Custom Domain
-                </a>
-              ` : ''}
+            <button class="btn btn-secondary btn-sm btn-open-custom-domain-modal" data-id="${service.id}" style="display: inline-flex; align-items: center; gap: 6px; border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;" title="Configure & Edit Custom Domain">
+              🌐 Edit Custom Domain
+            </button>
             ` : `
               <button class="btn btn-secondary btn-sm" disabled style="opacity: 0.6; cursor: not-allowed; display: inline-flex; align-items: center; gap: 6px;">
                 ⏹ Site Stopped
@@ -178,79 +186,8 @@ export function renderServiceDetail(container) {
 
   function renderOverviewTab() {
     const isRunning = service.status === 'running';
-    const isDnsActive = service.customDomainStatus === 'active' && service.dnsResolved !== false;
 
     return `
-      ${service.customDomain ? `
-        <!-- Custom Domain & DNS Setup Guide -->
-        <div class="metric-card" style="padding: 22px; margin-bottom: 24px; border: 1px solid rgba(56, 189, 248, 0.25); background: rgba(8, 14, 28, 0.7);">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 14px;">
-            <div>
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 18px;">🌐</span>
-                <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin: 0;">Custom Domain & DNS Setup</h3>
-                ${isDnsActive ? `
-                  <span class="badge" style="background: rgba(34,197,94,0.18); color: #22c55e; border: 1px solid rgba(34,197,94,0.35); font-size: 10px; padding: 2px 7px;">● DNS Active & Live</span>
-                ` : `
-                  <span class="badge" style="background: rgba(245,158,11,0.18); color: #f59e0b; border: 1px solid rgba(245,158,11,0.35); font-size: 10px; padding: 2px 7px;">⏳ DNS Setup Required</span>
-                `}
-              </div>
-              <p style="font-size: 12.5px; color: #94a3b8; margin: 6px 0 0 0;">
-                Configured Custom Domain: <strong style="color: #38bdf8; font-family: var(--font-mono);">${service.customDomain}</strong>
-              </p>
-            </div>
-
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <a href="${exactPagesUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="background: #7c3aed; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                🚀 Open Live Web Page
-              </a>
-              <button class="btn btn-secondary btn-sm" id="btn-verify-domain-overview" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);">
-                🔄 Check DNS Now
-              </button>
-              <a href="${customSiteUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" id="btn-test-custom-domain" style="text-decoration: none;">
-                🌐 Test Custom Domain
-              </a>
-            </div>
-          </div>
-
-          ${!isDnsActive ? `
-            <div style="background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 8px; padding: 14px 16px;">
-              <div style="font-size: 12.5px; font-weight: 600; color: #fbbf24; margin-bottom: 6px;">
-                ⚠️ Why does the custom domain show net::ERR_NAME_NOT_RESOLVED?
-              </div>
-              <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 12px;">
-                Your website files are deployed and working immediately at <a href="${exactPagesUrl}" target="_blank" style="color: #a78bfa; text-decoration: underline;">${exactPagesUrl}</a>. To connect <strong>${service.customDomain}</strong>, add this CNAME record in your domain registrar DNS settings (where you manage allokonnect.com):
-              </div>
-
-              <div style="display: grid; grid-template-columns: 80px 1fr 1fr auto; gap: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 6px; padding: 10px 14px; font-family: var(--font-mono); font-size: 12px; align-items: center;">
-                <div>
-                  <span style="color: #64748b; font-size: 10px; display: block; font-family: var(--font-sans);">RECORD TYPE</span>
-                  <strong style="color: #38bdf8;">CNAME</strong>
-                </div>
-                <div>
-                  <span style="color: #64748b; font-size: 10px; display: block; font-family: var(--font-sans);">HOST / NAME</span>
-                  <strong style="color: #cbd5e1;">${service.customDomain.includes('.') ? service.customDomain.split('.')[0] : service.customDomain}</strong>
-                </div>
-                <div>
-                  <span style="color: #64748b; font-size: 10px; display: block; font-family: var(--font-sans);">TARGET / VALUE</span>
-                  <strong style="color: #4ade80;">${service.name}.pages.dev</strong>
-                </div>
-                <div>
-                  <button class="btn btn-secondary btn-xs btn-copy-cname" data-cname="${service.name}.pages.dev" style="padding: 3px 8px; font-size: 11px;">
-                    Copy Target
-                  </button>
-                </div>
-              </div>
-            </div>
-          ` : `
-            <div style="background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.25); border-radius: 8px; padding: 12px 16px; font-size: 12.5px; color: #86efac; display: flex; align-items: center; justify-content: space-between;">
-              <span>✅ Custom domain is connected and resolving in public DNS.</span>
-              <a href="${customSiteUrl}" target="_blank" rel="noopener noreferrer" style="color: #4ade80; font-weight: 600; text-decoration: none;">Visit ${service.customDomain} ↗</a>
-            </div>
-          `}
-        </div>
-      ` : ''}
-
       <!-- Status & Container Specs Grid -->
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px;">
         <div class="metric-card" style="padding: 18px;">
@@ -262,19 +199,19 @@ export function renderServiceDetail(container) {
             ${isRunning ? 'Online & Proxying' : 'Stopped (Offline)'}
           </div>
           <div style="font-size: 12px; color: var(--text-faint); margin-top: 6px;">
-            ${isRunning ? `Serving traffic at port ${service.port || 3000}` : 'Halted by operator'}
+            ${isRunning ? 'Serving live edge traffic' : 'Halted by operator'}
           </div>
         </div>
 
         <div class="metric-card" style="padding: 18px;">
           <div style="font-size: 11px; font-weight: 600; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
-            Assigned Internal Port
+            Global Edge CDN
           </div>
-          <div style="font-size: 18px; font-weight: 700; color: #a78bfa; font-family: var(--font-mono);">
-            :${service.port || 3000}
+          <div style="font-size: 18px; font-weight: 700; color: #a78bfa;">
+            Cloudflare Edge
           </div>
           <div style="font-size: 12px; color: var(--text-faint); margin-top: 6px;">
-            Internal bridge network proxy target
+            Anycast routing & SSL active
           </div>
         </div>
 
@@ -306,17 +243,30 @@ export function renderServiceDetail(container) {
       <!-- Network and Destination Details -->
       <div class="config-grid">
         <div class="metric-card" style="padding: 20px;">
-          <div style="font-weight: 600; font-size: 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; color: #f4f4f5;">
-            ${icons.globe} Proxy & Domain Settings
+          <div style="font-weight: 600; font-size: 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; color: #f4f4f5;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              ${icons.globe} Proxy & Domain Settings
+            </div>
+            <button class="btn btn-secondary btn-xs btn-open-custom-domain-modal" data-id="${service.id}" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.4); display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; font-size: 11px;">
+              ${icons.edit || '✏️'} Edit Custom Domain
+            </button>
           </div>
           <div style="font-size: 13px; display: flex; flex-direction: column; gap: 12px;">
             <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
               <span style="color: var(--text-faint);">Cloudflare Pages URL</span>
-              <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; font-family: var(--font-mono); text-decoration: none;">${targetUrl}</a>
+              <a href="${exactPagesUrl}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; font-family: var(--font-mono); text-decoration: none;">${exactPagesUrl}</a>
             </div>
-            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
               <span style="color: var(--text-faint);">Custom Domain</span>
-              <span style="color: #cbd5e1; font-family: var(--font-mono);">${service.customDomain || service.liveDomain || service.name + '.local'}</span>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="color: #cbd5e1; font-family: var(--font-mono); font-weight: 600;">${service.customDomain || service.liveDomain || 'Not set'}</span>
+                ${service.customDomain ? `
+                  <span class="badge" style="background: rgba(34,197,94,0.18); color: #22c55e; border: 1px solid rgba(34,197,94,0.35); font-size: 9.5px; padding: 1px 6px;">● Active</span>
+                ` : ''}
+                <button class="btn btn-secondary btn-xs btn-open-custom-domain-modal" data-id="${service.id}" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.35); padding: 1px 7px; font-size: 10.5px;">
+                  Edit
+                </button>
+              </div>
             </div>
             ${service.customDomain || service.cloudflareProxied ? `
               <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
@@ -627,11 +577,6 @@ export function renderServiceDetail(container) {
             <input type="text" id="edit-srv-name" value="${service.name}" style="max-width: 440px;" />
           </div>
 
-          <div class="form-group" style="margin-bottom: 16px;">
-            <label class="form-label" for="edit-srv-port">Internal Container Port</label>
-            <input type="number" id="edit-srv-port" value="${service.port || 3000}" style="max-width: 200px;" />
-            <span style="font-size: 12px; color: var(--text-faint); margin-top: 4px; display: block;">The internal port the service listens on inside the container.</span>
-          </div>
 
           <div class="form-group" style="margin-bottom: 16px;">
             <label class="form-label" for="edit-srv-domain">Custom Domain / FQDN</label>
@@ -749,52 +694,13 @@ export function renderServiceDetail(container) {
       render();
     });
 
-    // Copy CNAME target
-    container.querySelectorAll('.btn-copy-cname').forEach(btn => {
+    // Custom Domain modal triggers
+    container.querySelectorAll('.btn-open-custom-domain-modal').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const cname = e.currentTarget.dataset.cname;
-        if (cname) {
-          navigator.clipboard.writeText(cname).then(() => {
-            store.showToast(`Copied CNAME target: ${cname} — add this record in your domain registrar DNS!`, 'success');
-          });
-        }
+        e.stopPropagation();
+        const id = btn.getAttribute('data-id') || service.id;
+        openCustomDomainModal(id);
       });
-    });
-
-    // Check DNS Now button in overview
-    container.querySelector('#btn-verify-domain-overview')?.addEventListener('click', async (e) => {
-      const btn = e.currentTarget;
-      btn.innerText = 'Checking DNS...';
-      btn.disabled = true;
-      try {
-        const res = await store.verifyCustomDomain(service.id);
-        if (res?.service) {
-          service = res.service;
-        }
-        render();
-        if (res?.statusInfo?.dnsResolved || res?.service?.customDomainStatus === 'active') {
-          store.showToast(`DNS is live and verified for ${service.customDomain}!`, 'success');
-        } else {
-          store.showToast(`CNAME not yet detected for ${service.customDomain}. Please add the CNAME record at your domain registrar.`, 'warn');
-        }
-      } catch (err) {
-        store.showToast(`DNS check error: ${err.message}`, 'error');
-        btn.innerText = 'Check DNS Now';
-        btn.disabled = false;
-      }
-    });
-
-    // Notice on testing custom domain when DNS pending
-    container.querySelector('#btn-test-custom-domain')?.addEventListener('click', () => {
-      if (service.customDomainStatus !== 'active' || service.dnsResolved === false) {
-        store.showToast(`Notice: ${service.customDomain} may show ERR_NAME_NOT_RESOLVED until the CNAME record is configured in your DNS registrar.`, 'warn');
-      }
-    });
-
-    container.querySelector('#btn-header-custom-domain')?.addEventListener('click', () => {
-      if (service.customDomainStatus !== 'active' || service.dnsResolved === false) {
-        store.showToast(`Notice: ${service.customDomain} may show ERR_NAME_NOT_RESOLVED until the CNAME record is configured in your DNS registrar.`, 'warn');
-      }
     });
 
     // Tab switcher
@@ -938,7 +844,8 @@ export function renderServiceDetail(container) {
     // Save Settings
     container.querySelector('#btn-save-settings')?.addEventListener('click', async () => {
       const newName = container.querySelector('#edit-srv-name')?.value.trim();
-      const newPort = parseInt(container.querySelector('#edit-srv-port')?.value, 10) || 3000;
+      const portInput = container.querySelector('#edit-srv-port');
+      const newPort = portInput ? (parseInt(portInput.value, 10) || service.port || 3000) : (service.port || 3000);
       const newDomain = container.querySelector('#edit-srv-domain')?.value.trim();
 
       if (newName) {

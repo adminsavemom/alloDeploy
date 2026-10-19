@@ -304,7 +304,7 @@ function openProjectSettingsModal(projectName) {
   });
 }
 
-function openCustomDomainModal(serviceId) {
+export function openCustomDomainModal(serviceId) {
   const existing = document.getElementById('custom-domain-modal-backdrop');
   if (existing) existing.remove();
 
@@ -333,8 +333,8 @@ function openCustomDomainModal(serviceId) {
 
       <!-- Modal Body (Matching Picture 5 Design & Strict Edge Options) -->
       <div class="domain-settings-body">
-        <!-- Row 1: Protocol, Domain *, Port -->
-        <div class="domain-form-row-3">
+        <!-- Row 1: Protocol, Domain * -->
+        <div style="display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: flex-start;">
           <div class="domain-form-group">
             <label class="domain-form-label" for="domain-protocol-select">Protocol</label>
             <select id="domain-protocol-select" class="domain-select">
@@ -353,17 +353,6 @@ function openCustomDomainModal(serviceId) {
               placeholder="e.g. mydomain.com"
               spellcheck="false"
               autocomplete="off"
-            />
-          </div>
-
-          <div class="domain-form-group">
-            <label class="domain-form-label" for="domain-port-input">Port</label>
-            <input 
-              type="number" 
-              id="domain-port-input" 
-              class="domain-input" 
-              value="${currentPort}" 
-              placeholder="5000"
             />
           </div>
         </div>
@@ -473,7 +462,7 @@ function openCustomDomainModal(serviceId) {
   modal.querySelector('#btn-save-domain-settings')?.addEventListener('click', async () => {
     const protocol = modal.querySelector('#domain-protocol-select')?.value || 'http';
     const rawDomain = modal.querySelector('#domain-name-input')?.value.trim() || '';
-    const port = modal.querySelector('#domain-port-input')?.value.trim() || '5000';
+    const port = modal.querySelector('#domain-port-input')?.value.trim() || currentPort || '80';
     const path = modal.querySelector('#domain-path-input')?.value.trim() || '';
     const indexing = modal.querySelector('#domain-indexing-select')?.value || 'Indexable';
     const wwwRedirect = modal.querySelector('#domain-redirect-select')?.value || 'No redirect';
@@ -715,7 +704,7 @@ function renderProjectsView(container) {
                       <div class="resource-meta-label">
                         <span>${srv.framework || srv.type}</span>
                         <span>•</span>
-                        <span>Port ${srv.port || 3000}</span>
+                        <span>${srv.size || 'Ready'}</span>
                       </div>
                     </div>
                   </div>

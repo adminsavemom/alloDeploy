@@ -5,42 +5,42 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  /* Color Palette - Obsidian / Deep Indigo Theme */
-  --bg-app: #080a10;
-  --bg-surface: #0e121a;
-  --bg-card: #121824;
-  --bg-card-hover: #172030;
-  --bg-input: #0a0d14;
-  --bg-elevated: #1b2438;
-  --bg-modal: #101522;
+  /* Color Palette - Pitch Black & Electric Purple Theme */
+  --bg-app: #030006;
+  --bg-surface: #07030e;
+  --bg-card: #0c0618;
+  --bg-card-hover: #150a28;
+  --bg-input: #05020a;
+  --bg-elevated: #160a2c;
+  --bg-modal: #080310;
   
   /* Borders */
-  --border-subtle: rgba(255, 255, 255, 0.07);
-  --border-default: rgba(255, 255, 255, 0.12);
-  --border-highlight: rgba(99, 102, 241, 0.4);
-  --border-glow: rgba(99, 102, 241, 0.7);
+  --border-subtle: rgba(168, 85, 247, 0.12);
+  --border-default: rgba(168, 85, 247, 0.22);
+  --border-highlight: rgba(168, 85, 247, 0.5);
+  --border-glow: rgba(168, 85, 247, 0.85);
 
   /* Primary Accent & Glows */
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --primary-glow: rgba(99, 102, 241, 0.25);
-  --accent-cyan: #06b6d4;
-  --accent-emerald: #10b981;
-  --accent-amber: #f59e0b;
+  --primary: #a855f7;
+  --primary-hover: #9333ea;
+  --primary-glow: rgba(168, 85, 247, 0.35);
+  --accent-cyan: #c084fc;
+  --accent-emerald: #a855f7;
+  --accent-amber: #e879f9;
   --accent-rose: #f43f5e;
-  --accent-purple: #a855f7;
+  --accent-purple: #c084fc;
 
   /* Typography Colors */
   --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-faint: #64748b;
-  --text-invert: #05070a;
+  --text-muted: #a1a1aa;
+  --text-faint: #71717a;
+  --text-invert: #030006;
 
   /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 20px rgba(99, 102, 241, 0.08);
-  --shadow-glow: 0 0 25px rgba(99, 102, 241, 0.35);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.8), 0 0 20px rgba(168, 85, 247, 0.15);
+  --shadow-glow: 0 0 25px rgba(168, 85, 247, 0.45);
 
   /* Radius */
   --radius-sm: 6px;
@@ -80,7 +80,7 @@ body::before {
   left: 20%;
   width: 60vw;
   height: 60vh;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, rgba(6, 182, 212, 0.03) 50%, transparent 70%);
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.12) 0%, rgba(124, 58, 237, 0.05) 50%, transparent 70%);
   filter: blur(80px);
   pointer-events: none;
   z-index: 0;
@@ -93,7 +93,7 @@ body::after {
   right: 10%;
   width: 50vw;
   height: 50vh;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.06) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(147, 51, 234, 0.1) 0%, transparent 70%);
   filter: blur(90px);
   pointer-events: none;
   z-index: 0;
@@ -162,14 +162,14 @@ a:hover {
 }
 
 .btn-primary {
-  background: linear-gradient(180deg, #6d70fa 0%, #4f52e2 100%);
+  background: linear-gradient(180deg, #a855f7 0%, #7c3aed 100%);
   color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 .btn-primary:hover {
-  background: linear-gradient(180deg, #7c7ffa 0%, #5d60ee 100%);
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
+  background: linear-gradient(180deg, #b76bf9 0%, #8b4cf0 100%);
+  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.55);
   transform: translateY(-1px);
 }
 .btn-primary:active {
@@ -252,18 +252,17 @@ a:hover {
 }
 .status-dot.live {
   background-color: var(--accent-emerald);
-  box-shadow: 0 0 8px var(--accent-emerald);
-  animation: pulse-dot 2s infinite ease-in-out;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
 }
 .status-dot.building {
-  background-color: var(--primary);
-  box-shadow: 0 0 8px var(--primary);
-  animation: pulse-dot 1s infinite ease-in-out;
+  background-color: #38bdf8;
+  box-shadow: 0 0 6px rgba(56, 189, 248, 0.5);
+  animation: pulse-dot 2s infinite ease-in-out;
 }
 
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.15); }
+  50% { opacity: 0.8; transform: scale(1.05); }
 }
 
 /* ==========================================================================
@@ -2433,11 +2432,11 @@ a:hover {
 }
 
 .pulse-status {
-  animation: pulseOpacity 2s infinite ease-in-out;
+  opacity: 1;
 }
 @keyframes pulseOpacity {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  50% { opacity: 0.9; }
 }
 
 .terminal-cursor {
@@ -3616,14 +3615,14 @@ a:hover {
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
-  background: #090a0d;
+  background: #030006;
 }
 
 .coolify-topbar {
   height: 52px;
   min-height: 52px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: #0b0c10;
+  border-bottom: 1px solid rgba(168, 85, 247, 0.15);
+  background: #080310;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -3726,8 +3725,8 @@ a:hover {
 
 /* Recent Deployments Table */
 .coolify-recent-table-wrap {
-  background: #0e1015;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: #080310;
+  border: 1px solid rgba(168, 85, 247, 0.15);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -3833,8 +3832,8 @@ a:hover {
 }
 
 .coolify-project-card {
-  background: #0e1016;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: #0a0414;
+  border: 1px solid rgba(168, 85, 247, 0.16);
   border-radius: 8px;
   padding: 14px 16px;
   display: flex;
@@ -3846,8 +3845,9 @@ a:hover {
 }
 
 .coolify-project-card:hover {
-  background: #12151e;
-  border-color: rgba(255, 255, 255, 0.14);
+  background: #140728;
+  border-color: rgba(168, 85, 247, 0.38);
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.12);
   transform: translateY(-1px);
 }
 
@@ -3929,8 +3929,8 @@ a:hover {
 
 /* Server Card */
 .coolify-server-banner {
-  background: #0e1016;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: #0a0414;
+  border: 1px solid rgba(168, 85, 247, 0.16);
   border-radius: 8px;
   padding: 16px 20px;
   display: flex;
@@ -3942,8 +3942,9 @@ a:hover {
 }
 
 .coolify-server-banner:hover {
-  background: #12151e;
-  border-color: rgba(255, 255, 255, 0.14);
+  background: #140728;
+  border-color: rgba(168, 85, 247, 0.38);
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.12);
 }
 
 .server-icon-box {
@@ -4194,37 +4195,38 @@ a:hover {
    ========================================================================== */
 
 .custom-env-panel {
-  background: #121215;
+  background: #0d111c;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   overflow: hidden;
   font-family: var(--font-sans);
   color: #f4f4f5;
+  margin-bottom: 24px;
 }
 
 .custom-env-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 22px 14px;
+  padding: 18px 22px 14px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .custom-env-tab-link {
   font-size: 14.5px;
   font-weight: 500;
-  color: #f4f4f5;
+  color: #f3e8ff;
   text-decoration: none;
   position: relative;
   padding-bottom: 14px;
   margin-bottom: -15px;
-  border-bottom: 2px solid #ffffff;
+  border-bottom: 2px solid #a855f7;
   display: inline-block;
 }
 
 .btn-dev-view-toggle {
-  background: #1c1c20;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(168, 85, 247, 0.2);
   color: #f4f4f5;
   padding: 6px 14px;
   border-radius: 6px;
@@ -4235,14 +4237,15 @@ a:hover {
 }
 
 .btn-dev-view-toggle:hover {
-  background: #27272a;
-  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(168, 85, 247, 0.12);
+  border-color: rgba(168, 85, 247, 0.4);
 }
 
 .btn-dev-view-toggle.active {
-  background: #3b82f6;
-  border-color: #3b82f6;
+  background: #a855f7;
+  border-color: #9333ea;
   color: #fff;
+  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.35);
 }
 
 .custom-env-subbar {
@@ -4250,8 +4253,8 @@ a:hover {
   grid-template-columns: 1fr 1fr;
   gap: 20px;
   padding: 18px 22px;
-  background: rgba(0, 0, 0, 0.18);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(12, 6, 24, 0.65);
+  border-bottom: 1px solid rgba(168, 85, 247, 0.12);
 }
 
 @media (max-width: 640px) {
@@ -4278,15 +4281,15 @@ a:hover {
 
 .env-dropdown-select {
   width: 100%;
-  background: #1c1c20;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #080312;
+  border: 1px solid rgba(168, 85, 247, 0.2);
   border-radius: 6px;
   padding: 9px 14px;
   color: #f4f4f5;
   font-size: 13.5px;
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c084fc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 14px;
@@ -4297,7 +4300,8 @@ a:hover {
 }
 
 .env-dropdown-select:focus {
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: #a855f7;
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.25);
 }
 
 .custom-env-action-row {
@@ -4307,7 +4311,7 @@ a:hover {
   gap: 14px;
   padding: 16px 22px;
   flex-wrap: wrap;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(168, 85, 247, 0.12);
 }
 
 .env-search-wrapper {
@@ -4322,7 +4326,7 @@ a:hover {
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #71717a;
+  color: #a855f7;
   pointer-events: none;
   display: flex;
   align-items: center;
@@ -4330,8 +4334,8 @@ a:hover {
 
 .env-search-input {
   width: 100%;
-  background: #1c1c20;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #080312;
+  border: 1px solid rgba(168, 85, 247, 0.2);
   border-radius: 7px;
   padding: 8px 12px 8px 36px;
   color: #f4f4f5;
@@ -4341,7 +4345,8 @@ a:hover {
 }
 
 .env-search-input:focus {
-  border-color: rgba(255, 255, 255, 0.25);
+  border-color: #a855f7;
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.25);
 }
 
 .env-action-buttons {
@@ -4352,8 +4357,8 @@ a:hover {
 
 .btn-env-filter,
 .btn-env-sort {
-  background: #1c1c20;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(168, 85, 247, 0.06);
+  border: 1px solid rgba(168, 85, 247, 0.2);
   color: #f4f4f5;
   padding: 8px 14px;
   border-radius: 6px;
@@ -4368,13 +4373,13 @@ a:hover {
 
 .btn-env-filter:hover,
 .btn-env-sort:hover {
-  background: #27272a;
-  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(168, 85, 247, 0.15);
+  border-color: rgba(168, 85, 247, 0.4);
 }
 
 .btn-env-add {
-  background: #7c3aed;
-  border: none;
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  border: 1px solid #9333ea;
   color: #ffffff;
   padding: 8px 18px;
   border-radius: 6px;
@@ -4384,12 +4389,13 @@ a:hover {
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.35);
-  transition: background 0.15s;
+  box-shadow: 0 2px 10px rgba(168, 85, 247, 0.35);
+  transition: all 0.15s;
 }
 
 .btn-env-add:hover {
-  background: #6d28d9;
+  background: #9333ea;
+  transform: translateY(-1px);
 }
 
 .env-list-body {
@@ -4403,29 +4409,34 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #18181b;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0d061a;
+  border: 1px solid rgba(168, 85, 247, 0.18);
   border-radius: 8px;
   padding: 10px 14px;
   transition: border-color 0.15s;
 }
 
 .env-item-row:focus-within {
-  border-color: rgba(124, 58, 237, 0.4);
+  border-color: #a855f7;
+  box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.3);
 }
 
 .env-key-field {
   flex: 1;
   min-width: 140px;
-  background: #121215;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #080312;
+  border: 1px solid rgba(168, 85, 247, 0.2);
   border-radius: 6px;
   padding: 7px 10px;
-  color: #38bdf8;
+  color: #c084fc;
   font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 600;
   outline: none;
+}
+
+.env-key-field:focus {
+  border-color: #a855f7;
 }
 
 .env-val-field-wrapper {
@@ -4436,8 +4447,8 @@ a:hover {
 
 .env-val-field {
   width: 100%;
-  background: #121215;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #080312;
+  border: 1px solid rgba(168, 85, 247, 0.2);
   border-radius: 6px;
   padding: 7px 34px 7px 10px;
   color: #f4f4f5;
@@ -4445,6 +4456,10 @@ a:hover {
   font-size: 13px;
   outline: none;
   box-sizing: border-box;
+}
+
+.env-val-field:focus {
+  border-color: #a855f7;
 }
 
 .btn-env-toggle-eye {
@@ -4492,11 +4507,11 @@ a:hover {
 .env-dev-textarea {
   width: 100%;
   min-height: 260px;
-  background: #0d0d10;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #080312;
+  border: 1px solid rgba(168, 85, 247, 0.2);
   border-radius: 8px;
   padding: 14px 16px;
-  color: #4ade80;
+  color: #d8b4fe;
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.6;
@@ -4506,7 +4521,7 @@ a:hover {
 }
 
 .env-dev-textarea:focus {
-  border-color: #7c3aed;
+  border-color: #a855f7;
 }
 
 .custom-env-footer {
@@ -4514,8 +4529,8 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   padding: 16px 22px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(168, 85, 247, 0.12);
+  background: rgba(12, 6, 24, 0.5);
 }
 
 /* ==========================================================================
@@ -4534,8 +4549,8 @@ a:hover {
 .cf-tabs-list {
   display: inline-flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #090312;
+  border: 1px solid rgba(168, 85, 247, 0.18);
   border-radius: 8px;
   padding: 4px;
   gap: 2px;
@@ -4545,7 +4560,7 @@ a:hover {
   background: transparent;
   border: none;
   border-radius: 6px;
-  color: #94a3b8;
+  color: #a1a1aa;
   font-size: 13.5px;
   font-weight: 500;
   padding: 7px 18px;
@@ -4556,19 +4571,19 @@ a:hover {
 
 .cf-tab-btn:hover {
   color: #f8fafc;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(168, 85, 247, 0.12);
 }
 
 .cf-tab-btn.active {
-  background: #ffffff;
-  color: #0f172a;
+  background: #a855f7;
+  color: #ffffff;
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 10px rgba(168, 85, 247, 0.4);
 }
 
 .btn-cf-create-deploy {
-  background: #2563eb;
-  border: 1px solid #1d4ed8;
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  border: 1px solid #9333ea;
   color: #ffffff;
   font-size: 13px;
   font-weight: 600;
@@ -4579,17 +4594,17 @@ a:hover {
   align-items: center;
   gap: 7px;
   transition: all 0.15s ease;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 2px 10px rgba(168, 85, 247, 0.35);
 }
 
 .btn-cf-create-deploy:hover {
-  background: #1d4ed8;
+  background: #9333ea;
   transform: translateY(-1px);
 }
 
 .cf-card {
-  background: #0d111c;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #080312;
+  border: 1px solid rgba(168, 85, 247, 0.18);
   border-radius: 10px;
   margin-bottom: 24px;
   overflow: hidden;
@@ -4597,7 +4612,7 @@ a:hover {
 
 .cf-card-header {
   padding: 18px 22px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(168, 85, 247, 0.12);
 }
 
 .cf-card-title {
@@ -4609,7 +4624,7 @@ a:hover {
 
 .cf-card-sub {
   font-size: 13px;
-  color: #94a3b8;
+  color: #a1a1aa;
   margin-top: 6px;
   display: flex;
   align-items: center;
@@ -4618,13 +4633,14 @@ a:hover {
 }
 
 .cf-card-sub a {
-  color: #38bdf8;
+  color: #c084fc;
   text-decoration: none;
   font-family: var(--font-mono);
   font-size: 12.5px;
 }
 
 .cf-card-sub a:hover {
+  color: #e9d5ff;
   text-decoration: underline;
 }
 
@@ -4638,16 +4654,16 @@ a:hover {
   padding: 12px 22px;
   font-size: 12px;
   font-weight: 600;
-  color: #94a3b8;
-  background: rgba(0, 0, 0, 0.15);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: #a1a1aa;
+  background: rgba(168, 85, 247, 0.05);
+  border-bottom: 1px solid rgba(168, 85, 247, 0.12);
 }
 
 .cf-table td {
   padding: 14px 22px;
   font-size: 13px;
-  color: #cbd5e1;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: #e2e8f0;
+  border-bottom: 1px solid rgba(168, 85, 247, 0.07);
   vertical-align: middle;
 }
 
@@ -4656,7 +4672,7 @@ a:hover {
 }
 
 .cf-table tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(168, 85, 247, 0.04);
 }
 
 .cf-env-tag {
@@ -4670,7 +4686,7 @@ a:hover {
 .cf-env-indicator {
   width: 3.5px;
   height: 20px;
-  background: #2563eb;
+  background: #a855f7;
   border-radius: 2px;
 }
 
@@ -4699,7 +4715,7 @@ a:hover {
 }
 
 .cf-deploy-url {
-  color: #94a3b8;
+  color: #cbd5e1;
   font-family: var(--font-mono);
   font-size: 12.5px;
   text-decoration: none;
@@ -4707,7 +4723,7 @@ a:hover {
 }
 
 .cf-deploy-url:hover {
-  color: #38bdf8;
+  color: #c084fc;
   text-decoration: underline;
 }
 
@@ -4719,18 +4735,18 @@ a:hover {
 }
 
 .cf-check-icon {
-  color: #10b981;
+  color: #c084fc;
   font-weight: 700;
   font-size: 14px;
 }
 
 .cf-status-time {
-  color: #94a3b8;
+  color: #a1a1aa;
   font-size: 12.5px;
 }
 
 .cf-details-btn {
-  color: #94a3b8;
+  color: #a1a1aa;
   font-size: 12.5px;
   text-decoration: none;
   display: inline-flex;
@@ -4745,8 +4761,8 @@ a:hover {
 }
 
 .cf-details-btn:hover {
-  color: #38bdf8;
-  background: rgba(56, 189, 248, 0.08);
+  color: #c084fc;
+  background: rgba(168, 85, 247, 0.12);
 }
 
 .cf-dots-btn {
@@ -4772,10 +4788,10 @@ a:hover {
   right: 0;
   top: 100%;
   margin-top: 4px;
-  background: #141a29;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #0d061a;
+  border: 1px solid rgba(168, 85, 247, 0.22);
   border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
   min-width: 170px;
   z-index: 100;
   overflow: hidden;
@@ -4800,7 +4816,7 @@ a:hover {
 }
 
 .cf-menu-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(168, 85, 247, 0.14);
   color: #ffffff;
 }
 

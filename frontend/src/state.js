@@ -7,6 +7,8 @@ const initialServices = [];
 class StateStore {
   constructor() {
     this.listeners = new Set();
+    this.toastListeners = new Set();
+    this._notifyPending = false;
     
     // Load saved session
     const savedUser = localStorage.getItem(STORAGE_KEY_USER);
@@ -82,6 +84,11 @@ class StateStore {
   subscribe(listener) {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
+  }
+
+  subscribeToasts(listener) {
+    this.toastListeners.add(listener);
+    return () => this.toastListeners.delete(listener);
   }
 
   getAuthHeaders() {
@@ -186,16 +193,30 @@ class StateStore {
   }
 
   notify() {
+    if (this._notifyPending) return;
+    this._notifyPending = true;
+    queueMicrotask(() => {
+      this._notifyPending = false;
+      this.listeners.forEach(fn => fn(this));
+    });
+  }
+
+  notifyImmediate() {
+    this._notifyPending = false;
     this.listeners.forEach(fn => fn(this));
+  }
+
+  notifyToasts() {
+    this.toastListeners.forEach(fn => fn(this.toasts));
   }
 
   showToast(message, type = 'info') {
     const id = 'toast_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
     this.toasts.push({ id, message, type });
-    this.notify();
+    this.notifyToasts();
     setTimeout(() => {
       this.toasts = this.toasts.filter(t => t.id !== id);
-      this.notify();
+      this.notifyToasts();
     }, 4000);
   }
 

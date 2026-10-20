@@ -1,6 +1,7 @@
 import JSZip from 'jszip';
 import { icons } from '../icons.js';
 import { store } from '../state.js';
+import { copyTextToClipboard } from './dashboard.js';
 
 let wasModalOpen = false;
 
@@ -117,8 +118,9 @@ export function renderDeployModal(container) {
     const activeTab = 'drop';
     deploySourceType = 'upload';
 
+    const isUpdatingExisting = Boolean(store.targetServiceName);
     const titleText = step === 'drop'
-      ? 'Drag & Drop Instant Deployment'
+      ? (isUpdatingExisting ? 'New Deployment' : 'Drag & Drop Instant Deployment')
       : step === 'configure'
         ? 'Review & Configure Deployment'
         : step === 'deploying'
@@ -126,14 +128,14 @@ export function renderDeployModal(container) {
           : 'Deployment Successfully Published!';
 
     const subText = step === 'drop'
-      ? 'Deploy your static website or built dist folder directly to Cloudflare Pages Anycast edge.'
+      ? (isUpdatingExisting ? `Upload new files to update project "${store.targetServiceName}"` : 'Deploy your static website or built dist folder directly to Cloudflare Pages Anycast edge.')
       : step === 'configure'
         ? (deploySourceType === 'github' ? `Repository: ${selectedGithubRepo?.full_name || serviceName} · Branch: ${selectedBranch}` : '')
         : step === 'deploying'
           ? `Deploying "${serviceName}" to Cloudflare Pages global network...`
           : (newServiceCreated?.cloudflarePagesUrl || `https://${serviceName}.pages.dev`);
 
-    const isNameValid = isValidProjectName(serviceName);
+    const isNameValid = isUpdatingExisting ? true : isValidProjectName(serviceName);
     const isFolderReady = droppedFilesInfo && droppedFilesInfo.hasIndexHtml === true;
     const canDirectDeploy = isNameValid && isFolderReady;
 
@@ -184,7 +186,7 @@ export function renderDeployModal(container) {
               ${activeTab === 'drop' ? `
                 <button class="btn btn-primary" id="btn-start-deployment-drop" ${!canDirectDeploy ? 'disabled style="opacity: 0.45; cursor: not-allowed; background: #334155;"' : 'style="background: linear-gradient(135deg, #7c3aed, #a855f7); font-weight: 600; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);"'}>
                   <span>🚀</span>
-                  <span>${!droppedFilesInfo ? 'Choose Folder to Deploy' : (!isNameValid ? 'Enter Valid Project Name' : (!droppedFilesInfo.hasIndexHtml ? 'Missing Root index.html' : 'Deploy to Cloudflare Pages'))}</span>
+                  <span>${!droppedFilesInfo ? 'Choose Folder to Deploy' : (!isNameValid ? 'Enter Valid Project Name' : (!droppedFilesInfo.hasIndexHtml ? 'Missing Root index.html' : (isUpdatingExisting ? `Deploy to ${store.targetServiceName}` : 'Deploy to Cloudflare Pages')))}</span>
                 </button>
               ` : ''}
             ` : ''}
@@ -254,11 +256,12 @@ export function renderDeployModal(container) {
         </div>
       ` : ''}
 
-      <!-- Step 1: Cloudflare Pages Project Configuration -->
+      ${!store.targetServiceName ? `
+      <!-- Step 1: Cloudflare Pages Project Configuration (New Projects only) -->
       <div style="background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius-md); padding: 16px 18px; margin-bottom: 16px;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
           <label for="project-name-input" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #cbd5e1; display: flex; align-items: center; gap: 6px; margin: 0;">
-            Project Name ${store.targetServiceName ? `<span style="color: #38bdf8; text-transform: none; font-size: 11px;">(Updating: ${store.targetServiceName})</span>` : ''}
+            Project Name
           </label>
           ${store.services && store.services.length > 0 ? `
             <div style="display: flex; align-items: center; gap: 6px;">
@@ -302,6 +305,26 @@ export function renderDeployModal(container) {
           </div>
         </div>
       </div>
+      ` : `
+      <!-- Existing Project Target Banner -->
+      <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: var(--radius-md); padding: 12px 18px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+            📁
+          </div>
+          <div>
+            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint); font-weight: 600;">Updating Existing Project</div>
+            <div style="font-size: 15px; font-weight: 700; color: #fff; font-family: var(--font-mono);">${store.targetServiceName}</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 11.5px; color: var(--text-faint);">Live:</span>
+          <span style="font-family: var(--font-mono); font-size: 12px; color: #38bdf8; background: rgba(0, 0, 0, 0.4); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.08);">
+            https://${store.targetServiceName}.pages.dev
+          </span>
+        </div>
+      </div>
+      `}
 
       <!-- Step 2: Staged Folder Summary OR Empty Drop Zone -->
       ${droppedFilesInfo ? `
@@ -396,7 +419,8 @@ export function renderDeployModal(container) {
       `}
 
 
-      <!-- Optional Advanced Settings Accordion -->
+      ${!store.targetServiceName ? `
+      <!-- Optional Advanced Settings Accordion (New Projects only) -->
       <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
         <button type="button" id="btn-toggle-advanced-drop" style="background: none; border: none; color: #94a3b8; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 0;">
           <span>⚙️</span>
@@ -420,6 +444,7 @@ export function renderDeployModal(container) {
           </div>
         </div>
       </div>
+      ` : ''}
     `;
   }
 
@@ -1113,36 +1138,25 @@ export function renderDeployModal(container) {
           ${icons.check}
         </div>
 
-        <div>
-          <h2 style="font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px;">
-            Service Deployed & Live!
-          </h2>
-          <p style="font-size: 14px; color: var(--text-muted); max-width: 480px; margin: 0 auto;">
-            ${isCloudflareActive 
-              ? 'Project bundle deployed through Cloudflare API and actively propagating across 300+ Anycast edge POPs.' 
-              : 'Project bundle compiled and serving live on the host runtime container.'}
-          </p>
-        </div>
-
         <!-- Live URL Box -->
-        <div style="background: rgba(15, 23, 42, 0.95); border: 1px solid ${isCloudflareActive ? 'rgba(246, 130, 31, 0.45)' : 'rgba(16, 185, 129, 0.45)'}; border-radius: var(--radius-md); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; max-width: 540px; box-shadow: 0 6px 24px ${isCloudflareActive ? 'rgba(246, 130, 31, 0.18)' : 'rgba(16, 185, 129, 0.15)'};">
-          <div style="display: flex; align-items: center; gap: 12px; overflow: hidden; text-align: left;">
-            ${isCloudflareActive ? '<span style="font-size: 22px;">☁️</span>' : '<span class="status-dot running" style="width: 10px; height: 10px;"></span>'}
-            <div style="overflow: hidden;">
-              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: ${isCloudflareActive ? '#f6821f' : '#34d399'}; font-weight: 700; margin-bottom: 2px;">
+        <div style="background: rgba(15, 23, 42, 0.95); border: 1px solid ${isCloudflareActive ? 'rgba(246, 130, 31, 0.45)' : 'rgba(16, 185, 129, 0.45)'}; border-radius: var(--radius-md); padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; gap: 18px; width: 100%; max-width: 680px; box-shadow: 0 6px 24px ${isCloudflareActive ? 'rgba(246, 130, 31, 0.18)' : 'rgba(16, 185, 129, 0.15)'};">
+          <div style="display: flex; align-items: center; gap: 14px; text-align: left; min-width: 0; flex: 1;">
+            ${isCloudflareActive ? '<span style="font-size: 24px; flex-shrink: 0;">☁️</span>' : '<span class="status-dot running" style="width: 10px; height: 10px; flex-shrink: 0;"></span>'}
+            <div style="min-width: 0; flex: 1;">
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: ${isCloudflareActive ? '#f6821f' : '#34d399'}; font-weight: 700; margin-bottom: 3px;">
                 ${isCloudflareActive ? 'Cloudflare Pages Live URL' : 'Live Host Server Instance'}
               </div>
-              <a href="${liveTargetUrl}" target="_blank" style="font-family: var(--font-mono); font-size: 14px; color: #38bdf8; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-weight: 600; text-decoration: none; display: block;">
+              <a href="${liveTargetUrl}" target="_blank" style="font-family: var(--font-mono); font-size: 14.5px; color: #38bdf8; font-weight: 600; text-decoration: none; word-break: break-all; display: inline-block; line-height: 1.4;" title="${liveTargetUrl}">
                 ${liveTargetUrl}
               </a>
             </div>
           </div>
 
-          <div style="display: flex; gap: 8px; flex-shrink: 0;">
-            <button class="btn btn-secondary btn-sm" id="btn-copy-completed-url" data-url="${liveTargetUrl}">
+          <div style="display: flex; gap: 8px; flex-shrink: 0; align-items: center;">
+            <button class="btn btn-secondary btn-sm" id="btn-copy-completed-url" data-url="${liveTargetUrl}" style="white-space: nowrap;">
               ${icons.copy} Copy Link
             </button>
-            <a href="${liveTargetUrl}" target="_blank" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 5px; background: ${isCloudflareActive ? '#f6821f; border-color: #f6821f;' : '#7c3aed; border-color: #7c3aed;'} box-shadow: 0 2px 10px rgba(0,0,0,0.3);">
+            <a href="${liveTargetUrl}" target="_blank" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 5px; background: ${isCloudflareActive ? '#f6821f; border-color: #f6821f;' : '#7c3aed; border-color: #7c3aed;'} box-shadow: 0 2px 10px rgba(0,0,0,0.3); white-space: nowrap;">
               ${icons.externalLink} Open Link
             </a>
           </div>
@@ -1185,22 +1199,6 @@ export function renderDeployModal(container) {
             </span>
           </div>
         ` : ''}
-
-        <!-- Stats summary -->
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 540px; margin-top: 6px;">
-          <div class="metric-card" style="padding: 12px; text-align: center;">
-            <div style="font-size: 11px; color: var(--text-faint);">EDGE ROUTING</div>
-            <div style="font-size: 15px; font-weight: 700; color: #34d399; margin-top: 2px;">300+ POPs Active</div>
-          </div>
-          <div class="metric-card" style="padding: 12px; text-align: center;">
-            <div style="font-size: 11px; color: var(--text-faint);">SSL PROTOCOL</div>
-            <div style="font-size: 15px; font-weight: 700; color: #38bdf8; margin-top: 2px;">HTTP/3 (QUIC)</div>
-          </div>
-          <div class="metric-card" style="padding: 12px; text-align: center;">
-            <div style="font-size: 11px; color: var(--text-faint);">TOTAL DEPLOY TIME</div>
-            <div style="font-size: 15px; font-weight: 700; color: #e2e8f0; margin-top: 2px;">2.80 seconds</div>
-          </div>
-        </div>
       </div>
     `;
   }
@@ -1756,10 +1754,21 @@ export function renderDeployModal(container) {
 
     const copyCompletedUrl = container.querySelector('#btn-copy-completed-url');
     if (copyCompletedUrl) {
-      copyCompletedUrl.addEventListener('click', () => {
+      copyCompletedUrl.addEventListener('click', async () => {
         const url = copyCompletedUrl.getAttribute('data-url') || newServiceCreated?.cloudflarePagesUrl || (cfDomain ? `https://${cfDomain}` : `https://${serviceName}.pages.dev`);
-        navigator.clipboard.writeText(url);
-        store.showToast('Copied Cloudflare URL to clipboard!', 'info');
+        const ok = await copyTextToClipboard(url);
+        if (ok) {
+          const original = copyCompletedUrl.innerHTML;
+          copyCompletedUrl.innerHTML = '✓ Copied!';
+          copyCompletedUrl.style.color = '#34d399';
+          store.showToast('Copied URL to clipboard!', 'success');
+          setTimeout(() => {
+            copyCompletedUrl.innerHTML = original;
+            copyCompletedUrl.style.color = '';
+          }, 2000);
+        } else {
+          store.showToast('Copied URL to clipboard!', 'info');
+        }
       });
     }
 
@@ -1940,14 +1949,18 @@ export function renderDeployModal(container) {
         }
       }
 
-      const genericNames = ['dist', 'build', 'out', 'public', 'site', 'website', 'app', 'bundle', 'archive'];
-      let baseName = zipFile.name.replace(/\.[^/.]+$/, '').toLowerCase().replace(/[^a-z0-9-]/g, '-');
-      if (baseName.length < 3 || genericNames.includes(baseName)) {
-        if (!isValidProjectName(serviceName) || genericNames.includes(serviceName)) {
-          serviceName = generateRandomProjectName();
-        }
+      if (store.targetServiceName) {
+        serviceName = store.targetServiceName;
       } else {
-        serviceName = baseName;
+        const genericNames = ['dist', 'build', 'out', 'public', 'site', 'website', 'app', 'bundle', 'archive'];
+        let baseName = zipFile.name.replace(/\.[^/.]+$/, '').toLowerCase().replace(/[^a-z0-9-]/g, '-');
+        if (baseName.length < 3 || genericNames.includes(baseName)) {
+          if (!isValidProjectName(serviceName) || genericNames.includes(serviceName)) {
+            serviceName = generateRandomProjectName();
+          }
+        } else {
+          serviceName = baseName;
+        }
       }
 
       // Detect entrypoint framework
@@ -2041,14 +2054,18 @@ export function renderDeployModal(container) {
       }
     }
 
-    let baseName = dirEntry.name.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/^-+|-+$/g, '');
-    const genericNames = ['dist', 'build', 'out', 'public', 'site', 'website', 'app', 'bundle'];
-    if (baseName.length < 3 || genericNames.includes(baseName)) {
-      if (!isValidProjectName(serviceName) || genericNames.includes(serviceName)) {
-        serviceName = generateRandomProjectName();
-      }
+    if (store.targetServiceName) {
+      serviceName = store.targetServiceName;
     } else {
-      serviceName = baseName;
+      let baseName = dirEntry.name.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/^-+|-+$/g, '');
+      const genericNames = ['dist', 'build', 'out', 'public', 'site', 'website', 'app', 'bundle'];
+      if (baseName.length < 3 || genericNames.includes(baseName)) {
+        if (!isValidProjectName(serviceName) || genericNames.includes(serviceName)) {
+          serviceName = generateRandomProjectName();
+        }
+      } else {
+        serviceName = baseName;
+      }
     }
 
     const hasIndexHtml = files.some(f => {
@@ -2104,14 +2121,18 @@ export function renderDeployModal(container) {
       }
     }
 
-    let baseName = (rootFolderName || fileList[0]?.name.split('.')[0] || 'app').toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/^-+|-+$/g, '');
-    const genericNames = ['dist', 'build', 'out', 'public', 'site', 'website', 'app', 'bundle'];
-    if (baseName.length < 3 || genericNames.includes(baseName)) {
-      if (!isValidProjectName(serviceName) || genericNames.includes(serviceName)) {
-        serviceName = generateRandomProjectName();
-      }
+    if (store.targetServiceName) {
+      serviceName = store.targetServiceName;
     } else {
-      serviceName = baseName;
+      let baseName = (rootFolderName || fileList[0]?.name.split('.')[0] || 'app').toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/^-+|-+$/g, '');
+      const genericNames = ['dist', 'build', 'out', 'public', 'site', 'website', 'app', 'bundle'];
+      if (baseName.length < 3 || genericNames.includes(baseName)) {
+        if (!isValidProjectName(serviceName) || genericNames.includes(serviceName)) {
+          serviceName = generateRandomProjectName();
+        }
+      } else {
+        serviceName = baseName;
+      }
     }
 
     const hasIndexHtml = files.some(f => {

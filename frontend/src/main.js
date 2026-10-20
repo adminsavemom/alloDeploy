@@ -9,6 +9,9 @@ import { renderServiceDetail } from './components/serviceDetail.js';
 import { renderBackendModal } from './components/backendModal.js';
 import { renderToasts } from './components/toast.js';
 
+let currentLayoutState = null; // 'auth' | 'app'
+let lastRenderedUserId = null;
+
 function renderApp() {
   const appContainer = document.getElementById('app');
   if (!appContainer) return;
@@ -20,6 +23,8 @@ function renderApp() {
   try {
     // If user is not authenticated, show Auth Page
     if (!store.user) {
+      currentLayoutState = 'auth';
+      lastRenderedUserId = null;
       appContainer.innerHTML = '<div id="auth-root"></div>';
       renderAuth(document.getElementById('auth-root'));
       if (modalContainer) modalContainer.innerHTML = '';
@@ -29,25 +34,34 @@ function renderApp() {
       return;
     }
 
-    // If authenticated, construct full layout (sidebar removed)
-    appContainer.innerHTML = `
-      <div id="coolify-app-layout" class="coolify-app-layout">
-        <div id="coolify-main-col" class="coolify-main-col">
-          <header id="coolify-topbar-root" class="coolify-topbar"></header>
-          <main id="main-content" class="coolify-main-content"></main>
+    // If authenticated, construct full layout only if not already mounted (prevents full-page blinking)
+    const existingLayout = document.getElementById('coolify-app-layout');
+    const userChanged = lastRenderedUserId !== store.user.id;
+    if (!existingLayout || currentLayoutState !== 'app' || userChanged) {
+      currentLayoutState = 'app';
+      lastRenderedUserId = store.user.id;
+      appContainer.innerHTML = `
+        <div id="coolify-app-layout" class="coolify-app-layout">
+          <div id="coolify-main-col" class="coolify-main-col">
+            <header id="coolify-topbar-root" class="coolify-topbar"></header>
+            <main id="main-content" class="coolify-main-content"></main>
+          </div>
         </div>
-      </div>
-    `;
+      `;
+    }
 
-    renderNavbar({
-      topbar: document.getElementById('coolify-topbar-root')
-    });
+    const topbarRoot = document.getElementById('coolify-topbar-root');
+    if (topbarRoot) {
+      renderNavbar({ topbar: topbarRoot });
+    }
 
     const mainContent = document.getElementById('main-content');
-    if (store.activeView === 'service-detail') {
-      renderServiceDetail(mainContent);
-    } else {
-      renderDashboard(mainContent);
+    if (mainContent) {
+      if (store.activeView === 'service-detail') {
+        renderServiceDetail(mainContent);
+      } else {
+        renderDashboard(mainContent);
+      }
     }
 
     // Modals and Toasts
@@ -140,6 +154,12 @@ window.addEventListener('drop', (e) => {
 // Subscribe to state updates
 store.subscribe(() => {
   renderApp();
+});
+
+// Dedicated Toast listener (updates only toast-container, prevents UI blinking)
+store.subscribeToasts(() => {
+  const toastContainer = document.getElementById('toast-container');
+  if (toastContainer) renderToasts(toastContainer);
 });
 
 // Initial boot

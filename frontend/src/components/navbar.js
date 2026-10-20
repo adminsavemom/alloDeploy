@@ -93,11 +93,15 @@ export function renderNavbar(target) {
       profileDropdown.style.display = isOpen ? 'none' : 'block';
     });
 
-    document.addEventListener('click', () => {
-      if (profileDropdown && profileDropdown.style.display === 'block') {
-        profileDropdown.style.display = 'none';
-      }
-    });
+    if (!window.__navbarClickBound) {
+      document.addEventListener('click', (e) => {
+        const dd = document.getElementById('topbar-profile-dropdown');
+        if (dd && dd.style.display === 'block' && !e.target.closest('#topbar-user-profile-trigger')) {
+          dd.style.display = 'none';
+        }
+      });
+      window.__navbarClickBound = true;
+    }
 
     topbarContainer.querySelector('#btn-dropdown-edit-profile')?.addEventListener('click', (e) => {
       e.stopPropagation();

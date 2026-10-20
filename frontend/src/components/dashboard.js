@@ -411,7 +411,7 @@ export function openCustomDomainModal(serviceId) {
 
         <!-- CNAME Target Info -->
         <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; color: #94a3b8; background: rgba(0,0,0,0.35); padding: 10px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06); margin-top: 14px;">
-          <span>CNAME Target: <strong id="cname-target-text" style="color: #38bdf8; font-family: var(--font-mono); user-select: all;">${targetCname}</strong></span>
+          <span>CNAME Target: <strong id="cname-target-text" style="color: #c084fc; font-family: var(--font-mono); user-select: all;">${targetCname}</strong></span>
           <button type="button" class="btn btn-secondary btn-xs" id="btn-modal-copy-cname" style="padding: 4px 10px; font-size: 11px; cursor: pointer; transition: all 0.2s ease;">Copy CNAME</button>
         </div>
       </div>
@@ -517,7 +517,7 @@ function renderAnalyticsView(container) {
       <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
         <div class="metric-card" style="padding: 18px;">
           <div style="font-size: 11px; color: var(--text-faint); text-transform: uppercase; font-weight: 700;">Host CPU Usage</div>
-          <div style="font-size: 26px; font-weight: 800; color: #38bdf8; margin-top: 6px;">${m.cpu || '0.4%'}</div>
+          <div style="font-size: 26px; font-weight: 800; color: #c084fc; margin-top: 6px;">${m.cpu || '0.4%'}</div>
           <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">4 cores active (Load avg 0.12)</div>
         </div>
 
@@ -561,9 +561,9 @@ function renderTerminalView(container) {
 
       <div style="background: #090b10; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 20px; font-family: var(--font-mono); font-size: 13px; color: #cbd5e1; height: 420px; overflow-y: auto;">
         <div style="color: #64748b; margin-bottom: 12px;">Connected to AlloDeploy Host Engine on Windows / PowerShell runtime. Type commands below.</div>
-        <div style="color: #38bdf8; margin-bottom: 4px;">root@localhost:~$ systemctl status allodeploy-engine</div>
+        <div style="color: #c084fc; margin-bottom: 4px;">root@localhost:~$ systemctl status allodeploy-engine</div>
         <div style="color: #34d399; margin-bottom: 12px;">● allodeploy-engine.service - Production Container Supervisor<br>&nbsp;&nbsp;Loaded: loaded (/etc/systemd/system/allodeploy.service)<br>&nbsp;&nbsp;Active: active (running) since Boot</div>
-        <div style="color: #38bdf8; margin-bottom: 4px;">root@localhost:~$ cloudflare-edge status</div>
+        <div style="color: #c084fc; margin-bottom: 4px;">root@localhost:~$ cloudflare-edge status</div>
         <div style="color: #f6821f; margin-bottom: 12px;">Cloudflare API Gateway: Active (Token Scoped Zone.DNS, CachePurge)</div>
         <div style="display: flex; gap: 8px; align-items: center; margin-top: 20px;">
           <span style="color: #34d399;">root@localhost:~$</span>
@@ -718,8 +718,8 @@ function renderProjectsView(container) {
                 <!-- Deployment Link Row -->
                 <div class="coolify-url-row" style="margin-top: 4px; gap: 8px;">
                   <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                    <span class="badge" style="background: rgba(246, 130, 31, 0.18); color: #f6821f; border: 1px solid rgba(246, 130, 31, 0.4); font-size: 10px; padding: 2px 7px; flex-shrink: 0; border-radius: 4px;">
-                      ${srv.customDomain ? '🌐 Domain' : '☁️ Pages'}
+                    <span class="badge" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35); font-size: 11px; padding: 2px 6px; flex-shrink: 0; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center;" title="${srv.customDomain ? 'Custom Domain' : 'Cloudflare Pages'}">
+                      ${srv.customDomain ? '🌐' : '☁️'}
                     </span>
                     <span class="resource-url-text" style="flex: 1; min-width: 0; font-family: var(--font-mono); font-size: 12px; color: #a78bfa; word-break: break-all; white-space: normal; line-height: 1.3;" title="${openSiteUrl}">
                       ${srv.customDomain || exactPagesUrl}
@@ -1164,7 +1164,7 @@ function renderSettingsView(container, initialTab = null) {
             <button class="btn btn-secondary btn-sm" id="btn-view-cf-dns">
               🌐 View Active DNS Records
             </button>
-            <button class="btn btn-secondary btn-sm" id="btn-view-cf-hostnames" style="color: #38bdf8; border-color: rgba(56,189,248,0.35);">
+            <button class="btn btn-secondary btn-sm" id="btn-view-cf-hostnames" style="color: #c084fc; border-color: rgba(168,85,247,0.35);">
               ⚡ View Custom Hostnames (SaaS Origins)
             </button>
           </div>
@@ -1657,7 +1657,7 @@ function renderSettingsView(container, initialTab = null) {
           <span style="display: flex; align-items: center; gap: 6px;">
             <span>⚡</span> Cloudflare Custom Hostnames (${hostnames.length})
           </span>
-          <span style="font-size: 11px; color: #38bdf8;">Cloudflare for SaaS / Origin Routing</span>
+          <span style="font-size: 11px; color: #c084fc;">Cloudflare for SaaS / Origin Routing</span>
         </div>
         <div style="max-height: 280px; overflow-y: auto; background: rgba(0,0,0,0.35); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
           <table style="width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--font-mono);">
@@ -1673,7 +1673,7 @@ function renderSettingsView(container, initialTab = null) {
             <tbody>
               ${hostnames.map(h => `
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
-                  <td style="padding: 8px 12px; color: #38bdf8; font-weight: 600;">${h.hostname}</td>
+                  <td style="padding: 8px 12px; color: #c084fc; font-weight: 600;">${h.hostname}</td>
                   <td style="padding: 8px 12px; color: #c084fc;">${h.custom_origin_server || '<span style="color:#64748b;">(Default Fallback)</span>'}</td>
                   <td style="padding: 8px 12px; color: #e2e8f0;">${h.custom_origin_sni || '<span style="color:#64748b;">(Default SNI)</span>'}</td>
                   <td style="padding: 8px 12px;">

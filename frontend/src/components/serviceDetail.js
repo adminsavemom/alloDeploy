@@ -2,6 +2,8 @@ import { icons } from '../icons.js';
 import { store } from '../state.js';
 import { openCustomDomainModal, copyTextToClipboard } from './dashboard.js';
 
+const serviceDeploymentsCache = new Map();
+
 function timeAgo(dateInput) {
   if (!dateInput) return 'Recently';
   if (typeof dateInput === 'string' && (dateInput.includes('ago') || dateInput === 'Just now')) {
@@ -34,7 +36,7 @@ export function renderServiceDetail(container) {
   }
 
   let activeTab = store.selectedDetailTab || 'deployments';
-  if (!['deployments', 'domain', 'env', 'new-deploy'].includes(activeTab)) {
+  if (!['deployments', 'domain', 'env'].includes(activeTab)) {
     activeTab = 'deployments';
   }
 
@@ -64,13 +66,34 @@ export function renderServiceDetail(container) {
       : null;
   }
 
-  async function loadDeployments() {
-    isLoadingDeployments = true;
+  // Prepopulate from memory cache or service record immediately
+  if (serviceDeploymentsCache.has(service.id)) {
+    deployments = serviceDeploymentsCache.get(service.id);
+  } else if (service.deploys && service.deploys.length > 0) {
+    deployments = (service.deploys || []).map(d => ({
+      id: d.id,
+      shortId: d.hash || (d.id ? d.id.replace('dep-', '').substring(0, 8) : ''),
+      environment: 'production',
+      url: d.url || (d.hash ? `https://${d.hash}.${service.name}.pages.dev` : exactPagesUrl),
+      branch: service.gitBranch || 'main',
+      commitHash: d.hash || '',
+      commitMessage: d.message || 'Deploy to Cloudflare Pages',
+      createdOn: d.date || d.timestamp || 'Just now',
+      status: 'success'
+    }));
+  }
+
+  async function loadDeployments(showSpinner = false) {
+    if (showSpinner || deployments.length === 0) {
+      isLoadingDeployments = true;
+      render();
+    }
     try {
       const data = await store.fetchServiceDeployments(service.id);
       if (Array.isArray(data) && data.length > 0) {
         deployments = data;
-      } else {
+        serviceDeploymentsCache.set(service.id, data);
+      } else if (deployments.length === 0) {
         // Fall back to service deploys
         deployments = (service.deploys || []).map(d => ({
           id: d.id,
@@ -83,6 +106,7 @@ export function renderServiceDetail(container) {
           createdOn: d.date || d.timestamp || 'Just now',
           status: 'success'
         }));
+        serviceDeploymentsCache.set(service.id, deployments);
       }
     } catch (e) {
       console.warn('Error loading deployments:', e);
@@ -125,7 +149,7 @@ export function renderServiceDetail(container) {
                 </a>
                 ${service.customDomain ? `
                   <span>•</span>
-                  <a href="${customSiteUrl}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; font-family: var(--font-mono); display: inline-flex; align-items: center; gap: 4px; text-decoration: none;" title="Custom domain: ${customSiteUrl}">
+                  <a href="${customSiteUrl}" target="_blank" rel="noopener noreferrer" style="color: #c084fc; font-family: var(--font-mono); display: inline-flex; align-items: center; gap: 4px; text-decoration: none;" title="Custom domain: ${customSiteUrl}">
                     🌐 ${service.customDomain} (${service.customDomainStatus === 'active' ? 'SSL Active' : 'Active'})
                   </a>
                 ` : ''}
@@ -171,13 +195,24 @@ export function renderServiceDetail(container) {
             <button class="cf-tab-btn ${activeTab === 'deployments' ? 'active' : ''}" data-tab="deployments">Deployments</button>
             <button class="cf-tab-btn ${activeTab === 'domain' ? 'active' : ''}" data-tab="domain">Custom Domain</button>
             <button class="cf-tab-btn ${activeTab === 'env' ? 'active' : ''}" data-tab="env">Environment Variables ${service.envVars?.length ? `(${service.envVars.length})` : ''}</button>
-            <button class="cf-tab-btn ${activeTab === 'new-deploy' ? 'active' : ''}" data-tab="new-deploy">New Deploy</button>
           </div>
 
-          <button class="btn-cf-create-deploy" id="btn-create-deployment" title="Deploy new files or repository updates">
-            <span style="font-size: 15px; display: inline-flex; align-items: center;">⬆</span>
-            <span>Create deployment</span>
-          </button>
+          ${activeTab === 'domain' ? `
+            <button class="btn-cf-create-deploy btn-open-custom-domain-modal" data-id="${service.id}" id="btn-header-add-domain" title="Add custom domain">
+              <span style="font-size: 15px; display: inline-flex; align-items: center; font-weight: bold;">+</span>
+              <span>Add custom domain</span>
+            </button>
+          ` : activeTab === 'env' ? `
+            <button class="btn-cf-create-deploy" id="btn-header-add-env" title="Add environment variable">
+              <span style="font-size: 15px; display: inline-flex; align-items: center; font-weight: bold;">+</span>
+              <span>+Add</span>
+            </button>
+          ` : `
+            <button class="btn-cf-create-deploy" id="btn-create-deployment" title="Deploy new files or repository updates">
+              <span style="font-size: 15px; display: inline-flex; align-items: center;">⬆</span>
+              <span>Create deployment</span>
+            </button>
+          `}
         </div>
 
         <!-- Tab Body -->
@@ -185,7 +220,6 @@ export function renderServiceDetail(container) {
           ${activeTab === 'deployments' ? renderDeploymentsTab() : ''}
           ${activeTab === 'domain' ? renderCustomDomainTab() : ''}
           ${activeTab === 'env' ? renderEnvTab() : ''}
-          ${activeTab === 'new-deploy' ? renderNewDeployTab() : ''}
         </div>
       </div>
     `;
@@ -225,10 +259,8 @@ export function renderServiceDetail(container) {
           <thead>
             <tr>
               <th style="width: 140px;">Environment</th>
-              <th style="width: 320px;">Source</th>
               <th>Deployment</th>
               <th style="width: 150px;">Status</th>
-              <th style="width: 100px; text-align: right;"></th>
             </tr>
           </thead>
           <tbody>
@@ -237,17 +269,6 @@ export function renderServiceDetail(container) {
                 <div class="cf-env-tag">
                   <div class="cf-env-indicator"></div>
                   <span>Production</span>
-                </div>
-              </td>
-              <td>
-                <div class="cf-source-wrap">
-                  <div class="cf-source-branch">
-                    <span style="display: inline-flex; align-items: center;">${icons.gitBranch || '⎇'}</span>
-                    <span>${prodDeploy.branch || 'main'}</span>
-                  </div>
-                  <div class="cf-source-commit" title="${prodDeploy.commitMessage || 'feat: production update'}">
-                    ${prodDeploy.commitMessage || 'feat: add backend storage, ser...'}
-                  </div>
                 </div>
               </td>
               <td>
@@ -260,11 +281,6 @@ export function renderServiceDetail(container) {
                   <span class="cf-check-icon">✓</span>
                   <span class="cf-status-time">${timeAgo(prodDeploy.createdOn || prodDeploy.date)}</span>
                 </div>
-              </td>
-              <td style="text-align: right;">
-                <a href="${prodDeploy.url || exactPagesUrl}" target="_blank" rel="noopener noreferrer" class="cf-details-btn">
-                  Details <span style="font-size: 11px;">↗</span>
-                </a>
               </td>
             </tr>
           </tbody>
@@ -291,24 +307,20 @@ export function renderServiceDetail(container) {
           <thead>
             <tr>
               <th style="width: 140px;">Environment</th>
-              <th style="width: 320px;">Source</th>
               <th>Deployment</th>
               <th style="width: 150px;">Status</th>
-              <th style="width: 90px; text-align: right;"></th>
-              <th style="width: 50px; text-align: center;"></th>
             </tr>
           </thead>
           <tbody>
             ${list.length === 0 ? `
               <tr>
-                <td colspan="6" style="text-align: center; padding: 36px; color: #71717a;">
+                <td colspan="3" style="text-align: center; padding: 36px; color: #71717a;">
                   No deployments recorded yet. Click <strong>"Create deployment"</strong> above to launch your first build.
                 </td>
               </tr>
             ` : list.map((dep, idx) => {
               const depUrl = dep.url || (dep.shortId ? `https://${dep.shortId}.${service.name}.pages.dev` : exactPagesUrl);
               const isProduction = (dep.environment || 'production').toLowerCase() === 'production';
-              const isMenuOpen = openMenuIndex === idx;
 
               return `
                 <tr>
@@ -316,17 +328,6 @@ export function renderServiceDetail(container) {
                     <div class="cf-env-tag">
                       ${isProduction ? `<div class="cf-env-indicator"></div>` : `<div class="cf-env-indicator" style="background: #a855f7;"></div>`}
                       <span>${isProduction ? 'Production' : 'Preview'}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="cf-source-wrap">
-                      <div class="cf-source-branch">
-                        <span style="display: inline-flex; align-items: center;">${icons.gitBranch || '⎇'}</span>
-                        <span>${dep.branch || 'main'}</span>
-                      </div>
-                      <div class="cf-source-commit" title="${dep.commitMessage || 'Deployment bundle update'}">
-                        ${dep.commitMessage || 'feat: add backend storage, ser...'}
-                      </div>
                     </div>
                   </td>
                   <td>
@@ -339,30 +340,6 @@ export function renderServiceDetail(container) {
                       <span class="cf-check-icon">✓</span>
                       <span class="cf-status-time">${timeAgo(dep.createdOn || dep.date)}</span>
                     </div>
-                  </td>
-                  <td style="text-align: right;">
-                    <a href="${depUrl}" target="_blank" rel="noopener noreferrer" class="cf-details-btn">
-                      Details <span style="font-size: 11px;">↗</span>
-                    </a>
-                  </td>
-                  <td style="text-align: center; position: relative;">
-                    <button class="cf-dots-btn btn-toggle-dep-menu" data-index="${idx}" title="More options">···</button>
-                    ${isMenuOpen ? `
-                      <div class="cf-menu-dropdown">
-                        <a href="${depUrl}" target="_blank" rel="noopener noreferrer" class="cf-menu-item">
-                          <span>🌐</span>
-                          <span>Visit Deployment</span>
-                        </a>
-                        <button type="button" class="cf-menu-item btn-copy-dep-url" data-url="${depUrl}">
-                          <span>📋</span>
-                          <span>Copy URL</span>
-                        </button>
-                        <button type="button" class="cf-menu-item btn-redeploy-row" data-id="${dep.id || service.id}">
-                          <span>⚡</span>
-                          <span>Redeploy this build</span>
-                        </button>
-                      </div>
-                    ` : ''}
                   </td>
                 </tr>
               `;
@@ -379,23 +356,20 @@ export function renderServiceDetail(container) {
   function renderCustomDomainTab() {
     return `
       <div class="cf-card">
-        <div class="cf-card-header" style="display: flex; align-items: center; justify-content: space-between;">
+        <div class="cf-card-header">
           <div>
             <h2 class="cf-card-title">Custom Domains</h2>
-            <p style="font-size: 12.5px; color: #94a3b8; margin-top: 4px; margin-bottom: 0;">
+            <p style="font-size: 12.5px; color: #a1a1aa; margin-top: 4px; margin-bottom: 0;">
               Connect your apex domain or subdomain to route global edge traffic directly to Cloudflare Pages.
             </p>
           </div>
-          <button class="btn btn-primary btn-sm btn-open-custom-domain-modal" data-id="${service.id}" style="background: #2563eb; border-color: #1d4ed8; display: inline-flex; align-items: center; gap: 6px;">
-            <span>+</span> Add Custom Domain
-          </button>
         </div>
 
         <div style="padding: 22px;">
           <!-- Active Domains List -->
           <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px;">
             <!-- Primary Cloudflare Pages Domain -->
-            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px 18px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.16); border-radius: 8px; padding: 14px 18px;">
               <div style="display: flex; align-items: center; gap: 12px;">
                 <span style="font-size: 20px;">🌐</span>
                 <div>
@@ -403,43 +377,37 @@ export function renderServiceDetail(container) {
                     <a href="${exactPagesUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 14px; font-weight: 600; color: #f8fafc; font-family: var(--font-mono); text-decoration: none;">
                       ${service.name}.pages.dev
                     </a>
-                    <span class="badge" style="background: rgba(34,197,94,0.18); color: #22c55e; border: 1px solid rgba(34,197,94,0.35); font-size: 10px; padding: 2px 7px;">
-                      ● Default Pages Domain
-                    </span>
                   </div>
-                  <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">
+                  <div style="font-size: 12px; color: #a1a1aa; margin-top: 2px;">
                     Cloudflare Pages native edge hostname • Universal SSL Active
                   </div>
                 </div>
               </div>
 
-              <a href="${exactPagesUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-xs" style="color: #38bdf8; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+              <a href="${exactPagesUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-xs" style="color: #c084fc; border-color: rgba(168, 85, 247, 0.35); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
                 Visit <span style="font-size: 11px;">↗</span>
               </a>
             </div>
 
             <!-- Custom Domain (if set) -->
             ${service.customDomain ? `
-              <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(37, 99, 235, 0.05); border: 1px solid rgba(37, 99, 235, 0.25); border-radius: 8px; padding: 14px 18px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.28); border-radius: 8px; padding: 14px 18px;">
                 <div style="display: flex; align-items: center; gap: 12px;">
                   <span style="font-size: 20px;">⚡</span>
                   <div>
                     <div style="display: flex; align-items: center; gap: 8px;">
-                      <a href="${customSiteUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 14.5px; font-weight: 600; color: #38bdf8; font-family: var(--font-mono); text-decoration: none;">
+                      <a href="${customSiteUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 14.5px; font-weight: 600; color: #c084fc; font-family: var(--font-mono); text-decoration: none;">
                         ${service.customDomain}
                       </a>
-                      <span class="badge" style="background: rgba(34,197,94,0.18); color: #22c55e; border: 1px solid rgba(34,197,94,0.4); font-size: 10px; padding: 2px 7px;">
-                        ● Active & SSL Ready
-                      </span>
                     </div>
-                    <div style="font-size: 12px; color: #94a3b8; margin-top: 2px;">
+                    <div style="font-size: 12px; color: #a1a1aa; margin-top: 2px;">
                       CNAME target: <code>${service.name}.pages.dev</code> • Edge Proxy Enabled
                     </div>
                   </div>
                 </div>
 
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <button class="btn btn-secondary btn-sm btn-open-custom-domain-modal" data-id="${service.id}" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.35); font-size: 12px; padding: 5px 12px;">
+                  <button class="btn btn-secondary btn-sm btn-open-custom-domain-modal" data-id="${service.id}" style="color: #c084fc; border-color: rgba(168, 85, 247, 0.35); font-size: 12px; padding: 5px 12px;">
                     Edit
                   </button>
                   <a href="${customSiteUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="color: #cbd5e1; text-decoration: none; font-size: 12px; padding: 5px 12px;">
@@ -448,11 +416,11 @@ export function renderServiceDetail(container) {
                 </div>
               </div>
             ` : `
-              <div style="text-align: center; padding: 32px 16px; background: rgba(0,0,0,0.15); border: 1px dashed rgba(255,255,255,0.1); border-radius: 8px;">
-                <p style="color: #94a3b8; font-size: 13px; margin-bottom: 12px;">
+              <div style="text-align: center; padding: 32px 16px; background: rgba(0,0,0,0.3); border: 1px dashed rgba(168, 85, 247, 0.22); border-radius: 8px;">
+                <p style="color: #a1a1aa; font-size: 13px; margin-bottom: 12px;">
                   No custom domain connected yet. You can bind any branded domain or subdomain (e.g. <code>app.mycompany.com</code>).
                 </p>
-                <button class="btn btn-primary btn-sm btn-open-custom-domain-modal" data-id="${service.id}" style="background: #2563eb; border-color: #1d4ed8;">
+                <button class="btn btn-primary btn-sm btn-open-custom-domain-modal" data-id="${service.id}" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: 1px solid #9333ea; box-shadow: 0 2px 10px rgba(168, 85, 247, 0.35);">
                   Connect Custom Domain
                 </button>
               </div>
@@ -460,14 +428,14 @@ export function renderServiceDetail(container) {
           </div>
 
           <!-- DNS Guidance Card -->
-          <div style="background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 18px;">
+          <div style="background: #080312; border: 1px solid rgba(168, 85, 247, 0.16); border-radius: 8px; padding: 18px;">
             <div style="font-weight: 600; font-size: 13.5px; color: #f8fafc; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
               <span>📘</span> DNS Configuration Guide
             </div>
-            <p style="font-size: 12.5px; color: #94a3b8; margin-bottom: 14px;">
+            <p style="font-size: 12.5px; color: #a1a1aa; margin-bottom: 14px;">
               To connect an external domain, add the following CNAME record in your DNS provider (Cloudflare, Namecheap, GoDaddy, Route53, etc.):
             </p>
-            <table class="cf-table" style="background: #0d1017; border-radius: 6px; overflow: hidden;">
+            <table class="cf-table" style="background: #05010b; border-radius: 6px; overflow: hidden; border: 1px solid rgba(168, 85, 247, 0.14);">
               <thead>
                 <tr>
                   <th style="padding: 8px 14px;">Type</th>
@@ -478,13 +446,13 @@ export function renderServiceDetail(container) {
               </thead>
               <tbody>
                 <tr>
-                  <td style="padding: 10px 14px; font-weight: 600; color: #f59e0b;">CNAME</td>
+                  <td style="padding: 10px 14px; font-weight: 600; color: #c084fc;">CNAME</td>
                   <td style="padding: 10px 14px; font-family: var(--font-mono); color: #f8fafc;">${service.customDomain ? service.customDomain.split('.')[0] : 'app'}</td>
-                  <td style="padding: 10px 14px; font-family: var(--font-mono); color: #38bdf8; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                  <td style="padding: 10px 14px; font-family: var(--font-mono); color: #c084fc; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
                     <span>${service.name}.pages.dev</span>
-                    <button type="button" class="btn btn-secondary btn-xs btn-copy-cname-table" data-cname="${service.name}.pages.dev" style="padding: 2px 8px; font-size: 11px; cursor: pointer;">Copy</button>
+                    <button type="button" class="btn btn-secondary btn-xs btn-copy-cname-table" data-cname="${service.name}.pages.dev" style="padding: 2px 8px; font-size: 11px; cursor: pointer; color: #c084fc; border-color: rgba(168, 85, 247, 0.35);">Copy</button>
                   </td>
-                  <td style="padding: 10px 14px; color: #f97316;">Proxied (Orange Cloud)</td>
+                  <td style="padding: 10px 14px; color: #e9d5ff;">Proxied (Purple Cloud)</td>
                 </tr>
               </tbody>
             </table>
@@ -518,7 +486,7 @@ export function renderServiceDetail(container) {
     const rawEnvText = (service.envVars || []).map(e => `${e.key}=${e.value || ''}`).join('\n');
 
     return `
-      <div class="custom-env-panel">
+      <div class="cf-card custom-env-panel">
         <div class="custom-env-topbar">
           <div class="custom-env-tab-link">Environment variables</div>
           <button type="button" class="btn-dev-view-toggle ${isDevView ? 'active' : ''}" id="btn-toggle-dev-view">
@@ -637,64 +605,9 @@ export function renderServiceDetail(container) {
           <div style="font-size: 12px; color: #71717a;">
             Variables are securely encrypted and injected into Cloudflare Pages build and runtime.
           </div>
-          <button type="button" class="btn btn-primary btn-sm" id="btn-save-env-vars" style="background: #2563eb; font-weight: 600; padding: 8px 22px;">
+          <button type="button" class="btn btn-primary btn-sm" id="btn-save-env-vars" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: 1px solid #9333ea; font-weight: 600; padding: 8px 22px; box-shadow: 0 2px 10px rgba(168, 85, 247, 0.35);">
             Save Environment Variables
           </button>
-        </div>
-      </div>
-    `;
-  }
-
-  // =========================================================================
-  // TAB 4: NEW DEPLOY
-  // =========================================================================
-  function renderNewDeployTab() {
-    return `
-      <div class="cf-card">
-        <div class="cf-card-header">
-          <h2 class="cf-card-title">New Deployment for "${service.name}"</h2>
-          <p style="font-size: 12.5px; color: #94a3b8; margin-top: 4px; margin-bottom: 0;">
-            Upload project assets (HTML, CSS, JS bundles, or ZIP) to trigger an immediate live Cloudflare Pages build.
-          </p>
-        </div>
-
-        <div style="padding: 24px;">
-          <!-- Drop Area -->
-          <div id="new-deploy-dropzone" style="border: 2px dashed rgba(59, 130, 246, 0.4); border-radius: 10px; padding: 48px 24px; text-align: center; background: rgba(59, 130, 246, 0.03); cursor: pointer; transition: all 0.2s;">
-            <div style="font-size: 38px; margin-bottom: 12px;">📁</div>
-            <h3 style="font-size: 16px; font-weight: 600; color: #f8fafc; margin-bottom: 6px;">
-              Drag & Drop your project folder, files, or .ZIP here
-            </h3>
-            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 16px;">
-              Supports static web pages, React/Vite/Next dist folders, and zip archives with root <code>index.html</code>.
-            </p>
-            <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
-              <label class="btn btn-primary btn-sm" style="background: #2563eb; border-color: #1d4ed8; cursor: pointer;">
-                Browse Files
-                <input type="file" id="new-deploy-file-input" multiple style="display: none;" />
-              </label>
-              <label class="btn btn-secondary btn-sm" style="cursor: pointer;">
-                Browse Folder
-                <input type="file" id="new-deploy-folder-input" webkitdirectory directory multiple style="display: none;" />
-              </label>
-            </div>
-            <div id="new-deploy-file-summary" style="margin-top: 14px; font-size: 12.5px; color: #4ade80; display: none;"></div>
-          </div>
-
-          <!-- Deploy Trigger Row -->
-          <div style="margin-top: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-            <div style="font-size: 12px; color: #94a3b8;">
-              Target: <code>${exactPagesUrl}</code> (Production branch: main)
-            </div>
-            <div style="display: flex; gap: 10px;">
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-open-deploy-modal">
-                Open Advanced Modal
-              </button>
-              <button type="button" class="btn btn-primary btn-sm" id="btn-trigger-new-deploy" style="background: #2563eb; border-color: #1d4ed8; font-weight: 600;">
-                Deploy to Cloudflare
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     `;
@@ -765,14 +678,27 @@ export function renderServiceDetail(container) {
       });
     });
 
-    // "+ Create deployment" button on top right of tabs
+    // Tab contextual action buttons: Create deployment, Add custom domain, +Add
     container.querySelector('#btn-create-deployment')?.addEventListener('click', () => {
       store.openDeployModalWithService(service.name);
     });
 
+    container.querySelector('#btn-header-add-domain')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openCustomDomainModal(service.id);
+    });
+
+    container.querySelector('#btn-header-add-env')?.addEventListener('click', () => {
+      if (!service.envVars) service.envVars = [];
+      const newVarName = `VARIABLE_${(service.envVars.length + 1).toString().padStart(2, '0')}`;
+      service.envVars.push({ key: newVarName, value: '', isSecret: false, isBuildSecret: false });
+      if (isDevView) isDevView = false;
+      render();
+    });
+
     // Refresh Deployments button
     container.querySelector('#btn-refresh-deployments')?.addEventListener('click', async () => {
-      await loadDeployments();
+      await loadDeployments(true);
       store.showToast('Deployments refreshed from Cloudflare Pages.', 'info');
     });
 
@@ -953,78 +879,13 @@ export function renderServiceDetail(container) {
       }
       render();
     });
-
-    // New Deploy Tab File Input & Modal
-    let pendingUploadFiles = [];
-
-    const fileInput = container.querySelector('#new-deploy-file-input');
-    const folderInput = container.querySelector('#new-deploy-folder-input');
-    const summaryBox = container.querySelector('#new-deploy-file-summary');
-
-    const handleSelectedFiles = (fileList) => {
-      pendingUploadFiles = Array.from(fileList);
-      if (summaryBox && pendingUploadFiles.length > 0) {
-        summaryBox.style.display = 'block';
-        summaryBox.innerHTML = `✓ Ready to deploy: <strong>${pendingUploadFiles.length} file(s)</strong> (${(pendingUploadFiles.reduce((a, f) => a + f.size, 0) / 1024).toFixed(1)} KB)`;
-      }
-    };
-
-    fileInput?.addEventListener('change', (e) => handleSelectedFiles(e.target.files));
-    folderInput?.addEventListener('change', (e) => handleSelectedFiles(e.target.files));
-
-    container.querySelector('#btn-open-deploy-modal')?.addEventListener('click', () => {
-      store.openDeployModalWithService(service.name);
-    });
-
-    container.querySelector('#btn-trigger-new-deploy')?.addEventListener('click', async () => {
-      if (pendingUploadFiles.length === 0) {
-        store.openDeployModalWithService(service.name);
-        return;
-      }
-
-      const btn = container.querySelector('#btn-trigger-new-deploy');
-      btn.disabled = true;
-      btn.innerHTML = `<span class="spinner" style="display:inline-block; width:12px; height:12px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:6px;"></span> Deploying...`;
-
-      try {
-        const formData = new FormData();
-        formData.append('serviceName', service.name);
-        formData.append('serviceId', service.id);
-        formData.append('region', service.region || 'Frankfurt (eu-central-1)');
-        formData.append('framework', service.framework || 'Static Site');
-
-        pendingUploadFiles.forEach(file => {
-          formData.append('files', file);
-          formData.append('paths', file.webkitRelativePath || file.name);
-        });
-
-        const res = await fetch(`${store.backendUrl}/api/deploy/upload`, {
-          method: 'POST',
-          headers: {
-            'x-user-id': store.user?.id || '',
-            'x-user-email': store.user?.email || ''
-          },
-          body: formData
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          store.showToast(`✔ Deployed ${service.name} successfully!`, 'success');
-          await loadDeployments();
-          activeTab = 'deployments';
-          store.selectedDetailTab = 'deployments';
-        } else {
-          const errData = await res.json().catch(() => ({}));
-          store.showToast(`Deploy error: ${errData.error || 'Upload failed'}`, 'error');
-        }
-      } catch (err) {
-        store.showToast(`Upload failed: ${err.message}`, 'error');
-      } finally {
-        render();
-      }
-    });
   }
 
-  // Initial load
-  loadDeployments();
+  // Initial render (instant, smooth, zero flicker)
+  render();
+
+  // Fetch from backend only if not yet cached
+  if (!serviceDeploymentsCache.has(service.id)) {
+    loadDeployments(false);
+  }
 }

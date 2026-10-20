@@ -193,8 +193,8 @@ function renderCoolifyHomeDashboard(container) {
       if (found) {
         store.setView('service-detail', found.id);
       } else {
-        store.openDeployModal('github');
-        store.showToast(`Selected application: ${appName}. Choose source to import and deploy.`, 'info');
+        store.openDeployModal('drop');
+        store.showToast(`Selected application: ${appName}. Choose folder or bundle to deploy.`, 'info');
       }
     });
   });
@@ -204,7 +204,7 @@ function renderCoolifyHomeDashboard(container) {
   });
 
   container.querySelector('#btn-empty-new-deploy')?.addEventListener('click', () => {
-    store.openDeployModal('github');
+    store.openDeployModal('drop');
   });
 
   container.querySelector('#btn-view-all-servers')?.addEventListener('click', () => {
@@ -228,7 +228,7 @@ function renderCoolifyHomeDashboard(container) {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const pName = btn.dataset.project;
-      store.openDeployModal('github');
+      store.openDeployModal('drop');
       store.showToast(`Deploying into workspace: ${pName}`, 'info');
     });
   });
@@ -564,12 +564,6 @@ function renderProjectsView(container) {
       <!-- Coolify Workspace Header -->
       <div class="coolify-project-header">
         <div>
-          <div class="project-env-badge">
-            <span class="status-dot live"></span>
-            <span>ENVIRONMENT: ${env}</span>
-            <span style="opacity: 0.4;">|</span>
-            <span>SERVER: LOCALHOST</span>
-          </div>
           <h1 class="coolify-page-title">Resources & Applications</h1>
           <p class="coolify-page-sub">Manage your running applications, databases, and container services hosted on this server.</p>
         </div>
@@ -681,21 +675,14 @@ function renderProjectsView(container) {
                 </div>
 
                 <!-- Deployment Link Row -->
-                <div class="coolify-url-row" style="margin-top: 4px;">
-                  <div style="display: flex; align-items: center; gap: 6px; overflow: hidden; flex: 1; min-width: 0;">
-                    <span class="badge" style="background: rgba(246, 130, 31, 0.18); color: #f6821f; border: 1px solid rgba(246, 130, 31, 0.4); font-size: 10px; padding: 1px 6px; flex-shrink: 0;">
+                <div class="coolify-url-row" style="margin-top: 4px; gap: 8px;">
+                  <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+                    <span class="badge" style="background: rgba(246, 130, 31, 0.18); color: #f6821f; border: 1px solid rgba(246, 130, 31, 0.4); font-size: 10px; padding: 2px 7px; flex-shrink: 0; border-radius: 4px;">
                       ${srv.customDomain ? '🌐 Domain' : '☁️ Pages'}
                     </span>
-                    <span class="resource-url-text" style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-mono); font-size: 12px; color: #a78bfa;" title="${openSiteUrl}">
+                    <span class="resource-url-text" style="flex: 1; min-width: 0; font-family: var(--font-mono); font-size: 12px; color: #a78bfa; word-break: break-all; white-space: normal; line-height: 1.3;" title="${openSiteUrl}">
                       ${srv.customDomain || exactPagesUrl}
                     </span>
-                    ${srv.customDomain ? (
-                      srv.customDomainStatus === 'active' ? `
-                        <span class="badge" style="background: rgba(34,197,94,0.18); color: #22c55e; border: 1px solid rgba(34,197,94,0.35); font-size: 9px; padding: 1px 5px; flex-shrink: 0;">● SSL Active</span>
-                      ` : `
-                        <span class="badge" style="background: rgba(245,158,11,0.18); color: #f59e0b; border: 1px solid rgba(245,158,11,0.35); font-size: 9px; padding: 1px 5px; flex-shrink: 0;" title="${srv.customDomainError || 'CNAME setup required in your domain registrar'}">⏳ DNS Setup</span>
-                      `
-                    ) : ''}
                   </div>
                   <div class="url-action-btns">
                     <button class="icon-btn btn-xs" data-action="copy-url" data-url="${openSiteUrl}" title="Copy Link">
@@ -706,6 +693,9 @@ function renderProjectsView(container) {
                         ${icons.externalLink}
                       </a>
                     ` : ''}
+                    <button class="icon-btn btn-xs" data-action="delete-project" data-id="${srv.id}" data-name="${srv.name}" title="Delete Project (${srv.name})" style="color: #ef4444;">
+                      ${icons.trash || '🗑️'}
+                    </button>
                   </div>
                 </div>
 
@@ -1847,8 +1837,9 @@ function bindProjectsEvents(container) {
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
       const id = e.currentTarget.dataset.id;
-      const srv = store.services.find(s => s.id === id);
-      if (id && confirm(`Are you sure you want to permanently delete project "${srv ? srv.name : id}"? This will delete the service and all hosting configurations.`)) {
+      const srv = store.services.find(s => s.id === id || s.name === id);
+      const name = e.currentTarget.dataset.name || (srv ? srv.name : id);
+      if (id && confirm(`Are you sure you want to permanently delete project "${name}"? This will delete the service and all hosting configurations.`)) {
         await store.deleteService(id);
       }
     });

@@ -369,12 +369,8 @@ class StateStore {
 
   // Modals
   openDeployModal(tab = 'drop') {
-    const targetTab = (tab === 'application' || !tab) ? 'drop' : tab;
-    this.deployModalTab = targetTab;
+    this.deployModalTab = 'drop';
     this.isDeployModalOpen = true;
-    if (targetTab === 'github' && this.githubRepos.length === 0) {
-      this.fetchGithubRepos();
-    }
     this.notify();
   }
 
@@ -1082,21 +1078,52 @@ class StateStore {
   }
 
   async deleteService(serviceId) {
-    const target = this.services.find(s => s.id === serviceId);
-    this.services = this.services.filter(s => s.id !== serviceId);
+    const target = this.services.find(s => s.id === serviceId || s.name === serviceId) ||
+                   (this.projects || []).find(p => p.id === serviceId || p.name === serviceId);
+    const targetName = target ? target.name : serviceId;
+    const effectiveId = target ? target.id : serviceId;
+
+    // Remove permanently from memory
+    this.services = this.services.filter(s => s.id !== effectiveId && s.id !== serviceId && s.name !== targetName);
+    this.projects = (this.projects || []).filter(p => p.id !== effectiveId && p.id !== serviceId && p.name !== targetName);
+    if (this.recentDeployments) {
+      this.recentDeployments = this.recentDeployments.filter(d => 
+        d.id !== effectiveId && 
+        d.id !== serviceId &&
+        d.application !== targetName && 
+        d.site !== targetName &&
+        d.projectName !== targetName
+      );
+    }
+
+    // Persist immediately across all local storage scopes
     this.persistServices();
-    if (this.selectedServiceId === serviceId) {
-      this.activeView = 'dashboard';
+    this.persistProjects();
+    this.persistRecentDeployments();
+
+    if (this.selectedServiceId === effectiveId || this.selectedServiceId === serviceId) {
       this.selectedServiceId = null;
+      this.activeView = 'dashboard';
     }
     this.notify();
-    this.showToast(`Resource "${target ? target.name : serviceId}" removed.`, 'info');
+    this.showToast(`Resource "${targetName}" deleted successfully.`, 'info');
 
+    // Permanently sync deletion to backend & Supabase DB
     try {
-      await fetch(`${this.backendUrl}/api/services/${serviceId}`, {
+      const q = targetName ? `?name=${encodeURIComponent(targetName)}` : '';
+      const res = await fetch(`${this.backendUrl}/api/services/${encodeURIComponent(effectiveId)}${q}`, {
         method: 'DELETE',
         headers: this.getAuthHeaders()
       });
+      if (!res.ok) {
+        console.warn('Backend delete returned non-ok status:', res.status);
+        if (targetName && targetName !== effectiveId) {
+          await fetch(`${this.backendUrl}/api/services/${encodeURIComponent(targetName)}`, {
+            method: 'DELETE',
+            headers: this.getAuthHeaders()
+          });
+        }
+      }
     } catch (e) {
       console.warn('Backend delete sync error:', e);
     }

@@ -11,7 +11,7 @@
     "sslEnabled": false,
     "forceHttps": true,
     "port": 7622,
-    "region": "Frankfurt (eu-central-1)",
+    "region": "Global Edge",
     "source": "Manual Upload (204 folder files)",
     "gitRepo": "",
     "gitUrl": "",
@@ -88,7 +88,7 @@
     "sslEnabled": false,
     "forceHttps": true,
     "port": 7667,
-    "region": "Frankfurt (eu-central-1)",
+    "region": "Global Edge",
     "source": "Manual Upload (Direct Drop)",
     "gitRepo": "",
     "gitUrl": "",
@@ -179,7 +179,7 @@
     "sslEnabled": false,
     "forceHttps": true,
     "port": 5354,
-    "region": "Frankfurt (eu-central-1)",
+    "region": "Global Edge",
     "source": "Manual Upload (204 folder files)",
     "gitRepo": "",
     "gitUrl": "",
@@ -234,134 +234,6 @@
     "userId": "usr_enterprise_dev",
     "userEmail": "alex.smith@example.com",
     "cloudflarePagesUrl": "https://sonic-breeze-139.pages.dev",
-    "cloudflareConnected": true
-  },
-  {
-    "id": "srv-fe82c49a",
-    "name": "allodeploy-test-demo",
-    "type": "Application",
-    "status": "stopped",
-    "url": "https://allodeploy-test-demo.pages.dev",
-    "liveDomain": "https://allodeploy-test-demo.pages.dev",
-    "customDomain": "",
-    "domains": [],
-    "sslEnabled": true,
-    "forceHttps": true,
-    "port": 4669,
-    "region": "Frankfurt (eu-central-1)",
-    "source": "Manual Upload (2 folder files)",
-    "gitRepo": "",
-    "gitUrl": "",
-    "gitBranch": "main",
-    "gitCommit": "",
-    "gitCommitMsg": "",
-    "gitAuthor": "",
-    "buildCommand": "",
-    "publishDir": "",
-    "autoDeploy": false,
-    "filesCount": 2,
-    "size": "0.1 KB",
-    "framework": "Static Site",
-    "updatedAt": "Just now",
-    "createdAt": "2026-10-14 06:16",
-    "deployCount": 2,
-    "metrics": {
-      "cpu": "0.2%",
-      "memory": "0.1 KB",
-      "uptime": "100%"
-    },
-    "envVars": [],
-    "sampleFiles": [
-      "index.html",
-      "style.css"
-    ],
-    "deploys": [
-      {
-        "id": "dep-2c18d45f",
-        "date": "Just now",
-        "hash": "6f9977",
-        "status": "running",
-        "message": "Deploy from bundle (2 files, 0.1 KB)",
-        "duration": "2.4s"
-      }
-    ],
-    "healthcheck": {
-      "path": "/",
-      "expectedStatus": 200,
-      "intervalSeconds": 30
-    },
-    "backups": [],
-    "templateType": "",
-    "userId": "usr_enterprise_dev",
-    "userEmail": "alex.smith@example.com",
-    "cloudflarePagesUrl": "https://allodeploy-test-demo.pages.dev",
-    "cloudflareConnected": true
-  },
-  {
-    "id": "srv-0e2edd4a",
-    "name": "dist",
-    "type": "Application",
-    "status": "running",
-    "url": "https://dist.pages.dev",
-    "liveDomain": "https://dist.pages.dev",
-    "customDomain": "",
-    "domains": [],
-    "sslEnabled": false,
-    "forceHttps": true,
-    "port": 7373,
-    "region": "Frankfurt (eu-central-1)",
-    "source": "Manual Upload (Direct Drop)",
-    "gitRepo": "",
-    "gitUrl": "",
-    "gitBranch": "main",
-    "gitCommit": "",
-    "gitCommitMsg": "",
-    "gitAuthor": "",
-    "buildCommand": "",
-    "publishDir": "",
-    "autoDeploy": false,
-    "filesCount": 1,
-    "size": "12 KB",
-    "framework": "Static HTML Bundle",
-    "updatedAt": "Just now",
-    "createdAt": "2026-10-13 12:34",
-    "deployCount": 2,
-    "metrics": {
-      "cpu": "0.2%",
-      "memory": "12 KB",
-      "uptime": "100%"
-    },
-    "envVars": [
-      {
-        "key": "PORT",
-        "value": "5000",
-        "isSecret": false,
-        "isBuildSecret": false
-      }
-    ],
-    "sampleFiles": [
-      "index.html"
-    ],
-    "deploys": [
-      {
-        "id": "dep-f97a2a89",
-        "date": "Just now",
-        "hash": "d73ae0",
-        "status": "running",
-        "message": "Deploy from bundle upload",
-        "duration": "2.4s"
-      }
-    ],
-    "healthcheck": {
-      "path": "/",
-      "expectedStatus": 200,
-      "intervalSeconds": 30
-    },
-    "backups": [],
-    "templateType": "",
-    "userId": "usr_enterprise_dev",
-    "userEmail": "alex.smith@example.com",
-    "cloudflarePagesUrl": "https://dist.pages.dev",
     "cloudflareConnected": true
   }
 ]

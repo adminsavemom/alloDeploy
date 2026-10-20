@@ -114,23 +114,19 @@ export function renderDeployModal(container) {
 
   function render() {
     const rawTab = store.deployModalTab;
-    const activeTab = (rawTab === 'github' || rawTab === 'drop') ? rawTab : 'drop';
-    if (activeTab === 'drop') {
-      deploySourceType = 'upload';
-    } else if (activeTab === 'github') {
-      deploySourceType = 'github';
-    }
+    const activeTab = 'drop';
+    deploySourceType = 'upload';
 
     const titleText = step === 'drop'
-      ? (activeTab === 'github' ? 'Deploy from GitHub Repository' : 'Drag & Drop Instant Deployment')
+      ? 'Drag & Drop Instant Deployment'
       : step === 'configure'
-        ? (deploySourceType === 'github' ? 'Configure GitHub Edge Deployment' : 'Review & Configure Deployment')
+        ? 'Review & Configure Deployment'
         : step === 'deploying'
-          ? (deploySourceType === 'github' ? 'Executing GitHub CI/CD Pipeline' : 'Deploying to Cloudflare Pages Edge')
+          ? 'Deploying to Cloudflare Pages Edge'
           : 'Deployment Successfully Published!';
 
     const subText = step === 'drop'
-      ? (activeTab === 'drop' ? 'Deploy your static website or built dist folder directly to Cloudflare Pages Anycast edge.' : 'Import and deploy repositories with automated build pipelines.')
+      ? 'Deploy your static website or built dist folder directly to Cloudflare Pages Anycast edge.'
       : step === 'configure'
         ? (deploySourceType === 'github' ? `Repository: ${selectedGithubRepo?.full_name || serviceName} · Branch: ${selectedBranch}` : '')
         : step === 'deploying'
@@ -148,7 +144,7 @@ export function renderDeployModal(container) {
           <div class="modal-header">
             <div style="display: flex; align-items: center; gap: 10px;">
               <div class="service-icon-box" style="width: 32px; height: 32px;">
-                ${step === 'deploying' ? icons.activity : step === 'completed' ? icons.check : activeTab === 'drop' ? icons.cloudUpload : icons.github}
+                ${step === 'deploying' ? icons.activity : step === 'completed' ? icons.check : icons.cloudUpload}
               </div>
               <div>
                 <h2>
@@ -232,25 +228,7 @@ export function renderDeployModal(container) {
   }
 
   function renderDropStep() {
-    const rawTab = store.deployModalTab;
-    const activeTab = (rawTab === 'github' || rawTab === 'drop' ) ? rawTab : 'drop';
-
-    return `
-      <!-- Method Switcher Tab Bar -->
-      <div class="deploy-method-tabs">
-        <button type="button" class="deploy-method-tab ${activeTab === 'drop' ? 'active' : ''}" data-method="drop">
-          ${icons.cloudUpload}
-          <span>Drag & Drop Upload</span>
-        </button>
-        <button type="button" class="deploy-method-tab ${activeTab === 'github' ? 'active' : ''}" data-method="github">
-          ${icons.github}
-          <span>GitHub Project Integration</span>
-        </button>
-      </div>
-
-      ${activeTab === 'drop' ? renderManualDropSection() : ''}
-      ${activeTab === 'github' ? renderGithubSection() : ''}
-    `;
+    return renderManualDropSection();
   }
 
   function renderManualDropSection() {

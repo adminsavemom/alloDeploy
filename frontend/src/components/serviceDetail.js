@@ -138,8 +138,6 @@ export function renderServiceDetail(container) {
                   </a>
                 ` : ''}
                 <span>•</span>
-                <span>${service.region || 'Self-Hosted Server'}</span>
-                <span>•</span>
                 <span>Updated ${service.updatedAt || 'Recently'}</span>
               </div>
             </div>
@@ -755,9 +753,10 @@ export function renderServiceDetail(container) {
     });
 
     // Header Delete
-    container.querySelector('#btn-detail-delete')?.addEventListener('click', () => {
-      if (confirm(`Are you sure you want to permanently delete resource "${service.name}"?`)) {
-        store.deleteService(service.id);
+    container.querySelector('#btn-detail-delete')?.addEventListener('click', async () => {
+      if (confirm(`Are you sure you want to permanently delete resource "${service.name}"? This action will remove all files and hosting configurations.`)) {
+        await store.deleteService(service.id);
+        store.setView('dashboard');
       }
     });
 

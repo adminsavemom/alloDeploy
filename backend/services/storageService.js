@@ -190,28 +190,36 @@ export const storageService = {
     return newService;
   },
 
-  // Delete a service
-  async deleteService(serviceId) {
+  // Delete a service permanently
+  async deleteService(serviceId, serviceName = null) {
     const current = this.getServicesSync();
-    const target = current.find(s => s.id === serviceId);
-    const updated = current.filter(s => s.id !== serviceId);
+    const target = current.find(s => s.id === serviceId || s.name === serviceId || (serviceName && s.name === serviceName));
+    const effectiveName = serviceName || (target && target.name);
+    const effectiveId = (target && target.id) || serviceId;
+
+    const updated = current.filter(s => 
+      s.id !== effectiveId && 
+      s.id !== serviceId && 
+      (!effectiveName || s.name !== effectiveName) && 
+      (!serviceName || s.name !== serviceName)
+    );
     memoryCache = updated;
     saveLocalFileServices(updated);
 
-    if (target) {
-      const sitePath = path.join(SITES_DIR, target.name);
+    if (effectiveName) {
+      const sitePath = path.join(SITES_DIR, effectiveName);
       if (fs.existsSync(sitePath)) {
         try {
           fs.rmSync(sitePath, { recursive: true, force: true });
         } catch (e) {
-          console.error(`Failed to delete site directory for ${target.name}:`, e.message);
+          console.error(`Failed to delete site directory for ${effectiveName}:`, e.message);
         }
       }
     }
 
     if (db.isDbConnected()) {
       try {
-        await db.deleteService(serviceId);
+        await db.deleteService(effectiveId, effectiveName);
       } catch (err) {
         console.warn('⚠️ Supabase delete error:', err.message);
       }

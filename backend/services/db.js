@@ -317,12 +317,15 @@ export const db = {
     }
   },
 
-  async deleteService(id) {
+  async deleteService(id, name = null) {
     const p = getPool();
     if (!p || !isConnected) return null;
 
     try {
-      const res = await p.query('DELETE FROM services WHERE id = $1 RETURNING *', [id]);
+      const res = await p.query(
+        'DELETE FROM services WHERE id = $1 OR name = $1 OR (name = $2 AND $2 IS NOT NULL AND $2 != \'\') RETURNING *',
+        [id, name || null]
+      );
       if (res.rows.length === 0) return null;
       return rowToService(res.rows[0]);
     } catch (err) {

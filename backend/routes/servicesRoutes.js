@@ -18,26 +18,33 @@ function getRequestingUser(req) {
   return { userId, userEmail };
 }
 
-function checkServiceOwnership(service, { userId, userEmail }) {
-  if (!userId && !userEmail) return true; // Internal or unrestricted
-  if (!service.userId && !service.userEmail) return true; // Unassigned legacy resources
-  if (userId && service.userId && service.userId === userId) return true;
-  if (userEmail && service.userEmail && service.userEmail.toLowerCase() === userEmail.toLowerCase()) return true;
-  // Primary account or admin accounts
-  const isPrimary = userId === 'usr_enterprise_dev' || 
-    (userEmail && (userEmail === 'alex.smith@example.com' || userEmail.includes('kathir') || userEmail.includes('admin') || userEmail.includes('owner')));
-  if (isPrimary) return true;
-  return true; // Self-hosted host: allow authorized resource management
+export function checkServiceOwnership(service, { userId, userEmail }) {
+  if (!service) return false;
+  if (!userId && !userEmail) return false;
+
+  const reqEmail = (userEmail || '').toLowerCase().trim();
+  const srvEmail = (service.userEmail || '').toLowerCase().trim();
+  const reqId = (userId || '').trim();
+  const srvId = (service.userId || '').trim();
+
+  // Strict match by userId
+  if (reqId && srvId && reqId === srvId) return true;
+
+  // Strict match by userEmail
+  if (reqEmail && srvEmail && reqEmail === srvEmail) return true;
+
+  return false;
 }
 
-// GET all services (isolated per user)
+// GET all services (strictly isolated per user account)
 servicesRouter.get('/', async (req, res) => {
   const { userId, userEmail } = getRequestingUser(req);
-  let services = (await storageService.getServices()) || [];
-
-  if (userId || userEmail) {
-    services = services.filter(s => checkServiceOwnership(s, { userId, userEmail }));
+  if (!userId && !userEmail) {
+    return res.json({ services: [] });
   }
+
+  const allServices = (await storageService.getServices()) || [];
+  const services = allServices.filter(s => checkServiceOwnership(s, { userId, userEmail }));
   res.json({ services });
 });
 
@@ -45,10 +52,10 @@ servicesRouter.get('/', async (req, res) => {
 servicesRouter.get('/:id', async (req, res) => {
   const { userId, userEmail } = getRequestingUser(req);
   const services = await storageService.getServices();
-  const service = services.find(s => s.id === req.params.id);
+  const service = services.find(s => s.id === req.params.id || s.name === req.params.id);
   if (!service) return res.status(404).json({ error: 'Service not found' });
 
-  if ((userId || userEmail) && !checkServiceOwnership(service, { userId, userEmail })) {
+  if (!checkServiceOwnership(service, { userId, userEmail })) {
     return res.status(403).json({ error: 'Access denied. You do not have permission to view this project.' });
   }
 
@@ -99,8 +106,17 @@ servicesRouter.post('/create', async (req, res) => {
     storageService.saveCustomHtmlSite(cleanName, defaultHtml);
 
     const { userId, userEmail } = getRequestingUser(req);
-    const assignedUserId = userId || 'usr_enterprise_dev';
-    const assignedUserEmail = userEmail || 'alex.smith@example.com';
+    if (!userId && !userEmail) {
+      return res.status(401).json({ error: 'Authentication required to create a project.' });
+    }
+    const assignedUserId = userId || '';
+    const assignedUserEmail = userEmail || '';
+
+    const existingServices = await storageService.getServices();
+    const existingSameName = existingServices.find(s => s.name === cleanName);
+    if (existingSameName && !checkServiceOwnership(existingSameName, { userId: assignedUserId, userEmail: assignedUserEmail })) {
+      return res.status(409).json({ error: `A project named "${cleanName}" already exists under another account. Please choose a different project name.` });
+    }
 
     const newResource = {
       id: 'srv-' + crypto.randomBytes(4).toString('hex'),

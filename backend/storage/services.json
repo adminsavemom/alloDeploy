@@ -1,74 +1,5 @@
 [
   {
-    "id": "srv-d55a3f9c",
-    "name": "neon-crest-982",
-    "type": "Application",
-    "status": "running",
-    "url": "https://neon-crest-982.pages.dev",
-    "liveDomain": "https://neon-crest-982.pages.dev",
-    "customDomain": "",
-    "domains": [],
-    "sslEnabled": false,
-    "forceHttps": true,
-    "port": 7622,
-    "region": "Global Edge",
-    "source": "Manual Upload (204 folder files)",
-    "gitRepo": "",
-    "gitUrl": "",
-    "gitBranch": "main",
-    "gitCommit": "",
-    "gitCommitMsg": "",
-    "gitAuthor": "",
-    "buildCommand": "",
-    "publishDir": "",
-    "autoDeploy": false,
-    "filesCount": 204,
-    "size": "7.7 MB",
-    "framework": "Static HTML Bundle",
-    "updatedAt": "Just now",
-    "createdAt": "2026-10-19 11:06",
-    "deployCount": 2,
-    "metrics": {
-      "cpu": "0.2%",
-      "memory": "7.7 MB",
-      "uptime": "100%"
-    },
-    "envVars": [],
-    "sampleFiles": [
-      "index.html",
-      "next.svg",
-      "vercel.svg",
-      "images/illustrations/characters-with-objects/1.png",
-      "images/illustrations/characters-with-objects/13.png",
-      "images/illustrations/characters-with-objects/7.png",
-      "images/illustrations/characters-with-objects/images.png",
-      "images/illustrations/characters-with-objects/Login.png",
-      "images/illustrations/characters-with-objects/Portal.png",
-      "images/avatars/1.png"
-    ],
-    "deploys": [
-      {
-        "id": "dep-1792407989824-syo9in",
-        "date": "Just now",
-        "hash": "3bb445",
-        "status": "running",
-        "message": "Deploy from bundle (204 files, 7.7 MB)",
-        "duration": "2.4s"
-      }
-    ],
-    "healthcheck": {
-      "path": "/",
-      "expectedStatus": 200,
-      "intervalSeconds": 30
-    },
-    "backups": [],
-    "templateType": "",
-    "userId": "usr_enterprise_dev",
-    "userEmail": "alex.smith@example.com",
-    "cloudflarePagesUrl": "https://neon-crest-982.pages.dev",
-    "cloudflareConnected": true
-  },
-  {
     "id": "srv-0fd2b9db",
     "name": "uyir-portal",
     "type": "Application",
@@ -104,7 +35,7 @@
     "framework": "React / Vite Admin Portal",
     "updatedAt": "Just now",
     "createdAt": "2026-10-19 03:40",
-    "deployCount": 6,
+    "deployCount": 7,
     "metrics": {
       "cpu": "0.2%",
       "memory": "7.7 MB",
@@ -123,10 +54,18 @@
     ],
     "deploys": [
       {
+        "id": "dep-89333bc8",
+        "date": "Just now",
+        "hash": "72f34c",
+        "status": "running",
+        "message": "Manual container redeploy triggered",
+        "duration": "2.4s"
+      },
+      {
         "id": "dep-4b803f74",
         "date": "Just now",
         "hash": "f58cb3",
-        "status": "running",
+        "status": "superseded",
         "message": "Manual container redeploy triggered",
         "duration": "2.4s"
       },
@@ -162,78 +101,9 @@
     },
     "backups": [],
     "templateType": "",
-    "userId": "usr_enterprise_dev",
-    "userEmail": "alex.smith@example.com",
+    "userId": "usr_30cea933a128",
+    "userEmail": "kathirkamadurai.s@gmail.com",
     "cloudflarePagesUrl": "https://uyir-portal.pages.dev",
-    "cloudflareConnected": true
-  },
-  {
-    "id": "srv-ac2b5ef4",
-    "name": "sonic-breeze-139",
-    "type": "Application",
-    "status": "running",
-    "url": "https://sonic-breeze-139.pages.dev",
-    "liveDomain": "https://sonic-breeze-139.pages.dev",
-    "customDomain": "",
-    "domains": [],
-    "sslEnabled": false,
-    "forceHttps": true,
-    "port": 5354,
-    "region": "Global Edge",
-    "source": "Manual Upload (204 folder files)",
-    "gitRepo": "",
-    "gitUrl": "",
-    "gitBranch": "main",
-    "gitCommit": "",
-    "gitCommitMsg": "",
-    "gitAuthor": "",
-    "buildCommand": "",
-    "publishDir": "",
-    "autoDeploy": false,
-    "filesCount": 204,
-    "size": "7.7 MB",
-    "framework": "Static HTML Bundle",
-    "updatedAt": "Just now",
-    "createdAt": "2026-10-17 08:31",
-    "deployCount": 2,
-    "metrics": {
-      "cpu": "0.2%",
-      "memory": "7.7 MB",
-      "uptime": "100%"
-    },
-    "envVars": [],
-    "sampleFiles": [
-      "index.html",
-      "next.svg",
-      "vercel.svg",
-      "images/illustrations/characters-with-objects/1.png",
-      "images/illustrations/characters-with-objects/13.png",
-      "images/illustrations/characters-with-objects/7.png",
-      "images/illustrations/characters-with-objects/images.png",
-      "images/illustrations/characters-with-objects/Login.png",
-      "images/illustrations/characters-with-objects/Portal.png",
-      "images/avatars/1.png"
-    ],
-    "deploys": [
-      {
-        "id": "dep-1792225866606-hcl2d2",
-        "date": "Just now",
-        "hash": "03cb26",
-        "status": "running",
-        "message": "Deploy from bundle (204 files, 7.7 MB)",
-        "duration": "2.4s"
-      }
-    ],
-    "healthcheck": {
-      "path": "/",
-      "expectedStatus": 200,
-      "intervalSeconds": 30
-    },
-    "backups": [],
-    "templateType": "",
-    "userId": "usr_enterprise_dev",
-    "userEmail": "alex.smith@example.com",
-    "cloudflarePagesUrl": "https://sonic-breeze-139.pages.dev",
     "cloudflareConnected": true
   }
 ]

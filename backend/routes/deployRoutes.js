@@ -92,8 +92,22 @@ deployRouter.post('/upload', upload.any(), async (req, res) => {
 
     const assignedPort = parseInt(req.body.port, 10) || (3000 + Math.floor(Math.random() * 5000));
 
+    const requestingUserId = (req.headers['x-user-id'] || req.body.userId || '').trim();
+    const requestingUserEmail = (req.headers['x-user-email'] || req.body.userEmail || '').toLowerCase().trim();
+
     const existingServices = await storageService.getServices();
-    const existing = existingServices.find(s => s.name === serviceName || (req.body.serviceId && s.id === req.body.serviceId));
+    const existingSameName = existingServices.find(s => s.name === serviceName || (req.body.serviceId && s.id === req.body.serviceId));
+
+    if (existingSameName) {
+      const isOwner = (requestingUserId && existingSameName.userId === requestingUserId) ||
+                      (requestingUserEmail && existingSameName.userEmail && existingSameName.userEmail.toLowerCase() === requestingUserEmail);
+      if (!isOwner) {
+        return res.status(409).json({
+          error: `A project named "${serviceName}" already exists under another account. Please choose a different project name.`
+        });
+      }
+    }
+    const existing = existingSameName;
 
     const targetDomainInit = req.body.cloudflareDomain || req.body.customDomain || (existing?.customDomain || '');
     const cfPagesUrl = `https://${serviceName}.pages.dev`;
@@ -101,14 +115,11 @@ deployRouter.post('/upload', upload.any(), async (req, res) => {
       ? (targetDomainInit.startsWith('http') ? targetDomainInit : `https://${targetDomainInit}`) 
       : (existing?.url || cfPagesUrl);
 
-    const requestingUserId = req.headers['x-user-id'] || req.body.userId || (existing?.userId || 'usr_enterprise_dev');
-    const requestingUserEmail = req.headers['x-user-email'] || req.body.userEmail || (existing?.userEmail || 'alex.smith@example.com');
-
     const newService = {
       ...(existing || {}),
       id: existing ? existing.id : ('srv-' + crypto.randomBytes(4).toString('hex')),
-      userId: requestingUserId,
-      userEmail: requestingUserEmail,
+      userId: requestingUserId || existing?.userId || '',
+      userEmail: requestingUserEmail || existing?.userEmail || '',
       name: serviceName,
       type: framework.includes('API') || framework.includes('Node') ? 'Web Service' : (existing?.type || 'Application'),
       status: 'running',
@@ -255,8 +266,22 @@ deployRouter.post('/github', async (req, res) => {
     const filesCount = extractedSource?.filesCount || 1;
     const sampleFiles = extractedSource?.sampleFiles || ['index.html'];
 
+    const requestingUserId = (req.headers['x-user-id'] || req.body.userId || '').trim();
+    const requestingUserEmail = (req.headers['x-user-email'] || req.body.userEmail || '').toLowerCase().trim();
+
     const existingServices = await storageService.getServices();
-    const existing = existingServices.find(s => s.name === cleanServiceName);
+    const existingSameName = existingServices.find(s => s.name === cleanServiceName);
+
+    if (existingSameName) {
+      const isOwner = (requestingUserId && existingSameName.userId === requestingUserId) ||
+                      (requestingUserEmail && existingSameName.userEmail && existingSameName.userEmail.toLowerCase() === requestingUserEmail);
+      if (!isOwner) {
+        return res.status(409).json({
+          error: `A project named "${cleanServiceName}" already exists under another account. Please choose a different project name.`
+        });
+      }
+    }
+    const existing = existingSameName;
 
     const cfPagesUrl = `https://${cleanServiceName}.pages.dev`;
     const targetDomainInit = req.body.cloudflareDomain || req.body.customDomain || (existing?.customDomain || '');
@@ -264,14 +289,11 @@ deployRouter.post('/github', async (req, res) => {
       ? (targetDomainInit.startsWith('http') ? targetDomainInit : `https://${targetDomainInit}`) 
       : (existing?.url || cfPagesUrl);
 
-    const requestingUserId = req.headers['x-user-id'] || req.body.userId || (existing?.userId || 'usr_enterprise_dev');
-    const requestingUserEmail = req.headers['x-user-email'] || req.body.userEmail || (existing?.userEmail || 'alex.smith@example.com');
-
     const newService = {
       ...(existing || {}),
       id: existing ? existing.id : ('srv-' + crypto.randomBytes(4).toString('hex')),
-      userId: requestingUserId,
-      userEmail: requestingUserEmail,
+      userId: requestingUserId || existing?.userId || '',
+      userEmail: requestingUserEmail || existing?.userEmail || '',
       name: cleanServiceName,
       type: repoInfo.language === 'JavaScript' || repoInfo.language === 'TypeScript' ? 'Application' : 'Web Service',
       status: 'building',

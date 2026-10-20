@@ -8,40 +8,27 @@ class StateStore {
   constructor() {
     this.listeners = new Set();
     
-    // Load saved session or set corporate default (non-admin example email)
-    const defaultUser = {
-      id: 'usr_enterprise_dev',
-      name: 'Alex Smith',
-      handle: 'alexsmith',
-      email: 'alex.smith@example.com',
-      avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=alex',
-      role: 'DevOps / Owner',
-      team: 'Engineering Team'
-    };
-
+    // Load saved session
     const savedUser = localStorage.getItem(STORAGE_KEY_USER);
     if (savedUser) {
       try {
         const u = JSON.parse(savedUser);
-        if (u && typeof u === 'object' && u.name) {
-          if (u.email && (u.email.includes('admin@') || u.email.includes('company.internal'))) {
-            u.email = 'alex.smith@example.com';
-            localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(u));
-          }
+        if (u && typeof u === 'object' && (u.email || u.id)) {
           this.user = u;
         } else {
-          this.user = defaultUser;
+          this.user = null;
         }
       } catch (e) {
-        this.user = defaultUser;
+        this.user = null;
       }
     } else {
-      this.user = defaultUser;
-      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(this.user));
+      this.user = null;
     }
 
     // Load user-scoped resources and projects
     this.services = [];
+    this.projects = [];
+    this.recentDeployments = [];
     this.loadUserScopedData();
 
     // Navigation State
@@ -51,30 +38,6 @@ class StateStore {
     this.currentEnvironment = 'production'; // 'production' | 'staging' | 'development'
     this.selectedServiceId = null;
     this.selectedDetailTab = 'overview'; // 'overview' | 'env' | 'logs' | 'deployments' | 'settings'
-
-    // alloDeploy Workspaces & Projects (Real user deployments only, no dummy data)
-    const savedProjects = localStorage.getItem('allodeploy_projects_list') || localStorage.getItem('coolify_projects_list');
-    let parsedProjects = null;
-    try {
-      parsedProjects = savedProjects ? JSON.parse(savedProjects) : null;
-      if (Array.isArray(parsedProjects)) {
-        parsedProjects = parsedProjects.filter(p => p && !p.id?.startsWith('proj-allo') && !p.id?.startsWith('proj-bio') && !p.id?.startsWith('proj-bwell') && !p.id?.startsWith('proj-field') && !p.id?.startsWith('proj-hoston') && !p.id?.startsWith('proj-integrator') && !p.id?.startsWith('proj-langaudio'));
-      }
-    } catch (e) {}
-    this.projects = Array.isArray(parsedProjects) ? parsedProjects : [];
-    this.persistProjects();
-
-    // alloDeploy Recent Completed Deployments (Real deployments only, no dummy data)
-    const savedRecent = localStorage.getItem('allodeploy_recent_deployments') || localStorage.getItem('coolify_recent_deployments');
-    let parsedRecent = null;
-    try {
-      parsedRecent = savedRecent ? JSON.parse(savedRecent) : null;
-      if (Array.isArray(parsedRecent)) {
-        parsedRecent = parsedRecent.filter(d => d && !d.application?.includes('openmadurai') && !d.application?.includes('language-and-audio'));
-      }
-    } catch (e) {}
-    this.recentDeployments = Array.isArray(parsedRecent) ? parsedRecent : [];
-    this.persistRecentDeployments();
     
     // Modals
     this.isDeployModalOpen = false;
@@ -139,12 +102,19 @@ class StateStore {
   }
 
   loadUserScopedData() {
-    const userKey = this.user?.id || 'usr_enterprise_dev';
-    const isPrimaryUser = userKey === 'usr_enterprise_dev' || this.user?.email === 'alex.smith@example.com' || (this.user?.email && this.user.email.includes('kathir'));
+    if (!this.user) {
+      this.services = [];
+      this.projects = [];
+      this.recentDeployments = [];
+      return;
+    }
+
+    const userKey = this.user?.id || '';
+    const userEmail = (this.user?.email || '').toLowerCase().trim();
 
     // 1. Scoped Services
     const scopedServicesKey = `${STORAGE_KEY_SERVICES}_${userKey}`;
-    const rawSaved = localStorage.getItem(scopedServicesKey) || (isPrimaryUser ? localStorage.getItem(STORAGE_KEY_SERVICES) : null);
+    const rawSaved = localStorage.getItem(scopedServicesKey);
     let parsedServices = null;
     try {
       parsedServices = rawSaved ? JSON.parse(rawSaved) : null;
@@ -159,23 +129,18 @@ class StateStore {
       'supabase-pg-vault',
       'test-git-app'
     ]);
-    const cleanServices = (parsedServices || []).filter(s => 
-      s && 
-      !fakeNames.has(s.name) && 
-      s.id !== 'srv-09f762b9' &&
-      s.name !== 'allodeploy-web-app' &&
-      !s.id?.startsWith('srv-nebula') && 
-      !s.id?.startsWith('srv-synthwave') && 
-      !s.id?.startsWith('srv-zenith') && 
-      !s.id?.startsWith('srv-uqey') && 
-      !s.id?.startsWith('srv-winek') &&
-      !s.id?.startsWith('srv-postgres') &&
-      (
-        (s.userId && s.userId === this.user?.id) ||
-        (s.userEmail && this.user?.email && s.userEmail.toLowerCase() === this.user.email.toLowerCase()) ||
-        (!s.userId && isPrimaryUser)
-      )
-    );
+    const cleanServices = (parsedServices || []).filter(s => {
+      if (!s || fakeNames.has(s.name) || s.id === 'srv-09f762b9' || s.name === 'allodeploy-web-app') return false;
+      if (s.id?.startsWith('srv-nebula') || s.id?.startsWith('srv-synthwave') || s.id?.startsWith('srv-zenith') || s.id?.startsWith('srv-uqey') || s.id?.startsWith('srv-winek') || s.id?.startsWith('srv-postgres')) return false;
+
+      const srvUserId = (s.userId || '').trim();
+      const srvEmail = (s.userEmail || '').toLowerCase().trim();
+
+      // Strict account-based matching only
+      if (userKey && srvUserId && srvUserId === userKey) return true;
+      if (userEmail && srvEmail && srvEmail === userEmail) return true;
+      return false;
+    });
 
     cleanServices.forEach(s => {
       const cfUrl = `https://${s.name}.pages.dev`;
@@ -192,21 +157,29 @@ class StateStore {
     this.services = cleanServices;
 
     // 2. Scoped Projects
-    const rawProjects = localStorage.getItem(`allodeploy_projects_list_${userKey}`) || 
-      (isPrimaryUser ? localStorage.getItem('allodeploy_projects_list') : null);
+    const rawProjects = localStorage.getItem(`allodeploy_projects_list_${userKey}`);
     try {
       const pList = rawProjects ? JSON.parse(rawProjects) : [];
-      this.projects = Array.isArray(pList) ? pList.filter(p => !p.userId || p.userId === this.user?.id || isPrimaryUser) : [];
+      this.projects = Array.isArray(pList) ? pList.filter(p => {
+        if (!p) return false;
+        const pUserId = (p.userId || '').trim();
+        const pEmail = (p.userEmail || '').toLowerCase().trim();
+        return (userKey && pUserId === userKey) || (userEmail && pEmail === userEmail);
+      }) : [];
     } catch (e) {
       this.projects = [];
     }
 
     // 3. Scoped Recent Deployments
-    const rawRecent = localStorage.getItem(`allodeploy_recent_deployments_${userKey}`) || 
-      (isPrimaryUser ? localStorage.getItem('allodeploy_recent_deployments') : null);
+    const rawRecent = localStorage.getItem(`allodeploy_recent_deployments_${userKey}`);
     try {
       const rList = rawRecent ? JSON.parse(rawRecent) : [];
-      this.recentDeployments = Array.isArray(rList) ? rList.filter(d => !d.userId || d.userId === this.user?.id || isPrimaryUser) : [];
+      this.recentDeployments = Array.isArray(rList) ? rList.filter(d => {
+        if (!d) return false;
+        const dUserId = (d.userId || '').trim();
+        const dEmail = (d.userEmail || '').toLowerCase().trim();
+        return (userKey && dUserId === userKey) || (userEmail && dEmail === userEmail);
+      }) : [];
     } catch (e) {
       this.recentDeployments = [];
     }
@@ -449,16 +422,21 @@ class StateStore {
           'zenith-dashboard-ui',
           'supabase-pg-vault'
         ]);
-        const cleanServices = (data.services || []).filter(s => 
-          s && 
-          !fakeNames.has(s.name) && 
-          !s.id?.startsWith('srv-nebula') && 
-          !s.id?.startsWith('srv-synthwave') && 
-          !s.id?.startsWith('srv-zenith') && 
-          !s.id?.startsWith('srv-uqey') && 
-          !s.id?.startsWith('srv-winek') &&
-          !s.id?.startsWith('srv-postgres')
-        );
+        const currentUserId = (this.user?.id || '').trim();
+        const currentUserEmail = (this.user?.email || '').toLowerCase().trim();
+
+        const cleanServices = (data.services || []).filter(s => {
+          if (!s || fakeNames.has(s.name)) return false;
+          if (s.id?.startsWith('srv-nebula') || s.id?.startsWith('srv-synthwave') || s.id?.startsWith('srv-zenith') || s.id?.startsWith('srv-uqey') || s.id?.startsWith('srv-winek') || s.id?.startsWith('srv-postgres')) return false;
+
+          const srvUserId = (s.userId || '').trim();
+          const srvEmail = (s.userEmail || '').toLowerCase().trim();
+
+          // Account-based check
+          if (currentUserId && srvUserId && srvUserId === currentUserId) return true;
+          if (currentUserEmail && srvEmail && srvEmail === currentUserEmail) return true;
+          return false;
+        });
         cleanServices.forEach(s => {
           const cfUrl = `https://${s.name}.pages.dev`;
           if (!s.url || s.url.includes('localhost') || s.url.includes('allodeploy.app')) {
@@ -821,6 +799,10 @@ class StateStore {
 
   addService(newService) {
     if (!newService) return;
+    if (this.user) {
+      newService.userId = newService.userId || this.user.id || '';
+      newService.userEmail = newService.userEmail || this.user.email || '';
+    }
     const cfUrl = `https://${newService.name}.pages.dev`;
     if (!newService.url || newService.url.includes('localhost') || newService.url.includes('allodeploy.app')) {
       newService.url = newService.customDomain 
@@ -1776,33 +1758,24 @@ class StateStore {
 
   persistServices() {
     try {
-      const userKey = this.user?.id || 'usr_enterprise_dev';
-      const isPrimary = userKey === 'usr_enterprise_dev' || this.user?.email === 'alex.smith@example.com' || (this.user?.email && this.user.email.includes('kathir'));
+      if (!this.user?.id) return;
+      const userKey = this.user.id;
       localStorage.setItem(`${STORAGE_KEY_SERVICES}_${userKey}`, JSON.stringify(this.services));
-      if (isPrimary) {
-        localStorage.setItem(STORAGE_KEY_SERVICES, JSON.stringify(this.services));
-      }
     } catch (e) {
       console.warn('Failed to persist services to localStorage:', e);
     }
   }
 
   persistProjects() {
-    const userKey = this.user?.id || 'usr_enterprise_dev';
-    const isPrimary = userKey === 'usr_enterprise_dev' || this.user?.email === 'alex.smith@example.com' || (this.user?.email && this.user.email.includes('kathir'));
+    if (!this.user?.id) return;
+    const userKey = this.user.id;
     localStorage.setItem(`allodeploy_projects_list_${userKey}`, JSON.stringify(this.projects));
-    if (isPrimary) {
-      localStorage.setItem('allodeploy_projects_list', JSON.stringify(this.projects));
-    }
   }
 
   persistRecentDeployments() {
-    const userKey = this.user?.id || 'usr_enterprise_dev';
-    const isPrimary = userKey === 'usr_enterprise_dev' || this.user?.email === 'alex.smith@example.com' || (this.user?.email && this.user.email.includes('kathir'));
+    if (!this.user?.id) return;
+    const userKey = this.user.id;
     localStorage.setItem(`allodeploy_recent_deployments_${userKey}`, JSON.stringify(this.recentDeployments));
-    if (isPrimary) {
-      localStorage.setItem('allodeploy_recent_deployments', JSON.stringify(this.recentDeployments));
-    }
   }
 
   addProject(project) {
@@ -1813,8 +1786,8 @@ class StateStore {
       foldersCount: project.foldersCount || 1,
       resourcesCount: project.resourcesCount || 0,
       environment: project.environment || this.currentEnvironment || 'production',
-      userId: this.user?.id || 'usr_enterprise_dev',
-      userEmail: this.user?.email || 'alex.smith@example.com',
+      userId: this.user?.id || '',
+      userEmail: this.user?.email || '',
       createdAt: new Date().toISOString()
     };
     this.projects.unshift(cleanProj);
@@ -1832,8 +1805,8 @@ class StateStore {
       server: dep.server || 'localhost',
       status: dep.status || 'Success',
       started: dep.started || 'Just now',
-      userId: this.user?.id || 'usr_enterprise_dev',
-      userEmail: this.user?.email || 'alex.smith@example.com',
+      userId: this.user?.id || '',
+      userEmail: this.user?.email || '',
       timestamp: Date.now()
     };
     this.recentDeployments.unshift(record);

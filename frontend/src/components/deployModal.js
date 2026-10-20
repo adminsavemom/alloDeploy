@@ -395,30 +395,6 @@ export function renderDeployModal(container) {
         </div>
       `}
 
-      <!-- Step 3: Direct Deploy Action Banner -->
-      <div style="display: flex; align-items: center; justify-content: flex-end; gap: 14px; background: rgba(99, 102, 241, 0.04); border: 1px solid rgba(99, 102, 241, 0.15); border-radius: var(--radius-md); padding: 12px 16px; flex-wrap: wrap;">
-
-        <button
-          type="button"
-          class="btn btn-primary"
-          id="btn-trigger-direct-deploy"
-          ${!canDeploy ? 'disabled' : ''}
-          style="${canDeploy
-            ? 'background: linear-gradient(135deg, #7c3aed, #a855f7); font-weight: 700; padding: 11px 22px; font-size: 14px; box-shadow: 0 4px 18px rgba(124, 58, 237, 0.4); border: 1px solid rgba(255,255,255,0.2); cursor: pointer;'
-            : 'opacity: 0.45; cursor: not-allowed; background: #334155; border-color: transparent; font-weight: 600; padding: 11px 22px;'}"
-        >
-          <span>🚀</span>
-          <span>
-            ${!droppedFilesInfo 
-              ? 'Choose a Folder to Deploy' 
-              : !isNameValid 
-                ? 'Enter Valid Project Name' 
-                : !droppedFilesInfo.hasIndexHtml 
-                  ? 'Missing Root index.html' 
-                  : 'Deploy to Cloudflare Pages'}
-          </span>
-        </button>
-      </div>
 
       <!-- Optional Advanced Settings Accordion -->
       <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
@@ -1317,9 +1293,8 @@ export function renderDeployModal(container) {
         const isFolderReady = droppedFilesInfo && droppedFilesInfo.hasIndexHtml === true;
         const canDeploy = valid && isFolderReady;
 
-        const btnBody = container.querySelector('#btn-trigger-direct-deploy');
         const btnFoot = container.querySelector('#btn-start-deployment-drop');
-        [btnBody, btnFoot].forEach(btn => {
+        [btnFoot].forEach(btn => {
           if (!btn) return;
           btn.disabled = !canDeploy;
           if (canDeploy) {
@@ -1426,7 +1401,6 @@ export function renderDeployModal(container) {
       startLiveDeployment();
     };
 
-    container.querySelector('#btn-trigger-direct-deploy')?.addEventListener('click', triggerDirectDeploy);
     container.querySelector('#btn-start-deployment-drop')?.addEventListener('click', triggerDirectDeploy);
 
     // GitHub Section Events
@@ -2269,6 +2243,12 @@ export function renderDeployModal(container) {
               formData.append('cloudflareZoneId', cfZoneId || '');
               formData.append('cloudflareProxied', cfProxied);
             }
+            if (store.user?.id) {
+              formData.append('userId', store.user.id);
+            }
+            if (store.user?.email) {
+              formData.append('userEmail', store.user.email);
+            }
 
             if (droppedFilesInfo?.rawFiles && droppedFilesInfo.rawFiles.length > 0) {
               droppedFilesInfo.rawFiles.forEach(({ file, path }) => {
@@ -2418,6 +2398,8 @@ export function renderDeployModal(container) {
         clearInterval(deployInterval);
         newServiceCreated = {
           id: 'srv-' + Math.random().toString(36).substr(2, 6),
+          userId: store.user?.id || '',
+          userEmail: store.user?.email || '',
           name: serviceName,
           type: 'Application',
           status: 'running',

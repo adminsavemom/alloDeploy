@@ -359,36 +359,10 @@ export function openCustomDomainModal(serviceId) {
 
 
 
-        <!-- Cloudflare Edge & Custom Hostnames SaaS Routing -->
-        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 12px 14px; font-size: 12px;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-            <span style="font-weight: 600; color: #a1a1aa; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Cloudflare Edge & SaaS Origin Routing</span>
-            ${isDomainActive ? `
-              <span class="badge" style="background: rgba(34,197,94,0.18); color: #22c55e; border: 1px solid rgba(34,197,94,0.4); font-size: 10px; padding: 2px 7px;">
-                ● Active & SSL Ready
-              </span>
-            ` : `
-              <span class="badge" style="background: rgba(245,158,11,0.18); color: #f59e0b; border: 1px solid rgba(245,158,11,0.4); font-size: 10px; padding: 2px 7px;">
-                ⏳ DNS Verification Pending
-              </span>
-            `}
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
-            <div>
-              <label style="font-size: 11px; color: #71717a; display: block; margin-bottom: 3px;">Origin Server (<code>custom_origin_server</code>)</label>
-              <input type="text" id="domain-origin-server" class="domain-input" style="font-size: 12px; padding: 6px 10px;" placeholder="e.g. origin.example.com" value="${srv.customOriginServer || ''}" />
-            </div>
-            <div>
-              <label style="font-size: 11px; color: #71717a; display: block; margin-bottom: 3px;">Origin SNI (<code>custom_origin_sni</code>)</label>
-              <input type="text" id="domain-origin-sni" class="domain-input" style="font-size: 12px; padding: 6px 10px;" placeholder="e.g. sni.example.com" value="${srv.customOriginSni || ''}" />
-            </div>
-          </div>
-
-          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #71717a; background: rgba(0,0,0,0.3); padding: 6px 10px; border-radius: 4px;">
-            <span>CNAME Target: <strong style="color: #38bdf8;">${targetCname}</strong></span>
-            <button type="button" class="btn btn-secondary btn-xs" id="btn-modal-copy-cname" style="padding: 2px 6px; font-size: 10px;">Copy CNAME</button>
-          </div>
+        <!-- CNAME Target Info -->
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; color: #94a3b8; background: rgba(0,0,0,0.35); padding: 10px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06); margin-top: 14px;">
+          <span>CNAME Target: <strong style="color: #38bdf8; font-family: var(--font-mono);">${targetCname}</strong></span>
+          <button type="button" class="btn btn-secondary btn-xs" id="btn-modal-copy-cname" style="padding: 3px 8px; font-size: 11px;">Copy CNAME</button>
         </div>
       </div>
 

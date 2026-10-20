@@ -304,12 +304,62 @@ function openProjectSettingsModal(projectName) {
   });
 }
 
+export async function copyTextToClipboard(text) {
+  if (!text) return false;
+  // 1. Try modern navigator.clipboard
+  if (navigator?.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (err) {
+      console.warn('navigator.clipboard.writeText error, attempting fallback:', err);
+    }
+  }
+
+  // 2. Fallback: temporary textarea + document.execCommand('copy')
+  try {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.top = '0';
+    textArea.style.left = '0';
+    textArea.style.width = '2em';
+    textArea.style.height = '2em';
+    textArea.style.padding = '0';
+    textArea.style.border = 'none';
+    textArea.style.outline = 'none';
+    textArea.style.boxShadow = 'none';
+    textArea.style.background = 'transparent';
+    textArea.setAttribute('readonly', '');
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    textArea.setSelectionRange(0, 99999);
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textArea);
+    if (successful) return true;
+  } catch (err) {
+    console.warn('execCommand copy fallback error:', err);
+  }
+
+  // 3. Fallback prompt
+  try {
+    window.prompt('Copy CNAME target to clipboard (Ctrl+C / Cmd+C):', text);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
 export function openCustomDomainModal(serviceId) {
   const existing = document.getElementById('custom-domain-modal-backdrop');
   if (existing) existing.remove();
 
-  const srv = store.services.find(s => s.id === serviceId);
-  if (!srv) return;
+  const srv = store.services.find(s => s.id === serviceId || s.name === serviceId);
+  if (!srv) {
+    store.showToast('Resource not found', 'error');
+    return;
+  }
 
   const currentProtocol = srv.protocol || 'http';
   const currentDomain = srv.customDomain || srv.generatedHostname || `${srv.name}.pages.dev`;
@@ -361,8 +411,8 @@ export function openCustomDomainModal(serviceId) {
 
         <!-- CNAME Target Info -->
         <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; color: #94a3b8; background: rgba(0,0,0,0.35); padding: 10px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06); margin-top: 14px;">
-          <span>CNAME Target: <strong style="color: #38bdf8; font-family: var(--font-mono);">${targetCname}</strong></span>
-          <button type="button" class="btn btn-secondary btn-xs" id="btn-modal-copy-cname" style="padding: 3px 8px; font-size: 11px;">Copy CNAME</button>
+          <span>CNAME Target: <strong id="cname-target-text" style="color: #38bdf8; font-family: var(--font-mono); user-select: all;">${targetCname}</strong></span>
+          <button type="button" class="btn btn-secondary btn-xs" id="btn-modal-copy-cname" style="padding: 4px 10px; font-size: 11px; cursor: pointer; transition: all 0.2s ease;">Copy CNAME</button>
         </div>
       </div>
 
@@ -382,11 +432,28 @@ export function openCustomDomainModal(serviceId) {
     if (e.target === modal) close();
   });
 
-  modal.querySelector('#btn-modal-copy-cname')?.addEventListener('click', () => {
-    navigator.clipboard.writeText(targetCname).then(() => {
-      store.showToast(`Copied CNAME target: ${targetCname}`, 'success');
+  const copyBtn = modal.querySelector('#btn-modal-copy-cname');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const success = await copyTextToClipboard(targetCname);
+      if (success) {
+        store.showToast(`Copied CNAME target: ${targetCname}`, 'success');
+        const origText = copyBtn.textContent;
+        copyBtn.textContent = '✓ Copied!';
+        copyBtn.style.color = '#4ade80';
+        copyBtn.style.borderColor = 'rgba(74, 222, 128, 0.4)';
+        setTimeout(() => {
+          copyBtn.textContent = origText;
+          copyBtn.style.color = '';
+          copyBtn.style.borderColor = '';
+        }, 2000);
+      } else {
+        store.showToast(`CNAME target: ${targetCname}`, 'info');
+      }
     });
-  });
+  }
 
   // Regenerate Hostname handler
   modal.querySelector('#btn-regenerate-hostname')?.addEventListener('click', async () => {
@@ -1832,13 +1899,17 @@ function bindProjectsEvents(container) {
 
   // Copy CNAME target button
   container.querySelectorAll('.btn-copy-cname').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', async (e) => {
       e.stopPropagation();
       const cname = e.currentTarget.dataset.cname;
       if (cname) {
-        navigator.clipboard.writeText(cname).then(() => {
+        const success = await copyTextToClipboard(cname);
+        if (success) {
           store.showToast(`Copied CNAME target: ${cname} — add this record in your domain DNS manager!`, 'success');
-        });
+          const orig = btn.innerText;
+          btn.innerText = '✓ Copied!';
+          setTimeout(() => { btn.innerText = orig; }, 2000);
+        }
       }
     });
   });

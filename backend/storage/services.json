@@ -1,5 +1,97 @@
 [
   {
+    "id": "srv-37af0ce5",
+    "name": "clean-forge-876",
+    "type": "Application",
+    "status": "running",
+    "url": "https://testuyir.allokonnect.com",
+    "liveDomain": "https://testuyir.allokonnect.com",
+    "customDomain": "testuyir.allokonnect.com",
+    "domains": [
+      {
+        "domain": "testuyir.allokonnect.com",
+        "sslStatus": "disabled",
+        "forceHttps": false,
+        "customOriginSni": "",
+        "customOriginServer": ""
+      }
+    ],
+    "sslEnabled": false,
+    "forceHttps": true,
+    "port": 7171,
+    "region": "Frankfurt (eu-central-1)",
+    "source": "Manual Upload (205 folder files)",
+    "gitRepo": "",
+    "gitUrl": "",
+    "gitBranch": "main",
+    "gitCommit": "",
+    "gitCommitMsg": "",
+    "gitAuthor": "",
+    "buildCommand": "",
+    "publishDir": "",
+    "autoDeploy": false,
+    "filesCount": 205,
+    "size": "7.7 MB",
+    "framework": "Static HTML Bundle",
+    "updatedAt": "Just now",
+    "createdAt": "2026-10-20 08:50",
+    "deployCount": 3,
+    "metrics": {
+      "cpu": "0.2%",
+      "memory": "7.7 MB",
+      "uptime": "100%"
+    },
+    "envVars": [
+      {
+        "key": "VARIABLE_01",
+        "value": "sadafdaf",
+        "isSecret": false,
+        "isBuildSecret": false
+      }
+    ],
+    "sampleFiles": [
+      "index.html",
+      "next.svg",
+      "vercel.svg",
+      "_redirects",
+      "images/illustrations/characters-with-objects/1.png",
+      "images/illustrations/characters-with-objects/13.png",
+      "images/illustrations/characters-with-objects/7.png",
+      "images/illustrations/characters-with-objects/images.png",
+      "images/illustrations/characters-with-objects/Login.png",
+      "images/illustrations/characters-with-objects/Portal.png"
+    ],
+    "deploys": [
+      {
+        "id": "dep-9d921f1d",
+        "date": "Just now",
+        "hash": "1953eb",
+        "status": "running",
+        "message": "Manual container redeploy triggered",
+        "duration": "2.4s"
+      },
+      {
+        "id": "dep-1792486225055-c46ldp",
+        "date": "Just now",
+        "hash": "92a38e",
+        "status": "superseded",
+        "message": "Deploy from bundle (205 files, 7.7 MB)",
+        "duration": "2.4s"
+      }
+    ],
+    "healthcheck": {
+      "path": "/",
+      "expectedStatus": 200,
+      "intervalSeconds": 30
+    },
+    "backups": [],
+    "templateType": "",
+    "userId": "usr_1da2b0966b89",
+    "userEmail": "gamingspidyff@gmail.com",
+    "cloudflarePagesUrl": "https://clean-forge-876.pages.dev",
+    "cloudflareConnected": true
+  },
+  {
     "id": "srv-0fd2b9db",
     "name": "uyir-portal",
     "type": "Application",

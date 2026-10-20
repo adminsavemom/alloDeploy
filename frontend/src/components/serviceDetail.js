@@ -1,6 +1,6 @@
 import { icons } from '../icons.js';
 import { store } from '../state.js';
-import { openCustomDomainModal } from './dashboard.js';
+import { openCustomDomainModal, copyTextToClipboard } from './dashboard.js';
 
 function timeAgo(dateInput) {
   if (!dateInput) return 'Recently';
@@ -106,14 +106,6 @@ export function renderServiceDetail(container) {
             <span>Back to Projects / ${service.name}</span>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-faint);">
-            <span style="font-family: var(--font-mono);">UUID: ${service.id}</span>
-            <span>•</span>
-            <span class="coolify-chip ${isRunning ? 'chip-running' : 'chip-stopped'}">
-              <span class="coolify-dot ${isRunning ? 'dot-running' : 'dot-stopped'}"></span>
-              ${isRunning ? 'RUNNING' : 'STOPPED'}
-            </span>
-          </div>
         </div>
 
         <!-- Resource Header (Clean Title, No Application/Framework Badges) -->
@@ -488,7 +480,10 @@ export function renderServiceDetail(container) {
                 <tr>
                   <td style="padding: 10px 14px; font-weight: 600; color: #f59e0b;">CNAME</td>
                   <td style="padding: 10px 14px; font-family: var(--font-mono); color: #f8fafc;">${service.customDomain ? service.customDomain.split('.')[0] : 'app'}</td>
-                  <td style="padding: 10px 14px; font-family: var(--font-mono); color: #38bdf8;">${service.name}.pages.dev</td>
+                  <td style="padding: 10px 14px; font-family: var(--font-mono); color: #38bdf8; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                    <span>${service.name}.pages.dev</span>
+                    <button type="button" class="btn btn-secondary btn-xs btn-copy-cname-table" data-cname="${service.name}.pages.dev" style="padding: 2px 8px; font-size: 11px; cursor: pointer;">Copy</button>
+                  </td>
                   <td style="padding: 10px 14px; color: #f97316;">Proxied (Orange Cloud)</td>
                 </tr>
               </tbody>
@@ -837,6 +832,22 @@ export function renderServiceDetail(container) {
         e.stopPropagation();
         const id = btn.getAttribute('data-id') || service.id;
         openCustomDomainModal(id);
+      });
+    });
+
+    container.querySelectorAll('.btn-copy-cname-table').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const cname = btn.getAttribute('data-cname');
+        if (cname) {
+          const success = await copyTextToClipboard(cname);
+          if (success) {
+            store.showToast(`Copied CNAME target: ${cname}`, 'success');
+            const orig = btn.innerText;
+            btn.innerText = '✓ Copied!';
+            setTimeout(() => { btn.innerText = orig; }, 2000);
+          }
+        }
       });
     });
 

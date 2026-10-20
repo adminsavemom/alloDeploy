@@ -124,15 +124,15 @@ export function renderDeployModal(container) {
       : step === 'configure'
         ? 'Review & Configure Deployment'
         : step === 'deploying'
-          ? 'Deploying to Cloudflare Pages Edge'
+          ? 'Deploying to AlloDeploy Edge'
           : 'Deployment Successfully Published!';
 
     const subText = step === 'drop'
-      ? (isUpdatingExisting ? `Upload new files to update project "${store.targetServiceName}"` : 'Deploy your static website or built dist folder directly to Cloudflare Pages Anycast edge.')
+      ? (isUpdatingExisting ? `Upload new files to update project "${store.targetServiceName}"` : 'Deploy your static website or built dist folder directly to AlloDeploy Edge.')
       : step === 'configure'
         ? (deploySourceType === 'github' ? `Repository: ${selectedGithubRepo?.full_name || serviceName} · Branch: ${selectedBranch}` : '')
         : step === 'deploying'
-          ? `Deploying "${serviceName}" to Cloudflare Pages global network...`
+          ? `Deploying "${serviceName}" to AlloDeploy global network...`
           : (newServiceCreated?.cloudflarePagesUrl || `https://${serviceName}.pages.dev`);
 
     const isNameValid = isUpdatingExisting ? true : isValidProjectName(serviceName);
@@ -186,7 +186,7 @@ export function renderDeployModal(container) {
               ${activeTab === 'drop' ? `
                 <button class="btn btn-primary" id="btn-start-deployment-drop" ${!canDirectDeploy ? 'disabled style="opacity: 0.45; cursor: not-allowed; background: #334155;"' : 'style="background: linear-gradient(135deg, #7c3aed, #a855f7); font-weight: 600; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);"'}>
                   <span>🚀</span>
-                  <span>${!droppedFilesInfo ? 'Choose Folder to Deploy' : (!isNameValid ? 'Enter Valid Project Name' : (!droppedFilesInfo.hasIndexHtml ? 'Missing Root index.html' : (isUpdatingExisting ? `Deploy to ${store.targetServiceName}` : 'Deploy to Cloudflare Pages')))}</span>
+                  <span>${!droppedFilesInfo ? 'Choose Folder to Deploy' : (!isNameValid ? 'Enter Valid Project Name' : (!droppedFilesInfo.hasIndexHtml ? 'Missing Root index.html' : (isUpdatingExisting ? `Deploy to ${store.targetServiceName}` : 'Deploy to AlloDeploy')))}</span>
                 </button>
               ` : ''}
             ` : ''}
@@ -197,7 +197,7 @@ export function renderDeployModal(container) {
               </button>
               <button class="btn btn-primary" id="btn-start-deployment" ${deploySourceType === 'upload' && droppedFilesInfo && droppedFilesInfo.hasIndexHtml === false ? 'disabled style="opacity: 0.5; cursor: not-allowed; background: #64748b;"' : 'style="background: linear-gradient(135deg, #7c3aed, #a855f7); font-weight: 600; padding: 10px 20px;"'}>
                 ${icons.zap}
-                <span>${deploySourceType === 'github' ? 'Build & Deploy from GitHub' : (deploySourceType === 'upload' && droppedFilesInfo && droppedFilesInfo.hasIndexHtml === false ? 'Missing Root index.html' : 'Deploy to Cloudflare Pages')}</span>
+                <span>${deploySourceType === 'github' ? 'Build & Deploy from GitHub' : (deploySourceType === 'upload' && droppedFilesInfo && droppedFilesInfo.hasIndexHtml === false ? 'Missing Root index.html' : 'Deploy to AlloDeploy')}</span>
               </button>
             ` : ''}
 
@@ -367,7 +367,7 @@ export function renderDeployModal(container) {
 
           ${!droppedFilesInfo.hasIndexHtml ? `
             <div style="margin-top: 12px; padding: 10px 14px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 6px; font-size: 12px; color: #fca5a5;">
-              <strong>Missing Entrypoint:</strong> Cloudflare Pages requires an <code>index.html</code> at the root of the uploaded directory. Please select your built distribution folder (e.g., <code>dist/</code>, <code>build/</code>, or <code>out/</code>) which contains your <code>index.html</code>.
+              <strong>Missing Entrypoint:</strong> AlloDeploy requires an <code>index.html</code> at the root of the uploaded directory. Please select your built distribution folder (e.g., <code>dist/</code>, <code>build/</code>, or <code>out/</code>) which contains your <code>index.html</code>.
             </div>
           ` : ''}
 
@@ -424,7 +424,7 @@ export function renderDeployModal(container) {
       <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
         <button type="button" id="btn-toggle-advanced-drop" style="background: none; border: none; color: #94a3b8; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 0;">
           <span>⚙️</span>
-          <span style="text-decoration: underline;">Advanced Cloudflare & Custom Domain Settings</span>
+          <span style="text-decoration: underline;">Advanced AlloDeploy & Custom Domain Settings</span>
           <span id="adv-caret">▾</span>
         </button>
 
@@ -435,7 +435,7 @@ export function renderDeployModal(container) {
               <input type="text" id="drop-cfg-cf-domain" class="auth-input" placeholder="e.g. app.mydomain.com" value="${cfDomain}" style="font-family: var(--font-mono); font-size: 12.5px; width: 100%;" />
             </div>
             <div>
-              <label style="font-size: 11.5px; color: var(--text-muted); display: block; margin-bottom: 4px;">Cloudflare DNS Zone</label>
+              <label style="font-size: 11.5px; color: var(--text-muted); display: block; margin-bottom: 4px;">AlloDeploy DNS Zone</label>
               <select id="drop-cfg-cf-zone" style="font-size: 12.5px; width: 100%;">
                 <option value="">Default Account Managed Zone</option>
                 ${(store.cloudflareZones || []).map(z => `<option value="${z.id}" ${z.id === cfZoneId ? 'selected' : ''}>${z.name}</option>`).join('')}
@@ -760,30 +760,30 @@ export function renderDeployModal(container) {
           </span>
         </div>
 
-        <!-- Cloudflare API Hosting & Edge Automation -->
-        <div class="cf-deploy-hosting-box" style="background: rgba(246, 130, 31, 0.06); border: 1px solid rgba(246, 130, 31, 0.35); border-radius: var(--radius-md); padding: 16px 18px;">
+        <!-- AlloDeploy API Hosting & Edge Automation -->
+        <div class="cf-deploy-hosting-box" style="background: rgba(168, 85, 247, 0.06); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: var(--radius-md); padding: 16px 18px;">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
             <div style="display: flex; align-items: center; gap: 10px;">
-              <span style="font-size: 20px;">☁️</span>
+              <span style="font-size: 20px;">⚡</span>
               <div>
-                <div style="font-size: 14px; font-weight: 700; color: #fff;">Cloudflare Pages & Edge Deployment Pipeline</div>
-                <div style="font-size: 12px; color: #94a3b8;">Automated build & distribution via Cloudflare API across 300+ edge data centers</div>
+                <div style="font-size: 14px; font-weight: 700; color: #fff;">AlloDeploy Edge Deployment Pipeline</div>
+                <div style="font-size: 12px; color: #94a3b8;">Automated build & distribution via AlloDeploy Edge Network</div>
               </div>
             </div>
-            <span class="badge" style="background: rgba(246, 130, 31, 0.18); color: #f6821f; border: 1px solid rgba(246, 130, 31, 0.4); font-size: 11px; font-weight: 600;">
-              ☁️ Cloudflare Pages API
+            <span class="badge" style="background: rgba(168, 85, 247, 0.18); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); font-size: 11px; font-weight: 600;">
+              ⚡ AlloDeploy Engine
             </span>
           </div>
 
           ${store.cloudflareConfig?.hasToken ? `
-            <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(246, 130, 31, 0.25); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
               <div>
-                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: #f6821f; font-weight: 700;">Target Live Cloudflare Link:</div>
-                <div style="font-family: var(--font-mono); font-size: 13.5px; color: #38bdf8; font-weight: 600;">
+                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: #c084fc; font-weight: 700;">Target Live AlloDeploy Link:</div>
+                <div style="font-family: var(--font-mono); font-size: 13.5px; color: #c084fc; font-weight: 600;">
                   https://${serviceName}.pages.dev
                 </div>
               </div>
-              <span class="badge badge-live" style="font-size: 10.5px;">Cloudflare API Connected</span>
+              <span class="badge badge-live" style="font-size: 10.5px;">AlloDeploy Connected</span>
             </div>
           ` : `
             <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
@@ -793,7 +793,7 @@ export function renderDeployModal(container) {
                   ${store.backendUrl}/sites/${serviceName}/
                 </div>
               </div>
-              <span class="badge" style="background: rgba(246, 130, 31, 0.15); color: #f6821f; border: 1px solid rgba(246, 130, 31, 0.3); font-size: 10.5px;">Connect CF Token in Settings for *.pages.dev</span>
+              <span class="badge" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); font-size: 10.5px;">Connect AlloDeploy Token in Settings for custom domains</span>
             </div>
           `}
 
@@ -803,7 +803,7 @@ export function renderDeployModal(container) {
               <input type="text" id="cfg-cf-domain" value="${cfDomain}" placeholder="e.g. app.mycompany.com" style="font-family: var(--font-mono); font-size: 13px;" />
             </div>
             <div class="form-group">
-              <label class="form-label" for="cfg-cf-zone">Cloudflare Zone</label>
+              <label class="form-label" for="cfg-cf-zone">AlloDeploy Zone</label>
               <select id="cfg-cf-zone" style="font-size: 13px;">
                 <option value="">Auto-detect from domain</option>
                 ${(store.cloudflareZones || []).map(z => `<option value="${z.id}" ${cfZoneId === z.id ? 'selected' : ''}>${z.name}</option>`).join('')}
@@ -813,12 +813,12 @@ export function renderDeployModal(container) {
 
           <div style="display: flex; gap: 20px; flex-wrap: wrap; font-size: 12.5px;">
             <label style="display: flex; align-items: center; gap: 8px; color: #cbd5e1; cursor: pointer;">
-              <input type="checkbox" id="cfg-cf-proxy" ${cfProxied ? 'checked' : ''} style="accent-color: #f6821f;" />
-              <span>Cloudflare Proxy (Orange Cloud ☁️)</span>
+              <input type="checkbox" id="cfg-cf-proxy" ${cfProxied ? 'checked' : ''} style="accent-color: #a855f7;" />
+              <span>AlloDeploy Proxy & Shield ⚡</span>
             </label>
             <label style="display: flex; align-items: center; gap: 8px; color: #cbd5e1; cursor: pointer;">
-              <input type="checkbox" id="cfg-cf-purge" ${cfPurgeCache ? 'checked' : ''} style="accent-color: #f6821f;" />
-              <span>Auto-Purge CDN Cache on Deploy</span>
+              <input type="checkbox" id="cfg-cf-purge" ${cfPurgeCache ? 'checked' : ''} style="accent-color: #a855f7;" />
+              <span>Auto-Purge Edge Cache on Deploy</span>
             </label>
           </div>
         </div>
@@ -864,7 +864,7 @@ export function renderDeployModal(container) {
             <div>
               <div style="font-weight: 700; color: #ef4444; font-size: 14px; margin-bottom: 2px;">Missing Root index.html File</div>
               <div style="font-size: 12.5px; color: #fca5a5; line-height: 1.4;">
-                Cloudflare Pages requires an <code>index.html</code> file located directly in the root of your dropped folder. Please drop a valid built web folder (such as <code>dist/</code> or <code>build/</code>) containing <code>index.html</code>.
+                AlloDeploy requires an <code>index.html</code> file located directly in the root of your dropped folder. Please drop a valid built web folder (such as <code>dist/</code> or <code>build/</code>) containing <code>index.html</code>.
               </div>
             </div>
           </div>
@@ -958,8 +958,8 @@ export function renderDeployModal(container) {
               <input type="text" id="cfg-service-name" value="${serviceName}" placeholder="e.g. my-awesome-site" spellcheck="false" />
             </div>
             <div style="display: flex; gap: 14px; flex-wrap: wrap; margin-top: 6px;">
-              <span style="font-size: 12px; color: #f6821f; font-family: var(--font-mono); font-weight: 600;">
-                ☁️ Cloudflare Pages: <span id="cf-pages-preview">https://${serviceName}.pages.dev</span>
+              <span style="font-size: 12px; color: #c084fc; font-family: var(--font-mono); font-weight: 600;">
+                ⚡ AlloDeploy: <span id="cf-pages-preview">https://${serviceName}.pages.dev</span>
               </span>
               <span style="font-size: 11.5px; color: #a78bfa; font-family: var(--font-mono);">
                 ✦ Server Root: ${store.backendUrl}/sites/${serviceName}/
@@ -1001,18 +1001,18 @@ export function renderDeployModal(container) {
           </div>
         </div>
 
-        <!-- Cloudflare API Hosting & Edge Automation -->
-        <div class="cf-deploy-hosting-box" style="background: rgba(246, 130, 31, 0.05); border: 1px solid rgba(246, 130, 31, 0.28); border-radius: var(--radius-md); padding: 14px 16px;">
+        <!-- AlloDeploy API Hosting & Edge Automation -->
+        <div class="cf-deploy-hosting-box" style="background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.28); border-radius: var(--radius-md); padding: 14px 16px;">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
             <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 18px;">☁️</span>
+              <span style="font-size: 18px;">⚡</span>
               <div>
-                <div style="font-size: 13.5px; font-weight: 700; color: #fff;">Cloudflare Edge Hosting & Custom Domain</div>
-                <div style="font-size: 11.5px; color: #94a3b8;">Automate DNS records, DDoS shield, Orange Cloud proxy, and edge SSL via Cloudflare API</div>
+                <div style="font-size: 13.5px; font-weight: 700; color: #fff;">AlloDeploy Edge Hosting & Custom Domain</div>
+                <div style="font-size: 11.5px; color: #94a3b8;">Automate DNS records, DDoS shield, proxy, and edge SSL via AlloDeploy</div>
               </div>
             </div>
-            <span class="badge" style="background: rgba(246, 130, 31, 0.15); color: #f6821f; border: 1px solid rgba(246, 130, 31, 0.35); font-size: 11px;">
-              Cloudflare v4 API
+            <span class="badge" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35); font-size: 11px;">
+              AlloDeploy API
             </span>
           </div>
 
@@ -1022,7 +1022,7 @@ export function renderDeployModal(container) {
               <input type="text" id="cfg-cf-domain" value="${cfDomain}" placeholder="e.g. app.mycompany.com" style="font-family: var(--font-mono); font-size: 13px;" />
             </div>
             <div class="form-group">
-              <label class="form-label" for="cfg-cf-zone">Cloudflare Zone</label>
+              <label class="form-label" for="cfg-cf-zone">AlloDeploy Zone</label>
               <select id="cfg-cf-zone" style="font-size: 13px;">
                 <option value="">Auto-detect from domain</option>
                 ${(store.cloudflareZones || []).map(z => `<option value="${z.id}" ${cfZoneId === z.id ? 'selected' : ''}>${z.name}</option>`).join('')}
@@ -1032,12 +1032,12 @@ export function renderDeployModal(container) {
 
           <div style="display: flex; gap: 20px; flex-wrap: wrap; font-size: 12.5px;">
             <label style="display: flex; align-items: center; gap: 8px; color: #cbd5e1; cursor: pointer;">
-              <input type="checkbox" id="cfg-cf-proxy" ${cfProxied ? 'checked' : ''} style="accent-color: #f6821f;" />
-              <span>Cloudflare Proxy (Orange Cloud ☁️)</span>
+              <input type="checkbox" id="cfg-cf-proxy" ${cfProxied ? 'checked' : ''} style="accent-color: #a855f7;" />
+              <span>AlloDeploy Proxy & Shield ⚡</span>
             </label>
             <label style="display: flex; align-items: center; gap: 8px; color: #cbd5e1; cursor: pointer;">
-              <input type="checkbox" id="cfg-cf-purge" ${cfPurgeCache ? 'checked' : ''} style="accent-color: #f6821f;" />
-              <span>Auto-Purge CDN Cache on Deploy</span>
+              <input type="checkbox" id="cfg-cf-purge" ${cfPurgeCache ? 'checked' : ''} style="accent-color: #a855f7;" />
+              <span>Auto-Purge Edge Cache on Deploy</span>
             </label>
           </div>
         </div>
@@ -1139,12 +1139,12 @@ export function renderDeployModal(container) {
         </div>
 
         <!-- Live URL Box -->
-        <div style="background: rgba(15, 23, 42, 0.95); border: 1px solid ${isCloudflareActive ? 'rgba(246, 130, 31, 0.45)' : 'rgba(16, 185, 129, 0.45)'}; border-radius: var(--radius-md); padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; gap: 18px; width: 100%; max-width: 680px; box-shadow: 0 6px 24px ${isCloudflareActive ? 'rgba(246, 130, 31, 0.18)' : 'rgba(16, 185, 129, 0.15)'};">
+        <div style="background: rgba(15, 23, 42, 0.95); border: 1px solid ${isCloudflareActive ? 'rgba(168, 85, 247, 0.45)' : 'rgba(16, 185, 129, 0.45)'}; border-radius: var(--radius-md); padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; gap: 18px; width: 100%; max-width: 680px; box-shadow: 0 6px 24px ${isCloudflareActive ? 'rgba(168, 85, 247, 0.18)' : 'rgba(16, 185, 129, 0.15)'};">
           <div style="display: flex; align-items: center; gap: 14px; text-align: left; min-width: 0; flex: 1;">
-            ${isCloudflareActive ? '<span style="font-size: 24px; flex-shrink: 0;">☁️</span>' : '<span class="status-dot running" style="width: 10px; height: 10px; flex-shrink: 0;"></span>'}
+            ${isCloudflareActive ? '<span style="font-size: 24px; flex-shrink: 0;">⚡</span>' : '<span class="status-dot running" style="width: 10px; height: 10px; flex-shrink: 0;"></span>'}
             <div style="min-width: 0; flex: 1;">
-              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: ${isCloudflareActive ? '#f6821f' : '#34d399'}; font-weight: 700; margin-bottom: 3px;">
-                ${isCloudflareActive ? 'Cloudflare Pages Live URL' : 'Live Host Server Instance'}
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: ${isCloudflareActive ? '#c084fc' : '#34d399'}; font-weight: 700; margin-bottom: 3px;">
+                ${isCloudflareActive ? 'AlloDeploy Live URL' : 'Live Host Server Instance'}
               </div>
               <a href="${liveTargetUrl}" target="_blank" style="font-family: var(--font-mono); font-size: 14.5px; color: #38bdf8; font-weight: 600; text-decoration: none; word-break: break-all; display: inline-block; line-height: 1.4;" title="${liveTargetUrl}">
                 ${liveTargetUrl}
@@ -1156,33 +1156,33 @@ export function renderDeployModal(container) {
             <button class="btn btn-secondary btn-sm" id="btn-copy-completed-url" data-url="${liveTargetUrl}" style="white-space: nowrap;">
               ${icons.copy} Copy Link
             </button>
-            <a href="${liveTargetUrl}" target="_blank" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 5px; background: ${isCloudflareActive ? '#f6821f; border-color: #f6821f;' : '#7c3aed; border-color: #7c3aed;'} box-shadow: 0 2px 10px rgba(0,0,0,0.3); white-space: nowrap;">
+            <a href="${liveTargetUrl}" target="_blank" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 5px; background: ${isCloudflareActive ? '#7c3aed; border-color: #7c3aed;' : '#7c3aed; border-color: #7c3aed;'} box-shadow: 0 2px 10px rgba(0,0,0,0.3); white-space: nowrap;">
               ${icons.externalLink} Open Link
             </a>
           </div>
         </div>
 
         ${!isCloudflareActive ? `
-          <div style="background: rgba(246, 130, 31, 0.06); border: 1px solid rgba(246, 130, 31, 0.25); border-radius: var(--radius-md); padding: 12px 16px; width: 100%; max-width: 540px; text-align: left; display: flex; align-items: flex-start; gap: 10px; font-size: 12px;">
-            <span style="font-size: 18px; line-height: 1;">☁️</span>
+          <div style="background: rgba(168, 85, 247, 0.06); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: var(--radius-md); padding: 12px 16px; width: 100%; max-width: 540px; text-align: left; display: flex; align-items: flex-start; gap: 10px; font-size: 12px;">
+            <span style="font-size: 18px; line-height: 1;">⚡</span>
             <div>
-              <div style="font-weight: 700; color: #f6821f; margin-bottom: 2px;">Want to host on Cloudflare Edge (${serviceName}.pages.dev)?</div>
+              <div style="font-weight: 700; color: #c084fc; margin-bottom: 2px;">Want to host on AlloDeploy Edge?</div>
               <div style="color: #94a3b8; line-height: 1.4;">
-                Connect your <strong>Cloudflare API Token</strong> in Settings to automatically provision and publish your site directly to Cloudflare's Anycast CDN network.
+                Connect your <strong>AlloDeploy API Token</strong> in Settings to automatically provision and publish your site directly to AlloDeploy's edge network.
               </div>
             </div>
           </div>
         ` : ''}
 
         ${cfDomain ? `
-          <div style="background: rgba(246, 130, 31, 0.08); border: 1px solid rgba(246, 130, 31, 0.35); border-radius: var(--radius-md); padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; max-width: 540px;">
+          <div style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: var(--radius-md); padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; max-width: 540px;">
             <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 16px;">☁️</span>
-              <span style="font-weight: 700; color: #f6821f; font-size: 13px;">Custom Domain:</span>
+              <span style="font-size: 16px;">⚡</span>
+              <span style="font-weight: 700; color: #c084fc; font-size: 13px;">Custom Domain:</span>
               <a href="https://${cfDomain}" target="_blank" style="color: #cbd5e1; font-family: var(--font-mono); font-size: 13px; text-decoration: underline;">https://${cfDomain}</a>
             </div>
-            <span class="badge" style="background: rgba(246, 130, 31, 0.2); color: #f6821f; border: 1px solid rgba(246, 130, 31, 0.4); font-size: 11px;">
-              ☁️ Proxied (Orange Cloud)
+            <span class="badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); font-size: 11px;">
+              ⚡ Proxied & Shielded
             </span>
           </div>
         ` : ''}
@@ -1301,7 +1301,7 @@ export function renderDeployModal(container) {
             btn.style.background = 'linear-gradient(135deg, #7c3aed, #a855f7)';
             btn.style.borderColor = 'rgba(255,255,255,0.2)';
             const labelSpan = btn.querySelector('span:last-child');
-            if (labelSpan) labelSpan.textContent = 'Deploy to Cloudflare Pages';
+            if (labelSpan) labelSpan.textContent = 'Deploy to AlloDeploy';
           } else {
             btn.style.opacity = '0.45';
             btn.style.cursor = 'not-allowed';
@@ -1313,7 +1313,7 @@ export function renderDeployModal(container) {
                 ? 'Choose a Folder to Deploy' 
                 : (!valid 
                   ? 'Enter Valid Project Name' 
-                  : (!droppedFilesInfo.hasIndexHtml ? 'Missing Root index.html' : 'Deploy to Cloudflare Pages'));
+                  : (!droppedFilesInfo.hasIndexHtml ? 'Missing Root index.html' : 'Deploy to AlloDeploy'));
             }
           }
         });
@@ -1384,7 +1384,7 @@ export function renderDeployModal(container) {
     // 1-Click Direct Cloudflare Deploy Triggers
     const triggerDirectDeploy = () => {
       if (!serviceName || !isValidProjectName(serviceName)) {
-        store.showToast('Please enter a valid Cloudflare project name (3-63 characters, lowercase letters, numbers, and hyphens).', 'warn');
+        store.showToast('Please enter a valid project name (3-63 characters, lowercase letters, numbers, and hyphens).', 'warn');
         return;
       }
       if (!droppedFilesInfo) {
@@ -2166,7 +2166,7 @@ export function renderDeployModal(container) {
 
     logLines = [
       { time: '00:00.01', type: 'info', category: 'build', text: `==> Initializing AlloDeploy pipeline for "${serviceName}" [${deployId}]` },
-      { time: '00:00.04', type: 'info', category: 'build', text: `==> Target: Cloudflare Pages Edge (https://${serviceName}.pages.dev)` }
+      { time: '00:00.04', type: 'info', category: 'build', text: `==> Target: AlloDeploy Edge Network (https://${serviceName}.pages.dev)` }
     ];
     render();
 
@@ -2335,7 +2335,7 @@ export function renderDeployModal(container) {
           store.addRecentDeployment({
             application: serviceName,
             environment: `${serviceName} / production`,
-            server: 'Cloudflare Pages',
+            server: 'AlloDeploy',
             status: 'Success',
             started: 'Just now'
           });
@@ -2379,16 +2379,16 @@ export function renderDeployModal(container) {
         { p: 32, time: '00:00.64', type: 'info', category: 'build', text: `==> Resolving dependencies: npm ci --prefer-offline...` },
         { p: 48, time: '00:00.98', type: 'success', category: 'security', text: `✔ AST static security audit clean: 0 vulnerabilities` },
         { p: 62, time: '00:01.35', type: 'purple', category: 'build', text: `==> Executing build command: "${buildCommand}"...` },
-        { p: 80, time: '00:01.80', type: 'info', category: 'network', text: `==> Deploying to Cloudflare Pages edge network...` },
-        { p: 100, time: '00:02.50', type: 'success', category: 'network', text: `✔ Live on Cloudflare Pages: https://${serviceName}.pages.dev` }
+        { p: 80, time: '00:01.80', type: 'info', category: 'network', text: `==> Deploying to AlloDeploy edge network...` },
+        { p: 100, time: '00:02.50', type: 'success', category: 'network', text: `✔ Live on AlloDeploy: https://${serviceName}.pages.dev` }
       ];
     } else {
       stages = [
         { p: 18, time: '00:00.32', type: 'success', category: 'build', text: `✔ Checksum integrity passed. Bundle unpacked (${droppedFilesInfo?.filesCount || 1} files)` },
         { p: 40, time: '00:00.70', type: 'info', category: 'security', text: `==> Verified root index.html and static assets` },
-        { p: 65, time: '00:01.20', type: 'purple', category: 'build', text: `==> Running Wrangler CLI: wrangler pages deploy...` },
-        { p: 85, time: '00:01.80', type: 'info', category: 'network', text: `==> Uploading assets to Cloudflare Pages edge POPs...` },
-        { p: 100, time: '00:02.40', type: 'success', category: 'network', text: `✔ Live on Cloudflare Pages: https://${serviceName}.pages.dev` }
+        { p: 65, time: '00:01.20', type: 'purple', category: 'build', text: `==> Running AlloDeploy CLI: allodeploy pages deploy...` },
+        { p: 85, time: '00:01.80', type: 'info', category: 'network', text: `==> Uploading assets to AlloDeploy edge POPs...` },
+        { p: 100, time: '00:02.40', type: 'success', category: 'network', text: `✔ Live on AlloDeploy: https://${serviceName}.pages.dev` }
       ];
     }
 

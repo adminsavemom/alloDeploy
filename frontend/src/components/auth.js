@@ -60,7 +60,7 @@ export function renderAuth(container) {
               </h1>
 
               <p class="auth-hero-sub">
-                An open-source, hassle-free alternative to Heroku & Netlify. Deploy your Git repositories, Docker containers, and one-click open-source templates directly on your servers.
+                Deploy your Git repositories, Docker containers, and one-click open-source templates directly on your servers with AlloDeploy.
               </p>
 
               <!-- Interactive Simulated Terminal with Blinking Cursor -->

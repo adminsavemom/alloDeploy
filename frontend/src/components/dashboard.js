@@ -174,7 +174,7 @@ function renderCoolifyHomeDashboard(container) {
               <span style="color: #34d399; font-weight: 600;">● Online</span>
               <span>CPU: ${serverMetrics.cpu || '0.4%'}</span>
               <span>RAM: ${serverMetrics.memory || '52 MB'}</span>
-              <span>Edge: ${store.cloudflareConfig?.configured ? '☁️ Cloudflare Active' : 'Direct Host'}</span>
+              <span>Edge: ${store.cloudflareConfig?.configured ? '⚡ AlloDeploy Active' : 'Direct Host'}</span>
             </div>
           </div>
           <div class="server-alert-icon" title="Primary Host Engine">
@@ -510,7 +510,7 @@ function renderAnalyticsView(container) {
             <span>SYSTEM TELEMETRY & EDGE ANALYTICS</span>
           </div>
           <h1 class="coolify-page-title">Analytics & Metrics</h1>
-          <p class="coolify-page-sub">Host server utilization, Docker runtime memory, and Cloudflare edge network traffic.</p>
+          <p class="coolify-page-sub">Host server utilization, Docker runtime memory, and AlloDeploy edge network traffic.</p>
         </div>
       </div>
 
@@ -528,7 +528,7 @@ function renderAnalyticsView(container) {
         </div>
 
         <div class="metric-card" style="padding: 18px;">
-          <div style="font-size: 11px; color: var(--text-faint); text-transform: uppercase; font-weight: 700;">Cloudflare Edge CDN Hits</div>
+          <div style="font-size: 11px; color: var(--text-faint); text-transform: uppercase; font-weight: 700;">AlloDeploy Edge CDN Hits</div>
           <div style="font-size: 26px; font-weight: 800; color: #f6821f; margin-top: 6px;">
             ${cf.configured ? '98.4% Cached' : 'Direct Host'}
           </div>
@@ -563,8 +563,8 @@ function renderTerminalView(container) {
         <div style="color: #64748b; margin-bottom: 12px;">Connected to AlloDeploy Host Engine on Windows / PowerShell runtime. Type commands below.</div>
         <div style="color: #c084fc; margin-bottom: 4px;">root@localhost:~$ systemctl status allodeploy-engine</div>
         <div style="color: #34d399; margin-bottom: 12px;">● allodeploy-engine.service - Production Container Supervisor<br>&nbsp;&nbsp;Loaded: loaded (/etc/systemd/system/allodeploy.service)<br>&nbsp;&nbsp;Active: active (running) since Boot</div>
-        <div style="color: #c084fc; margin-bottom: 4px;">root@localhost:~$ cloudflare-edge status</div>
-        <div style="color: #f6821f; margin-bottom: 12px;">Cloudflare API Gateway: Active (Token Scoped Zone.DNS, CachePurge)</div>
+        <div style="color: #c084fc; margin-bottom: 4px;">root@localhost:~$ allodeploy-edge status</div>
+        <div style="color: #f6821f; margin-bottom: 12px;">AlloDeploy API Gateway: Active (Token Scoped Zone.DNS, CachePurge)</div>
         <div style="display: flex; gap: 8px; align-items: center; margin-top: 20px;">
           <span style="color: #34d399;">root@localhost:~$</span>
           <input type="text" id="terminal-exec-input" placeholder="Enter command (e.g. status, ps, help)..." style="flex: 1; background: transparent; border: none; color: #fff; font-family: var(--font-mono); font-size: 13px; outline: none;" />
@@ -718,7 +718,7 @@ function renderProjectsView(container) {
                 <!-- Deployment Link Row -->
                 <div class="coolify-url-row" style="margin-top: 4px; gap: 8px;">
                   <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                    <span class="badge" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35); font-size: 11px; padding: 2px 6px; flex-shrink: 0; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center;" title="${srv.customDomain ? 'Custom Domain' : 'Cloudflare Pages'}">
+                    <span class="badge" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35); font-size: 11px; padding: 2px 6px; flex-shrink: 0; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center;" title="${srv.customDomain ? 'Custom Domain' : 'AlloDeploy'}">
                       ${srv.customDomain ? '🌐' : '☁️'}
                     </span>
                     <span class="resource-url-text" style="flex: 1; min-width: 0; font-family: var(--font-mono); font-size: 12px; color: #a78bfa; word-break: break-all; white-space: normal; line-height: 1.3;" title="${openSiteUrl}">
@@ -1003,15 +1003,15 @@ function renderSettingsView(container, initialTab = null) {
             <span>PRODUCTION INSTANCE</span>
           </div>
           <h1 class="coolify-page-title">Infrastructure Settings</h1>
-          <p class="coolify-page-sub">Configure Cloudflare API edge network, GitHub VCS connection, server runtime engine, and organization security.</p>
+          <p class="coolify-page-sub">Configure AlloDeploy Edge API network, GitHub VCS connection, server runtime engine, and organization security.</p>
         </div>
       </div>
 
       <!-- Settings Navigation Tabs -->
       <div class="settings-tabs-header">
         <button class="settings-tab-btn ${currentSettingsTab === 'cloudflare' ? 'active' : ''}" data-tab="cloudflare">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="#f6821f"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
-          <span>Cloudflare API & DNS</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="#a855f7"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
+          <span>AlloDeploy API & DNS</span>
           ${isCfConfigured ? '<span class="status-dot live" style="margin-left: 2px;"></span>' : ''}
         </button>
 
@@ -1037,23 +1037,23 @@ function renderSettingsView(container, initialTab = null) {
         </button>
       </div>
 
-      <!-- TAB 1: CLOUDFLARE API & DNS -->
+      <!-- TAB 1: ALLODEPLOY API & DNS -->
       <div class="settings-panel ${currentSettingsTab === 'cloudflare' ? 'active' : ''}" id="panel-cloudflare">
         <div class="cf-brand-banner">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
             <div>
               <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="#f6821f"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
-                <h2 style="font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.01em;">Cloudflare Edge & DNS Network</h2>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="#a855f7"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
+                <h2 style="font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.01em;">AlloDeploy Edge & DNS Network</h2>
               </div>
               <p style="font-size: 13.5px; color: var(--text-muted); max-width: 640px; line-height: 1.5;">
-                Connect Cloudflare API to automate authoritative DNS records, instant worldwide CDN cache purges, and enterprise DDoS mitigation via Cloudflare Proxy (Orange Cloud ☁️).
+                Connect AlloDeploy API to automate authoritative DNS records, instant worldwide CDN cache purges, and enterprise DDoS mitigation via AlloDeploy Proxy.
               </p>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
               <span class="cf-status-badge ${isCfConfigured ? 'active' : 'inactive'}">
                 <span class="status-dot ${isCfConfigured ? 'live' : ''}"></span>
-                ${isCfConfigured ? 'Cloudflare Verified' : 'Not Configured'}
+                ${isCfConfigured ? 'AlloDeploy Verified' : 'Not Configured'}
               </span>
             </div>
           </div>
@@ -1063,27 +1063,27 @@ function renderSettingsView(container, initialTab = null) {
           <div class="enterprise-card-header">
             <div>
               <div class="enterprise-card-title">
-                <span>Cloudflare API Credentials</span>
+                <span>AlloDeploy API Credentials</span>
               </div>
-              <div class="enterprise-card-desc">Configure your Cloudflare Scoped API Token with <code>Zone.DNS (Edit)</code> and <code>Zone.CachePurge (Purge)</code> permissions.</div>
+              <div class="enterprise-card-desc">Configure your AlloDeploy Scoped API Token with <code>Zone.DNS (Edit)</code> and <code>Zone.CachePurge (Purge)</code> permissions.</div>
             </div>
           </div>
 
           <div class="auth-form-group">
-            <label class="auth-form-label">Cloudflare API Token</label>
+            <label class="auth-form-label">AlloDeploy API Token</label>
             <div style="display: flex; gap: 10px;">
-              <input type="password" id="cf-api-token" class="auth-input" style="font-family: var(--font-mono);" placeholder="${cf.hasToken ? (cf.apiTokenMasked || '••••••••••••••••') : 'Paste Cloudflare Scoped API Token'}" />
+              <input type="password" id="cf-api-token" class="auth-input" style="font-family: var(--font-mono);" placeholder="${cf.hasToken ? (cf.apiTokenMasked || '••••••••••••••••') : 'Paste AlloDeploy Scoped API Token'}" />
               <button class="btn btn-secondary btn-sm" id="btn-verify-cf-token" style="white-space: nowrap;">
                 Verify API Token
               </button>
             </div>
-            <span style="font-size: 11.5px; color: var(--text-faint); margin-top: 5px;">Generate an API token at <strong>dash.cloudflare.com/profile/api-tokens</strong> with Zone DNS and Cache Purge permissions.</span>
+            <span style="font-size: 11.5px; color: var(--text-faint); margin-top: 5px;">Generate an API token with Zone DNS and Cache Purge permissions.</span>
           </div>
 
           <div class="form-grid-2">
             <div class="auth-form-group">
               <label class="auth-form-label">
-                <span>Cloudflare Account ID (for Pages Edge)</span>
+                <span>AlloDeploy Account ID (for Edge)</span>
                 ${(store.cloudflareAccounts && store.cloudflareAccounts.length > 0) ? `
                   <span style="color: #34d399; font-size: 11px;">● ${store.cloudflareAccounts.length} Account(s)</span>
                 ` : ''}
@@ -1097,11 +1097,11 @@ function renderSettingsView(container, initialTab = null) {
                 </select>
               ` : ''}
               <input type="text" id="cf-account-id" class="auth-input" style="font-family: var(--font-mono);" placeholder="e.g. 023e105f4ecef8ad9ca31a8372d0c353" value="${cf.accountId || ''}" />
-              <span style="font-size: 11.5px; color: var(--text-faint); margin-top: 5px;">Required for Cloudflare Pages edge deployments. Found in Cloudflare dashboard URL or Overview.</span>
+              <span style="font-size: 11.5px; color: var(--text-faint); margin-top: 5px;">Required for AlloDeploy edge deployments.</span>
             </div>
 
             <div class="auth-form-group">
-              <label class="auth-form-label">Cloudflare Zone ID (for DNS Records)</label>
+              <label class="auth-form-label">AlloDeploy Zone ID (for DNS Records)</label>
               ${(store.cloudflareZones && store.cloudflareZones.length > 0) ? `
                 <select id="cf-zone-dropdown" class="auth-input" style="font-family: var(--font-mono); margin-bottom: 8px;">
                   <option value="">Select from discovered active zones...</option>
@@ -1124,8 +1124,8 @@ function renderSettingsView(container, initialTab = null) {
             <label class="settings-checkbox-item">
               <input type="checkbox" id="cf-deploy-pages" ${cf.deployPages !== false ? 'checked' : ''} />
               <div>
-                <strong style="color: #fff;">Build & Deploy Projects via Cloudflare Pages API</strong>
-                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Deploy application bundles directly through Cloudflare Pages API, generating live <code>*.pages.dev</code> links with global Anycast acceleration.</div>
+                <strong style="color: #fff;">Build & Deploy Projects via AlloDeploy Engine</strong>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Deploy application bundles directly through AlloDeploy Engine, generating live links with global Anycast acceleration.</div>
               </div>
             </label>
 
@@ -1133,7 +1133,7 @@ function renderSettingsView(container, initialTab = null) {
               <input type="checkbox" id="cf-auto-dns" ${cf.autoDns !== false ? 'checked' : ''} />
               <div>
                 <strong style="color: #fff;">Automated DNS Record Provisioning</strong>
-                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Automatically create CNAME / A records in Cloudflare whenever a service custom domain is configured.</div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Automatically create CNAME / A records in AlloDeploy whenever a service custom domain is configured.</div>
               </div>
             </label>
 
@@ -1141,22 +1141,22 @@ function renderSettingsView(container, initialTab = null) {
               <input type="checkbox" id="cf-auto-purge" ${cf.autoPurge !== false ? 'checked' : ''} />
               <div>
                 <strong style="color: #fff;">Instant Global CDN Cache Invalidation</strong>
-                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Purge worldwide Cloudflare CDN edge cache automatically upon successful service deployments.</div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Purge worldwide AlloDeploy CDN edge cache automatically upon successful service deployments.</div>
               </div>
             </label>
 
             <label class="settings-checkbox-item">
               <input type="checkbox" id="cf-default-proxied" ${cf.defaultProxied !== false ? 'checked' : ''} />
               <div>
-                <strong style="color: #fff;">Cloudflare Orange Cloud (Proxy ☁️) Enabled by Default</strong>
-                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Route incoming traffic through Cloudflare's Anycast CDN with automatic SSL termination & DDoS defense.</div>
+                <strong style="color: #fff;">AlloDeploy Shield & Proxy Enabled by Default</strong>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Route incoming traffic through AlloDeploy's Anycast CDN with automatic SSL termination & DDoS defense.</div>
               </div>
             </label>
           </div>
 
           <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <button class="btn btn-coolify-primary btn-sm" id="btn-save-cf-settings" style="background: #f6821f; border-color: #f6821f;">
-              Save Cloudflare Settings
+            <button class="btn btn-primary btn-sm" id="btn-save-cf-settings" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border-color: #9333ea;">
+              Save AlloDeploy Settings
             </button>
             <button class="btn btn-secondary btn-sm" id="btn-purge-cf-cache">
               ⚡ Purge CDN Cache Worldwide
@@ -1577,18 +1577,18 @@ function renderSettingsView(container, initialTab = null) {
     }
 
     dnsContainer.style.display = 'block';
-    dnsContainer.innerHTML = '<div style="font-size: 13px; color: #a1a1aa; padding: 8px;">Fetching active DNS records from Cloudflare API...</div>';
+    dnsContainer.innerHTML = '<div style="font-size: 13px; color: #a1a1aa; padding: 8px;">Fetching active DNS records from AlloDeploy API...</div>';
     
     const records = await store.fetchCloudflareDns();
     if (!records || records.length === 0) {
-      dnsContainer.innerHTML = '<div style="font-size: 13px; color: #a1a1aa; padding: 8px;">No DNS records found. Verify Cloudflare API Token and Zone ID above.</div>';
+      dnsContainer.innerHTML = '<div style="font-size: 13px; color: #a1a1aa; padding: 8px;">No DNS records found. Verify AlloDeploy API Token and Zone ID above.</div>';
       return;
     }
 
     dnsContainer.innerHTML = `
       <div style="font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-        <span>Active Cloudflare DNS Records (${records.length})</span>
-        <span style="font-size: 11px; color: #f6821f;">Zone: ${records[0]?.zoneName || cf.zoneId}</span>
+        <span>Active AlloDeploy DNS Records (${records.length})</span>
+        <span style="font-size: 11px; color: #a855f7;">Zone: ${records[0]?.zoneName || cf.zoneId}</span>
       </div>
       <div style="max-height: 240px; overflow-y: auto; background: rgba(0,0,0,0.35); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
         <table style="width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--font-mono);">
@@ -1607,8 +1607,8 @@ function renderSettingsView(container, initialTab = null) {
                 <td style="padding: 8px 12px; color: #fff;">${r.name}</td>
                 <td style="padding: 8px 12px; color: var(--text-muted); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${r.content}</td>
                 <td style="padding: 8px 12px;">
-                  <button class="btn-toggle-cf-proxy" data-id="${r.id}" data-proxied="${r.proxied}" style="padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; ${r.proxied ? 'background: rgba(246,130,31,0.25); color: #f6821f; border: 1px solid rgba(246,130,31,0.4);' : 'background: rgba(255,255,255,0.05); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1);'}">
-                    ${r.proxied ? '☁️ Proxied' : 'DNS Only'}
+                  <button class="btn-toggle-cf-proxy" data-id="${r.id}" data-proxied="${r.proxied}" style="padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; ${r.proxied ? 'background: rgba(168,85,247,0.25); color: #c084fc; border: 1px solid rgba(168,85,247,0.4);' : 'background: rgba(255,255,255,0.05); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1);'}">
+                    ${r.proxied ? '⚡ Proxied' : 'DNS Only'}
                   </button>
                 </td>
               </tr>
@@ -1635,7 +1635,7 @@ function renderSettingsView(container, initialTab = null) {
     }
 
     hostnamesContainer.style.display = 'block';
-    hostnamesContainer.innerHTML = '<div style="font-size: 13px; color: #a1a1aa; padding: 8px;">Fetching Cloudflare Custom Hostnames (SaaS Origins)...</div>';
+    hostnamesContainer.innerHTML = '<div style="font-size: 13px; color: #a1a1aa; padding: 8px;">Fetching AlloDeploy Custom Hostnames (Origin Routing)...</div>';
 
     try {
       const res = await fetch(`${store.backendUrl}/api/cloudflare/custom-hostnames`);
@@ -1645,7 +1645,7 @@ function renderSettingsView(container, initialTab = null) {
       if (!hostnames || hostnames.length === 0) {
         hostnamesContainer.innerHTML = `
           <div style="font-size: 12.5px; color: #94a3b8; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px dashed rgba(255,255,255,0.1);">
-            <div style="font-weight: 600; color: #cbd5e1; margin-bottom: 4px;">No Cloudflare Custom Hostnames Found</div>
+            <div style="font-weight: 600; color: #cbd5e1; margin-bottom: 4px;">No AlloDeploy Custom Hostnames Found</div>
             <div>Configure a domain on any resource to register and PATCH a Custom Hostname with custom origin routing (<code>custom_origin_server</code> & <code>custom_origin_sni</code>).</div>
           </div>
         `;
@@ -1655,9 +1655,9 @@ function renderSettingsView(container, initialTab = null) {
       hostnamesContainer.innerHTML = `
         <div style="font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
           <span style="display: flex; align-items: center; gap: 6px;">
-            <span>⚡</span> Cloudflare Custom Hostnames (${hostnames.length})
+            <span>⚡</span> AlloDeploy Custom Hostnames (${hostnames.length})
           </span>
-          <span style="font-size: 11px; color: #c084fc;">Cloudflare for SaaS / Origin Routing</span>
+          <span style="font-size: 11px; color: #c084fc;">AlloDeploy Origin Routing</span>
         </div>
         <div style="max-height: 280px; overflow-y: auto; background: rgba(0,0,0,0.35); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
           <table style="width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--font-mono);">

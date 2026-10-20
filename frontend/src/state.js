@@ -750,7 +750,7 @@ class StateStore {
       createdOn: d.date || d.timestamp || 'Just now',
       branch: 'main',
       commitHash: d.hash || '',
-      commitMessage: d.message || 'Deploy to Cloudflare Pages',
+      commitMessage: d.message || 'Deploy to AlloDeploy',
       status: 'success',
       duration: d.duration || '2.4s'
     }));
@@ -901,7 +901,7 @@ class StateStore {
     const srv = this.services.find(s => s.id === serviceId);
     if (!srv) return null;
 
-    this.showToast(`Updating Cloudflare Custom Hostname origin routing...`, 'info');
+    this.showToast(`Updating AlloDeploy Custom Hostname origin routing...`, 'info');
     try {
       const res = await fetch(`${this.backendUrl}/api/services/${serviceId}/custom-domain/origin`, {
         method: 'PATCH',
@@ -1004,7 +1004,7 @@ class StateStore {
   }
 
   async patchCloudflareCustomHostname(customHostnameId, { customOriginServer, customOriginSni, zoneId } = {}) {
-    this.showToast(`Applying PATCH to Cloudflare Custom Hostname ${customHostnameId}...`, 'info');
+    this.showToast(`Applying PATCH to AlloDeploy Custom Hostname ${customHostnameId}...`, 'info');
     try {
       const res = await fetch(`${this.backendUrl}/api/cloudflare/custom-hostnames/${customHostnameId}`, {
         method: 'PATCH',
@@ -1017,7 +1017,7 @@ class StateStore {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        this.showToast(`Cloudflare Custom Hostname updated successfully!`, 'success');
+        this.showToast(`AlloDeploy Custom Hostname updated successfully!`, 'success');
         return data;
       } else {
         this.showToast(data.error || 'Failed to update custom hostname', 'error');
@@ -1043,7 +1043,7 @@ class StateStore {
           this.notify();
         }
         if (data.statusInfo?.status === 'active') {
-          this.showToast(`🎉 Domain ${srv.customDomain} is verified & ACTIVE on Cloudflare Pages!`, 'success');
+          this.showToast(`🎉 Domain ${srv.customDomain} is verified & ACTIVE on AlloDeploy!`, 'success');
         } else {
           this.showToast(`⏳ CNAME not yet resolving. Point CNAME: ${srv.customDomain} -> ${srv.name}.pages.dev`, 'info');
         }
@@ -1571,7 +1571,7 @@ class StateStore {
   }
 
   async saveCloudflareConfig(configUpdates) {
-    this.showToast('Saving Cloudflare configuration...', 'info');
+    this.showToast('Saving AlloDeploy configuration...', 'info');
     try {
       const res = await fetch(`${this.backendUrl}/api/cloudflare/config`, {
         method: 'POST',
@@ -1582,11 +1582,11 @@ class StateStore {
       if (res.ok && data.success) {
         this.cloudflareConfig = data.config;
         this.edgeConfig = this.cloudflareConfig;
-        this.showToast('Cloudflare API settings saved successfully!', 'success');
+        this.showToast('AlloDeploy API settings saved successfully!', 'success');
         await this.fetchCloudflareConfig();
         return data;
       } else {
-        this.showToast(data.error || 'Failed to save Cloudflare settings', 'error');
+        this.showToast(data.error || 'Failed to save AlloDeploy settings', 'error');
       }
     } catch (e) {
       this.showToast(e.message, 'error');
@@ -1599,7 +1599,7 @@ class StateStore {
   }
 
   async verifyCloudflareToken(token = null) {
-    this.showToast('Verifying token with Cloudflare API...', 'info');
+    this.showToast('Verifying token with AlloDeploy API...', 'info');
     try {
       const res = await fetch(`${this.backendUrl}/api/cloudflare/verify`, {
         method: 'POST',
@@ -1608,7 +1608,7 @@ class StateStore {
       });
       const data = await res.json();
       if (data.success) {
-        this.showToast('✅ Cloudflare API Token is valid and active!', 'success');
+        this.showToast('✅ AlloDeploy API Token is valid and active!', 'success');
       } else {
         this.showToast(`❌ Verification failed: ${data.message || 'Invalid token'}`, 'error');
       }
@@ -1680,7 +1680,7 @@ class StateStore {
   }
 
   async createCloudflareDns(recordData) {
-    this.showToast(`Creating DNS record ${recordData.name} on Cloudflare...`, 'info');
+    this.showToast(`Creating DNS record ${recordData.name} on AlloDeploy...`, 'info');
     try {
       const res = await fetch(`${this.backendUrl}/api/cloudflare/dns`, {
         method: 'POST',
@@ -1689,7 +1689,7 @@ class StateStore {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        this.showToast(`DNS record ${recordData.name} created on Cloudflare!`, 'success');
+        this.showToast(`DNS record ${recordData.name} created on AlloDeploy!`, 'success');
         await this.fetchCloudflareDns(recordData.zoneId);
         return data;
       } else {
@@ -1706,13 +1706,13 @@ class StateStore {
   }
 
   async deleteCloudflareDns(recordId, zoneId = null) {
-    this.showToast('Removing DNS record from Cloudflare...', 'info');
+    this.showToast('Removing DNS record from AlloDeploy...', 'info');
     try {
       const url = zoneId ? `${this.backendUrl}/api/cloudflare/dns/${recordId}?zoneId=${zoneId}` : `${this.backendUrl}/api/cloudflare/dns/${recordId}`;
       const res = await fetch(url, { method: 'DELETE' });
       const data = await res.json();
       if (res.ok && data.success) {
-        this.showToast('DNS record removed from Cloudflare.', 'success');
+        this.showToast('DNS record removed from AlloDeploy.', 'success');
         await this.fetchCloudflareDns(zoneId);
         return data;
       } else {
@@ -1729,7 +1729,7 @@ class StateStore {
   }
 
   async toggleCloudflareProxy(recordId, proxied, zoneId = null) {
-    this.showToast(`${proxied ? 'Enabling' : 'Disabling'} Cloudflare Proxy (Orange Cloud ☁️)...`, 'info');
+    this.showToast(`${proxied ? 'Enabling' : 'Disabling'} AlloDeploy Proxy & Shield...`, 'info');
     try {
       const res = await fetch(`${this.backendUrl}/api/cloudflare/dns/${recordId}/toggle-proxy`, {
         method: 'POST',
@@ -1738,7 +1738,7 @@ class StateStore {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        this.showToast(`Cloudflare Proxy ${proxied ? 'enabled' : 'disabled'}.`, 'success');
+        this.showToast(`AlloDeploy Proxy ${proxied ? 'enabled' : 'disabled'}.`, 'success');
         await this.fetchCloudflareDns(zoneId);
         return data;
       }
@@ -1753,7 +1753,7 @@ class StateStore {
   }
 
   async purgeCloudflareCache(zoneId = null, purgeEverything = true) {
-    this.showToast('Purging Cloudflare Edge Cache worldwide...', 'info');
+    this.showToast('Purging AlloDeploy Edge Cache worldwide...', 'info');
     try {
       const res = await fetch(`${this.backendUrl}/api/cloudflare/purge`, {
         method: 'POST',
@@ -1762,7 +1762,7 @@ class StateStore {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        this.showToast('⚡ Cloudflare Edge Cache purged worldwide!', 'success');
+        this.showToast('⚡ AlloDeploy Edge Cache purged worldwide!', 'success');
         return data;
       } else {
         this.showToast(data.error || 'Cache purge failed', 'error');
@@ -1839,7 +1839,7 @@ class StateStore {
   }
 
   async syncServiceWithCloudflare(serviceId, domain, options = {}) {
-    this.showToast(`Provisioning Cloudflare DNS & Orange Cloud for ${domain}...`, 'info');
+    this.showToast(`Provisioning AlloDeploy DNS & Edge Proxy for ${domain}...`, 'info');
     try {
       const res = await fetch(`${this.backendUrl}/api/cloudflare/sync-service/${serviceId}`, {
         method: 'POST',
@@ -1856,10 +1856,10 @@ class StateStore {
             this.notify();
           }
         }
-        this.showToast(`Domain ${domain} provisioned on Cloudflare with Edge Proxy!`, 'success');
+        this.showToast(`Domain ${domain} provisioned on AlloDeploy with Edge Proxy!`, 'success');
         return data;
       } else {
-        this.showToast(data.error || 'Failed to sync domain with Cloudflare', 'error');
+        this.showToast(data.error || 'Failed to sync domain with AlloDeploy', 'error');
       }
     } catch (e) {
       this.showToast(e.message, 'error');

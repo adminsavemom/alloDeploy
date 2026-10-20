@@ -77,7 +77,7 @@ export function renderServiceDetail(container) {
       url: d.url || (d.hash ? `https://${d.hash}.${service.name}.pages.dev` : exactPagesUrl),
       branch: service.gitBranch || 'main',
       commitHash: d.hash || '',
-      commitMessage: d.message || 'Deploy to Cloudflare Pages',
+      commitMessage: d.message || 'Deploy to AlloDeploy',
       createdOn: d.date || d.timestamp || 'Just now',
       status: 'success'
     }));
@@ -102,7 +102,7 @@ export function renderServiceDetail(container) {
           url: d.url || (d.hash ? `https://${d.hash}.${service.name}.pages.dev` : exactPagesUrl),
           branch: service.gitBranch || 'main',
           commitHash: d.hash || '',
-          commitMessage: d.message || 'Deploy to Cloudflare Pages',
+          commitMessage: d.message || 'Deploy to AlloDeploy',
           createdOn: d.date || d.timestamp || 'Just now',
           status: 'success'
         }));
@@ -189,7 +189,7 @@ export function renderServiceDetail(container) {
           </div>
         </div>
 
-        <!-- Cloudflare Pages Style Tabs Navigation Bar (Pic 1 Style) -->
+        <!-- AlloDeploy Style Tabs Navigation Bar (Pic 1 Style) -->
         <div class="cf-tabs-container">
           <div class="cf-tabs-list">
             <button class="cf-tab-btn ${activeTab === 'deployments' ? 'active' : ''}" data-tab="deployments">Deployments</button>
@@ -202,17 +202,12 @@ export function renderServiceDetail(container) {
               <span style="font-size: 15px; display: inline-flex; align-items: center; font-weight: bold;">+</span>
               <span>Add custom domain</span>
             </button>
-          ` : activeTab === 'env' ? `
-            <button class="btn-cf-create-deploy" id="btn-header-add-env" title="Add environment variable">
-              <span style="font-size: 15px; display: inline-flex; align-items: center; font-weight: bold;">+</span>
-              <span>+Add</span>
-            </button>
-          ` : `
+          ` : activeTab === 'deployments' ? `
             <button class="btn-cf-create-deploy" id="btn-create-deployment" title="Deploy new files or repository updates">
               <span style="font-size: 15px; display: inline-flex; align-items: center;">⬆</span>
               <span>Create deployment</span>
             </button>
-          `}
+          ` : ''}
         </div>
 
         <!-- Tab Body -->
@@ -228,7 +223,7 @@ export function renderServiceDetail(container) {
   }
 
   // =========================================================================
-  // TAB 1: CLOUDFLARE PAGES STYLE DEPLOYMENTS (PIC 1 DESIGN)
+  // TAB 1: ALLODEPLOY STYLE DEPLOYMENTS (PIC 1 DESIGN)
   // =========================================================================
   function renderDeploymentsTab() {
     const list = deployments.length > 0 ? deployments : (service.deploys || []);
@@ -294,7 +289,7 @@ export function renderServiceDetail(container) {
           ${isLoadingDeployments ? `
             <span style="font-size: 12px; color: #a1a1aa; display: flex; align-items: center; gap: 6px;">
               <span class="spinner" style="display:inline-block; width:12px; height:12px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.8s linear infinite;"></span>
-              Syncing Cloudflare...
+              Syncing AlloDeploy...
             </span>
           ` : `
             <button class="btn btn-secondary btn-xs" id="btn-refresh-deployments" style="font-size: 11px; padding: 2px 8px; color: #94a3b8;">
@@ -360,15 +355,15 @@ export function renderServiceDetail(container) {
           <div>
             <h2 class="cf-card-title">Custom Domains</h2>
             <p style="font-size: 12.5px; color: #a1a1aa; margin-top: 4px; margin-bottom: 0;">
-              Connect your apex domain or subdomain to route global edge traffic directly to Cloudflare Pages.
+              Connect your apex domain or subdomain to route global edge traffic directly to AlloDeploy.
             </p>
           </div>
         </div>
 
         <div style="padding: 22px;">
           <!-- Active Domains List -->
-          <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px;">
-            <!-- Primary Cloudflare Pages Domain -->
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <!-- Primary AlloDeploy Domain -->
             <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.16); border-radius: 8px; padding: 14px 18px;">
               <div style="display: flex; align-items: center; gap: 12px;">
                 <span style="font-size: 20px;">🌐</span>
@@ -379,7 +374,7 @@ export function renderServiceDetail(container) {
                     </a>
                   </div>
                   <div style="font-size: 12px; color: #a1a1aa; margin-top: 2px;">
-                    Cloudflare Pages native edge hostname • Universal SSL Active
+                    AlloDeploy native edge hostname • Universal SSL Active
                   </div>
                 </div>
               </div>
@@ -425,37 +420,6 @@ export function renderServiceDetail(container) {
                 </button>
               </div>
             `}
-          </div>
-
-          <!-- DNS Guidance Card -->
-          <div style="background: #080312; border: 1px solid rgba(168, 85, 247, 0.16); border-radius: 8px; padding: 18px;">
-            <div style="font-weight: 600; font-size: 13.5px; color: #f8fafc; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-              <span>📘</span> DNS Configuration Guide
-            </div>
-            <p style="font-size: 12.5px; color: #a1a1aa; margin-bottom: 14px;">
-              To connect an external domain, add the following CNAME record in your DNS provider (Cloudflare, Namecheap, GoDaddy, Route53, etc.):
-            </p>
-            <table class="cf-table" style="background: #05010b; border-radius: 6px; overflow: hidden; border: 1px solid rgba(168, 85, 247, 0.14);">
-              <thead>
-                <tr>
-                  <th style="padding: 8px 14px;">Type</th>
-                  <th style="padding: 8px 14px;">Name</th>
-                  <th style="padding: 8px 14px;">Target / Value</th>
-                  <th style="padding: 8px 14px;">Proxy Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="padding: 10px 14px; font-weight: 600; color: #c084fc;">CNAME</td>
-                  <td style="padding: 10px 14px; font-family: var(--font-mono); color: #f8fafc;">${service.customDomain ? service.customDomain.split('.')[0] : 'app'}</td>
-                  <td style="padding: 10px 14px; font-family: var(--font-mono); color: #c084fc; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                    <span>${service.name}.pages.dev</span>
-                    <button type="button" class="btn btn-secondary btn-xs btn-copy-cname-table" data-cname="${service.name}.pages.dev" style="padding: 2px 8px; font-size: 11px; cursor: pointer; color: #c084fc; border-color: rgba(168, 85, 247, 0.35);">Copy</button>
-                  </td>
-                  <td style="padding: 10px 14px; color: #e9d5ff;">Proxied (Purple Cloud)</td>
-                </tr>
-              </tbody>
-            </table>
           </div>
         </div>
       </div>
@@ -603,7 +567,7 @@ export function renderServiceDetail(container) {
 
         <div class="custom-env-footer">
           <div style="font-size: 12px; color: #71717a;">
-            Variables are securely encrypted and injected into Cloudflare Pages build and runtime.
+            Variables are securely encrypted and injected into AlloDeploy build and runtime.
           </div>
           <button type="button" class="btn btn-primary btn-sm" id="btn-save-env-vars" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: 1px solid #9333ea; font-weight: 600; padding: 8px 22px; box-shadow: 0 2px 10px rgba(168, 85, 247, 0.35);">
             Save Environment Variables
@@ -699,7 +663,7 @@ export function renderServiceDetail(container) {
     // Refresh Deployments button
     container.querySelector('#btn-refresh-deployments')?.addEventListener('click', async () => {
       await loadDeployments(true);
-      store.showToast('Deployments refreshed from Cloudflare Pages.', 'info');
+      store.showToast('Deployments refreshed from AlloDeploy.', 'info');
     });
 
     // Deployments row three-dots menu toggle

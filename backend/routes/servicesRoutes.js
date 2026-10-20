@@ -584,6 +584,46 @@ servicesRouter.post('/:id/redeploy', async (req, res) => {
   }
 });
 
+// GET /api/services/:id/deployments - List Cloudflare Pages & local deployments
+servicesRouter.get('/:id/deployments', async (req, res) => {
+  const services = await storageService.getServices();
+  const srv = services.find(s => s.id === req.params.id);
+  if (!srv) return res.status(404).json({ error: 'Service not found' });
+
+  let cfDeployments = [];
+  try {
+    if (cloudflareService.isConfigured()) {
+      cfDeployments = await cloudflareService.getPagesDeployments(srv.name);
+    }
+  } catch (e) {
+    console.warn('[Cloudflare Deployments API]:', e.message);
+  }
+
+  const localDeploys = (srv.deploys || []).map(d => ({
+    id: d.id,
+    shortId: d.hash || (d.id ? d.id.replace('dep-', '').substring(0, 8) : ''),
+    environment: srv.currentEnvironment || 'production',
+    url: d.url || (d.hash ? `https://${d.hash}.${srv.name}.pages.dev` : (srv.cloudflarePagesUrl || srv.url)),
+    aliases: [srv.cloudflarePagesUrl || srv.url],
+    createdOn: d.timestamp || d.date,
+    branch: srv.gitBranch || 'main',
+    commitHash: d.hash || '',
+    commitMessage: d.message || 'Deploy to Cloudflare Pages',
+    status: d.status === 'running' || d.status === 'success' ? 'success' : (d.status || 'success'),
+    duration: d.duration || '2.4s'
+  }));
+
+  // Merge deployments prioritizing real Cloudflare Pages API
+  const combined = [...cfDeployments];
+  for (const ld of localDeploys) {
+    if (!combined.some(c => c.shortId === ld.shortId || (ld.commitHash && c.commitHash === ld.commitHash))) {
+      combined.push(ld);
+    }
+  }
+
+  res.json({ success: true, deployments: combined });
+});
+
 // =============================================================================
 // DOMAINS & AUTOMATED CERTBOT SSL INTEGRATION
 // =============================================================================

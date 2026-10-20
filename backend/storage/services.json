@@ -104,22 +104,37 @@
     "framework": "React / Vite Admin Portal",
     "updatedAt": "Just now",
     "createdAt": "2026-10-19 03:40",
-    "deployCount": 5,
+    "deployCount": 6,
     "metrics": {
       "cpu": "0.2%",
       "memory": "7.7 MB",
       "uptime": "100%"
     },
-    "envVars": [],
+    "envVars": [
+      {
+        "key": "VARIABLE_01",
+        "value": "ssdsdsa",
+        "isSecret": false,
+        "isBuildSecret": false
+      }
+    ],
     "sampleFiles": [
       "index.html"
     ],
     "deploys": [
       {
+        "id": "dep-4b803f74",
+        "date": "Just now",
+        "hash": "f58cb3",
+        "status": "running",
+        "message": "Manual container redeploy triggered",
+        "duration": "2.4s"
+      },
+      {
         "id": "dep-a8e6fe77",
         "date": "Just now",
         "hash": "b279c0",
-        "status": "running",
+        "status": "superseded",
         "message": "Manual container redeploy triggered",
         "duration": "2.4s"
       },

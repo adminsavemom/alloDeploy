@@ -5,121 +5,119 @@ export function renderNavbar(target) {
   const user = store.user;
   if (!user) return;
 
-  const sidebarContainer = target?.sidebar || document.getElementById('coolify-sidebar-root') || target;
   const topbarContainer = target?.topbar || document.getElementById('coolify-topbar-root');
+  const activeNav = store.activeNav || 'projects';
 
-  const activeNav = store.activeNav || 'dashboard';
-  const env = store.currentEnvironment || 'production';
-
-  // 1. RENDER SIDEBAR (Matching Coolify v4.4.6 layout)
-  if (sidebarContainer) {
-    sidebarContainer.innerHTML = `
-      <div class="coolify-brand-header">
-        <div class="coolify-brand-badge" id="btn-sidebar-home" style="cursor: pointer;" title="alloDeploy v4.4.6">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <rect width="24" height="24" rx="6" fill="#7c3aed" />
-            <path d="M7 8h10M7 12h10M7 16h6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" />
-          </svg>
-          <span class="coolify-title">alloDeploy</span>
-        </div>
-        <span class="coolify-version-tag">v4.4.6</span>
-      </div>
-
-      <div class="coolify-sidebar-search">
-        <span style="color: #64748b; display: flex; align-items: center;">${icons.search}</span>
-        <input type="text" id="global-search-input" placeholder="Search" />
-        <span class="key-badge">Ctrl+K</span>
-      </div>
-
-      <div class="coolify-sidebar-nav">
-        <div class="coolify-nav-section-title">Workspace</div>
-        <button class="coolify-nav-item ${activeNav === 'projects' || activeNav === 'dashboard' ? 'active' : ''}" data-nav="projects">
-          ${icons.layoutGrid}
-          <span>Projects</span>
-        </button>
-      </div>
-
-      <div class="coolify-sidebar-profile" id="user-profile-trigger">
-        <div class="sidebar-avatar-circle">A</div>
-        <div class="sidebar-user-text">
-          <span class="sidebar-user-name">${user.name || 'Admin'}</span>
-        </div>
-        <div style="margin-left: auto; display: flex; align-items: center; gap: 6px; color: #64748b;">
-          ${icons.chevronDown}
-          <button id="btn-sidebar-logout" class="icon-btn-minimal" title="Sign Out">
-            ${icons.logOut}
-          </button>
-        </div>
-      </div>
-    `;
-
-    // Sidebar events
-    sidebarContainer.querySelector('#btn-sidebar-home')?.addEventListener('click', () => {
-      store.setNav('projects');
-    });
-
-    sidebarContainer.querySelectorAll('.coolify-nav-item').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const nav = e.currentTarget.dataset.nav;
-        if (nav) {
-          store.setNav(nav);
-        }
-      });
-    });
-
-    sidebarContainer.querySelector('#user-profile-trigger')?.addEventListener('click', (e) => {
-      if (e.target.closest('#btn-sidebar-logout')) return;
-      openEditProfileModal();
-    });
-
-    sidebarContainer.querySelector('#btn-sidebar-logout')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      store.logout();
-    });
-
-    const searchInput = sidebarContainer.querySelector('#global-search-input');
-    if (searchInput) {
-      searchInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          const q = searchInput.value.trim().toLowerCase();
-          if (!q) return;
-          const found = store.services.find(s => s.name.toLowerCase().includes(q));
-          if (found) {
-            store.setView('service-detail', found.id);
-            store.showToast(`Navigated to resource: ${found.name}`, 'info');
-          } else {
-            store.showToast(`No resource found matching "${q}".`, 'info');
-          }
-        }
-      });
-    }
-  }
-
-  // 2. RENDER TOPBAR
   if (topbarContainer) {
     const navTitles = {
       'projects': 'Projects'
     };
 
     topbarContainer.innerHTML = `
-      <div class="coolify-topbar-breadcrumb">
-        <span class="bc-root">Root Team</span>
-        <span class="bc-sep">/</span>
-        <span class="bc-active">${navTitles[activeNav] || 'Projects'}</span>
+      <div style="display: flex; align-items: center; gap: 18px;">
+        <div class="coolify-brand-badge" id="btn-topbar-home" style="cursor: pointer; display: flex; align-items: center; gap: 10px;" title="alloDeploy">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <rect width="24" height="24" rx="6" fill="#7c3aed" />
+            <path d="M7 8h10M7 12h10M7 16h6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" />
+          </svg>
+          <span class="coolify-title" style="font-size: 16px; font-weight: 700; color: #fff; letter-spacing: -0.02em;">alloDeploy</span>
+        </div>
+
+        <div class="coolify-topbar-breadcrumb" style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #64748b;">
+          <span class="bc-root" style="color: #94a3b8; font-weight: 500;">Root Team</span>
+          <span class="bc-sep">/</span>
+          <span class="bc-active" style="color: #cbd5e1; font-weight: 600;">${navTitles[activeNav] || 'Projects'}</span>
+        </div>
       </div>
 
-      <div class="coolify-topbar-actions">
-        <!-- New Web Project Deploy -->
-        <button class="btn btn-coolify-primary btn-sm" id="btn-topbar-new-resource" title="Deploy New Web Project">
-          ${icons.plus}
-          <span>New Web Project Deploy</span>
-        </button>
+      <div class="coolify-topbar-actions" style="display: flex; align-items: center; gap: 12px;">
+        <!-- User Profile Avatar, Name, Chevron & Logout Details (Matching Pic 1) -->
+        <div class="topbar-user-section" style="position: relative; display: flex; align-items: center; gap: 8px;">
+          <div class="topbar-profile-trigger" id="topbar-user-profile-trigger" style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px 8px; border-radius: 6px; user-select: none; transition: background 0.15s;" title="Account Profile">
+            <div class="sidebar-avatar-circle" style="width: 26px; height: 26px; border-radius: 50%; background: #27272a; color: #f4f4f5; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center;">
+              ${(user.name || 'A').charAt(0).toUpperCase()}
+            </div>
+            <span class="sidebar-user-name" style="font-size: 13.5px; font-weight: 700; color: #f4f4f5; letter-spacing: -0.01em;">
+              ${user.name || 'Alex Smith'}
+            </span>
+            <span style="color: #64748b; display: flex; align-items: center; margin-left: 2px;">
+              ${icons.chevronDown}
+            </span>
+          </div>
+
+          <button id="btn-topbar-logout" class="icon-btn-minimal" title="Sign Out" style="color: #64748b; padding: 6px; border-radius: 4px; display: inline-flex; align-items: center; cursor: pointer; transition: color 0.15s; background: transparent; border: none;">
+            ${icons.logOut}
+          </button>
+
+          <!-- Profile & Login / Logout Dropdown -->
+          <div id="topbar-profile-dropdown" style="display: none; position: absolute; top: calc(100% + 8px); right: 0; min-width: 220px; padding: 8px; background: #121624; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; box-shadow: 0 12px 30px rgba(0,0,0,0.6); z-index: 1000;">
+            <div style="padding: 6px 10px 10px; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 6px;">
+              <div style="font-weight: 700; color: #f4f4f5; font-size: 13.5px;">${user.name || 'Alex Smith'}</div>
+              <div style="font-size: 11.5px; color: #94a3b8; font-family: var(--font-mono); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${user.email || 'alex.smith@example.com'}</div>
+              <div style="font-size: 11px; color: #a855f7; margin-top: 4px; font-weight: 500;">● ${user.role || 'DevOps / Owner'}</div>
+            </div>
+
+            <button type="button" class="cf-menu-item" id="btn-dropdown-edit-profile" style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; width: 100%; border: none; background: transparent; color: #cbd5e1; font-size: 12.5px; cursor: pointer; border-radius: 5px; text-align: left;">
+              <span>👤</span>
+              <span>Edit Profile & Account</span>
+            </button>
+
+            <button type="button" class="cf-menu-item" id="btn-dropdown-switch-account" style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; width: 100%; border: none; background: transparent; color: #cbd5e1; font-size: 12.5px; cursor: pointer; border-radius: 5px; text-align: left;">
+              <span>🔑</span>
+              <span>Switch Account / Login</span>
+            </button>
+
+            <div style="border-top: 1px solid rgba(255,255,255,0.06); margin: 6px 0;"></div>
+
+            <button type="button" class="cf-menu-item" id="btn-dropdown-logout" style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; width: 100%; border: none; background: transparent; color: #ef4444; font-size: 12.5px; cursor: pointer; border-radius: 5px; text-align: left;">
+              <span>🚪</span>
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </div>
       </div>
     `;
 
-    // Topbar bindings
-    topbarContainer.querySelector('#btn-topbar-new-resource')?.addEventListener('click', () => {
-      store.openDeployModal('drop');
+    topbarContainer.querySelector('#btn-topbar-home')?.addEventListener('click', () => {
+      store.setNav('projects');
+      store.setView('dashboard');
+    });
+
+    const profileTrigger = topbarContainer.querySelector('#topbar-user-profile-trigger');
+    const profileDropdown = topbarContainer.querySelector('#topbar-profile-dropdown');
+
+    profileTrigger?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!profileDropdown) return;
+      const isOpen = profileDropdown.style.display === 'block';
+      profileDropdown.style.display = isOpen ? 'none' : 'block';
+    });
+
+    document.addEventListener('click', () => {
+      if (profileDropdown && profileDropdown.style.display === 'block') {
+        profileDropdown.style.display = 'none';
+      }
+    });
+
+    topbarContainer.querySelector('#btn-dropdown-edit-profile')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (profileDropdown) profileDropdown.style.display = 'none';
+      openEditProfileModal();
+    });
+
+    topbarContainer.querySelector('#btn-dropdown-switch-account')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      store.logout();
+    });
+
+    topbarContainer.querySelector('#btn-dropdown-logout')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      store.logout();
+    });
+
+    topbarContainer.querySelector('#btn-topbar-logout')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      store.logout();
     });
   }
 }

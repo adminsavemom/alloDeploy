@@ -692,40 +692,73 @@ class StateStore {
 
   async redeployService(serviceId) {
     const srv = this.services.find(s => s.id === serviceId);
-    if (srv) {
-      srv.status = 'building';
-      this.notify();
-      this.showToast(`Triggered deployment for ${srv.name}...`, 'info');
+    if (!srv) return { success: false, error: 'Service not found' };
 
-      try {
-        const res = await fetch(`${this.backendUrl}/api/services/${serviceId}/redeploy`, { method: 'POST' });
-        if (res.ok) {
-          const data = await res.json();
-          setTimeout(() => {
-            const idx = this.services.findIndex(s => s.id === serviceId);
-            if (idx !== -1 && data.service) {
-              this.services[idx] = data.service;
-            } else {
-              srv.status = 'running';
-            }
-            this.persistServices();
-            this.notify();
-            this.showToast(`Deployment of ${srv.name} succeeded!`, 'success');
-          }, 1500);
-          return;
+    srv.status = 'building';
+    this.notify();
+    this.showToast(`Starting deployment for ${srv.name}...`, 'info');
+
+    try {
+      const res = await fetch(`${this.backendUrl}/api/services/${serviceId}/redeploy`, {
+        method: 'POST',
+        headers: this.getAuthHeaders()
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const idx = this.services.findIndex(s => s.id === serviceId);
+        let updatedService = srv;
+        if (idx !== -1 && data.service) {
+          this.services[idx] = data.service;
+          updatedService = data.service;
+        } else {
+          srv.status = 'running';
+          srv.updatedAt = 'Just now';
         }
-      } catch (e) {
-        console.warn(e);
-      }
-
-      setTimeout(() => {
-        srv.status = 'running';
-        srv.updatedAt = 'Just now';
         this.persistServices();
         this.notify();
-        this.showToast(`Deployment finished for ${srv.name}.`, 'success');
-      }, 1500);
+        this.showToast(`✔ Deployment of ${srv.name} succeeded!`, 'success');
+        return { success: true, service: updatedService, deploy: data.deploy };
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Deployment failed');
+      }
+    } catch (e) {
+      console.warn('Redeploy failed:', e);
+      srv.status = 'running';
+      this.notify();
+      this.showToast(`Redeployment notice: ${e.message}`, 'error');
+      return { success: false, error: e.message };
     }
+  }
+
+  async fetchServiceDeployments(serviceId) {
+    try {
+      const res = await fetch(`${this.backendUrl}/api/services/${serviceId}/deployments`, {
+        headers: this.getAuthHeaders()
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.deployments) {
+          return data.deployments;
+        }
+      }
+    } catch (e) {
+      console.warn('Error fetching deployments:', e);
+    }
+    const srv = this.services.find(s => s.id === serviceId);
+    return (srv?.deploys || []).map(d => ({
+      id: d.id,
+      shortId: d.hash || (d.id ? d.id.replace('dep-', '').substring(0, 8) : ''),
+      environment: 'production',
+      url: d.url || srv.cloudflarePagesUrl || srv.url,
+      aliases: [srv.cloudflarePagesUrl || srv.url],
+      createdOn: d.date || d.timestamp || 'Just now',
+      branch: 'main',
+      commitHash: d.hash || '',
+      commitMessage: d.message || 'Deploy to Cloudflare Pages',
+      status: 'success',
+      duration: d.duration || '2.4s'
+    }));
   }
 
   async createResource(resourceData) {

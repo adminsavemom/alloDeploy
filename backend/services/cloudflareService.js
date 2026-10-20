@@ -538,8 +538,13 @@ export const cloudflareService = {
 
     try {
       if (onLog) onLog(`Ensuring Cloudflare Pages project "${cleanName}" exists...`);
-      // 1. Ensure project exists: wrangler pages project create <name> --production-branch=main
-      await runWrangler(['pages', 'project', 'create', cleanName, '--production-branch=main'], 30000);
+      // 1. Ensure project exists in Cloudflare
+      try {
+        await this.getOrCreatePagesProject(cleanName, accountId);
+      } catch (projErr) {
+        // Fall back to wrangler project create if not exists
+        await runWrangler(['pages', 'project', 'create', cleanName, '--production-branch=main'], 15000);
+      }
 
       // 2. Deploy directory: wrangler pages deploy <siteDir> --project-name=<name> --branch=<branch>
       if (siteDir && fs.existsSync(siteDir)) {
@@ -591,6 +596,46 @@ export const cloudflareService = {
         error: err.message
       };
     }
+  },
+
+  // Get all Cloudflare Pages deployments for a project
+  async getPagesDeployments(projectName) {
+    const cfg = this.getConfig();
+    const cleanProject = (projectName || '').toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    let accountId = cfg.accountId;
+    if (!accountId) {
+      const accounts = await this.listAccounts();
+      if (accounts.length > 0) accountId = accounts[0].id;
+    }
+    if (!accountId || !cfg.apiToken) return [];
+
+    try {
+      const headers = this.getHeaders();
+      const res = await fetch(`${CF_API_BASE}/accounts/${accountId}/pages/projects/${encodeURIComponent(cleanProject)}/deployments?per_page=25`, {
+        method: 'GET',
+        headers
+      });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.result)) {
+        return data.result.map(d => ({
+          id: d.id,
+          shortId: d.short_id || (d.id ? d.id.substring(0, 8) : ''),
+          environment: d.environment || 'production',
+          url: d.url || (d.short_id ? `https://${d.short_id}.${cleanProject}.pages.dev` : `https://${cleanProject}.pages.dev`),
+          aliases: d.aliases || [`https://${cleanProject}.pages.dev`],
+          createdOn: d.created_on,
+          modifiedOn: d.modified_on,
+          branch: d.deployment_trigger?.metadata?.branch || 'main',
+          commitHash: d.deployment_trigger?.metadata?.commit_hash || '',
+          commitMessage: d.deployment_trigger?.metadata?.commit_message || 'Deploy to Cloudflare Pages',
+          status: d.latest_stage?.status === 'success' ? 'success' : (d.latest_stage?.status || 'success'),
+          duration: '2.4s'
+        }));
+      }
+    } catch (err) {
+      console.warn('Failed to fetch Cloudflare deployments:', err.message);
+    }
+    return [];
   },
 
   // Add custom domain to Cloudflare Pages project

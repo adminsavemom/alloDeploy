@@ -29,10 +29,9 @@ function renderApp() {
       return;
     }
 
-    // If authenticated, construct full Coolify layout
+    // If authenticated, construct full layout (sidebar removed)
     appContainer.innerHTML = `
       <div id="coolify-app-layout" class="coolify-app-layout">
-        <aside id="coolify-sidebar-root" class="coolify-sidebar"></aside>
         <div id="coolify-main-col" class="coolify-main-col">
           <header id="coolify-topbar-root" class="coolify-topbar"></header>
           <main id="main-content" class="coolify-main-content"></main>
@@ -41,7 +40,6 @@ function renderApp() {
     `;
 
     renderNavbar({
-      sidebar: document.getElementById('coolify-sidebar-root'),
       topbar: document.getElementById('coolify-topbar-root')
     });
 

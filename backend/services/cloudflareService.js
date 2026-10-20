@@ -627,7 +627,7 @@ export const cloudflareService = {
           modifiedOn: d.modified_on,
           branch: d.deployment_trigger?.metadata?.branch || 'main',
           commitHash: d.deployment_trigger?.metadata?.commit_hash || '',
-          commitMessage: d.deployment_trigger?.metadata?.commit_message || 'Deploy to Cloudflare Pages',
+          commitMessage: d.deployment_trigger?.metadata?.commit_message || 'Deploy to AlloDeploy',
           status: d.latest_stage?.status === 'success' ? 'success' : (d.latest_stage?.status || 'success'),
           duration: '2.4s'
         }));

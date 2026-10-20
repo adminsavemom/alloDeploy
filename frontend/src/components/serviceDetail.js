@@ -78,7 +78,7 @@ export function renderServiceDetail(container) {
       branch: service.gitBranch || 'main',
       commitHash: d.hash || '',
       commitMessage: d.message || 'Deploy to AlloDeploy',
-      createdOn: d.date || d.timestamp || 'Just now',
+      createdOn: d.createdOn || d.timestamp ? new Date(d.timestamp || d.createdOn).toISOString() : (d.date && d.date !== 'Just now' ? d.date : service.createdAt || new Date().toISOString()),
       status: 'success'
     }));
   }
@@ -103,7 +103,7 @@ export function renderServiceDetail(container) {
           branch: service.gitBranch || 'main',
           commitHash: d.hash || '',
           commitMessage: d.message || 'Deploy to AlloDeploy',
-          createdOn: d.date || d.timestamp || 'Just now',
+          createdOn: d.createdOn || d.timestamp ? new Date(d.timestamp || d.createdOn).toISOString() : (d.date && d.date !== 'Just now' ? d.date : service.createdAt || new Date().toISOString()),
           status: 'success'
         }));
         serviceDeploymentsCache.set(service.id, deployments);
@@ -226,8 +226,13 @@ export function renderServiceDetail(container) {
   // TAB 1: ALLODEPLOY STYLE DEPLOYMENTS (PIC 1 DESIGN)
   // =========================================================================
   function renderDeploymentsTab() {
-    const list = deployments.length > 0 ? deployments : (service.deploys || []);
-    const prodDeploy = list[0] || {
+    const rawList = deployments.length > 0 ? deployments : (service.deploys || []);
+    const list = [...rawList].sort((a, b) => {
+      const tA = new Date(a.createdOn || a.date || a.timestamp || 0).getTime() || 0;
+      const tB = new Date(b.createdOn || b.date || b.timestamp || 0).getTime() || 0;
+      return tB - tA;
+    });
+    const prodDeploy = list.find(d => (d.environment || '').toLowerCase() === 'production') || list[0] || {
       shortId: '7fa7eda9',
       environment: 'production',
       branch: service.gitBranch || 'main',

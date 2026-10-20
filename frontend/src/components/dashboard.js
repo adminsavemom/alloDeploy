@@ -701,11 +701,6 @@ function renderProjectsView(container) {
                       <div class="resource-name" data-id="${srv.id}">
                         ${srv.name}
                       </div>
-                      <div class="resource-meta-label">
-                        <span>${srv.framework || srv.type}</span>
-                        <span>•</span>
-                        <span>${srv.size || 'Ready'}</span>
-                      </div>
                     </div>
                   </div>
 

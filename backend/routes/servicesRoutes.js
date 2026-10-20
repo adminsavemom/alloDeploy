@@ -202,15 +202,6 @@ servicesRouter.post('/:id/restart', async (req, res) => {
 
   srv.status = 'running';
   srv.updatedAt = 'Just now';
-  if (!Array.isArray(srv.deploys)) srv.deploys = [];
-  srv.deploys.unshift({
-    id: `dep-${Date.now().toString(16).substring(4)}`,
-    date: 'Just now',
-    hash: 'restart',
-    status: 'running',
-    message: 'Manual restart triggered via AlloDeploy API',
-    duration: '1.2s'
-  });
   await storageService.addOrUpdateService(srv);
   console.log(`🔄 [Service Restarted] Resource "${srv.name}" restarted successfully.`);
   res.json({ success: true, service: srv });
@@ -616,29 +607,29 @@ servicesRouter.get('/:id/deployments', async (req, res) => {
     console.warn('[Cloudflare Deployments API]:', e.message);
   }
 
+  // If authentic edge deployments are available, return them sorted descending (newest first)
+  if (cfDeployments && cfDeployments.length > 0) {
+    cfDeployments.sort((a, b) => new Date(b.createdOn).getTime() - new Date(a.createdOn).getTime());
+    return res.json({ success: true, deployments: cfDeployments });
+  }
+
   const localDeploys = (srv.deploys || []).map(d => ({
     id: d.id,
     shortId: d.hash || (d.id ? d.id.replace('dep-', '').substring(0, 8) : ''),
     environment: srv.currentEnvironment || 'production',
     url: d.url || (d.hash ? `https://${d.hash}.${srv.name}.pages.dev` : (srv.cloudflarePagesUrl || srv.url)),
     aliases: [srv.cloudflarePagesUrl || srv.url],
-    createdOn: d.timestamp || d.date,
+    createdOn: d.timestamp ? new Date(d.timestamp).toISOString() : (d.date && d.date !== 'Just now' ? d.date : srv.createdAt || new Date().toISOString()),
     branch: srv.gitBranch || 'main',
     commitHash: d.hash || '',
-    commitMessage: d.message || 'Deploy to Cloudflare Pages',
+    commitMessage: d.message || 'Deploy to AlloDeploy',
     status: d.status === 'running' || d.status === 'success' ? 'success' : (d.status || 'success'),
     duration: d.duration || '2.4s'
   }));
 
-  // Merge deployments prioritizing real Cloudflare Pages API
-  const combined = [...cfDeployments];
-  for (const ld of localDeploys) {
-    if (!combined.some(c => c.shortId === ld.shortId || (ld.commitHash && c.commitHash === ld.commitHash))) {
-      combined.push(ld);
-    }
-  }
+  localDeploys.sort((a, b) => new Date(b.createdOn).getTime() - new Date(a.createdOn).getTime());
 
-  res.json({ success: true, deployments: combined });
+  res.json({ success: true, deployments: localDeploys });
 });
 
 // =============================================================================

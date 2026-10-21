@@ -193,7 +193,7 @@ export function renderServiceDetail(container) {
         <div class="cf-tabs-container">
           <div class="cf-tabs-list">
             <button class="cf-tab-btn ${activeTab === 'deployments' ? 'active' : ''}" data-tab="deployments">Deployments</button>
-            <button class="cf-tab-btn ${activeTab === 'domain' ? 'active' : ''}" data-tab="domain">Custom Domain</button>
+            <button class="cf-tab-btn ${activeTab === 'domain' ? 'active' : ''}" data-tab="domain">Domains</button>
             <button class="cf-tab-btn ${activeTab === 'env' ? 'active' : ''}" data-tab="env">Environment Variables ${service.envVars?.length ? `(${service.envVars.length})` : ''}</button>
           </div>
 
@@ -358,7 +358,7 @@ export function renderServiceDetail(container) {
       <div class="cf-card">
         <div class="cf-card-header">
           <div>
-            <h2 class="cf-card-title">Custom Domains</h2>
+            <h2 class="cf-card-title">Domains</h2>
             <p style="font-size: 12.5px; color: #a1a1aa; margin-top: 4px; margin-bottom: 0;">
               Connect your apex domain or subdomain to route global edge traffic directly to AlloDeploy.
             </p>

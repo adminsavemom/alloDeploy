@@ -150,7 +150,7 @@ export function renderServiceDetail(container) {
                 ${service.customDomain ? `
                   <span>•</span>
                   <a href="${customSiteUrl}" target="_blank" rel="noopener noreferrer" style="color: #c084fc; font-family: var(--font-mono); display: inline-flex; align-items: center; gap: 4px; text-decoration: none;" title="Custom domain: ${customSiteUrl}">
-                    🌐 ${service.customDomain} (${service.customDomainStatus === 'active' ? 'SSL Active' : 'Active'})
+                    ${service.customDomain} (${service.customDomainStatus === 'active' ? 'SSL Active' : 'Active'})
                   </a>
                 ` : ''}
                 <span>•</span>
@@ -159,7 +159,7 @@ export function renderServiceDetail(container) {
             </div>
           </div>
 
-          <!-- Control Action Buttons (Stop, Restart, Redeploy, Delete - Clean without Open Site or Env/Deploy Files) -->
+          <!-- Control Action Buttons -->
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             ${isRunning ? `
               <button class="btn btn-secondary btn-sm" id="btn-detail-stop" style="color: #fca5a5; border-color: rgba(239, 68, 68, 0.3);">
@@ -184,12 +184,12 @@ export function renderServiceDetail(container) {
             </button>
 
             <button class="btn btn-secondary btn-sm" id="btn-detail-delete" title="Delete Resource" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.35);">
-              ${icons.trash || '🗑️'} Delete
+              ${icons.trash} Delete
             </button>
           </div>
         </div>
 
-        <!-- AlloDeploy Style Tabs Navigation Bar (Pic 1 Style) -->
+        <!-- Navigation Tabs -->
         <div class="cf-tabs-container">
           <div class="cf-tabs-list">
             <button class="cf-tab-btn ${activeTab === 'deployments' ? 'active' : ''}" data-tab="deployments">Deployments</button>
@@ -223,7 +223,7 @@ export function renderServiceDetail(container) {
   }
 
   // =========================================================================
-  // TAB 1: ALLODEPLOY STYLE DEPLOYMENTS (PIC 1 DESIGN)
+  // TAB 1: SERVICE DEPLOYMENTS
   // =========================================================================
   function renderDeploymentsTab() {
     const rawList = deployments.length > 0 ? deployments : (service.deploys || []);
@@ -278,7 +278,7 @@ export function renderServiceDetail(container) {
               </td>
               <td>
                 <div class="cf-status-wrap">
-                  <span class="cf-check-icon">✓</span>
+                  <span class="cf-check-icon" style="color: #10b981; display: inline-flex; align-items: center;">${icons.check}</span>
                   <span class="cf-status-time">${timeAgo(prodDeploy.createdOn || prodDeploy.date)}</span>
                 </div>
               </td>
@@ -337,7 +337,7 @@ export function renderServiceDetail(container) {
                   </td>
                   <td>
                     <div class="cf-status-wrap">
-                      <span class="cf-check-icon">✓</span>
+                      <span class="cf-check-icon" style="color: #10b981; display: inline-flex; align-items: center;">${icons.check}</span>
                       <span class="cf-status-time">${timeAgo(dep.createdOn || dep.date)}</span>
                     </div>
                   </td>
@@ -371,7 +371,7 @@ export function renderServiceDetail(container) {
             <!-- Primary AlloDeploy Domain -->
             <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.16); border-radius: 8px; padding: 14px 18px;">
               <div style="display: flex; align-items: center; gap: 12px;">
-                <span style="font-size: 20px;">🌐</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #a78bfa; flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
                 <div>
                   <div style="display: flex; align-items: center; gap: 8px;">
                     <a href="${exactPagesUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 14px; font-weight: 600; color: #f8fafc; font-family: var(--font-mono); text-decoration: none;">
@@ -393,7 +393,7 @@ export function renderServiceDetail(container) {
             ${service.customDomain ? `
               <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.28); border-radius: 8px; padding: 14px 18px;">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                  <span style="font-size: 20px;">⚡</span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #c084fc; flex-shrink: 0;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
                   <div>
                     <div style="display: flex; align-items: center; gap: 8px;">
                       <a href="${customSiteUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 14.5px; font-weight: 600; color: #c084fc; font-family: var(--font-mono); text-decoration: none;">
@@ -491,7 +491,9 @@ export function renderServiceDetail(container) {
 
         <div class="custom-env-action-row">
           <div class="env-search-wrapper">
-            <span class="env-search-icon">🔍</span>
+            <span class="env-search-icon" style="display: flex; align-items: center;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </span>
             <input 
               type="text" 
               id="env-search-input" 
@@ -503,11 +505,11 @@ export function renderServiceDetail(container) {
 
           <div class="env-action-buttons">
             <button type="button" class="btn-env-filter" id="btn-env-filter" title="Toggle Secret Filter">
-              <span style="display: flex; align-items: center;">${icons.filter || '⚲'}</span>
+              <span style="display: flex; align-items: center;">${icons.filter}</span>
               <span>Filter</span>
             </button>
             <button type="button" class="btn-env-sort" id="btn-env-sort" title="Toggle Sort Order">
-              <span style="display: flex; align-items: center;">${icons.arrowUpDown || '↓↑'}</span>
+              <span style="display: flex; align-items: center;">${icons.arrowUpDown}</span>
               <span>Sort</span>
             </button>
             <button type="button" class="btn-env-add" id="btn-add-env-var">
@@ -739,7 +741,7 @@ export function renderServiceDetail(container) {
           if (success) {
             store.showToast(`Copied CNAME target: ${cname}`, 'success');
             const orig = btn.innerText;
-            btn.innerText = '✓ Copied!';
+            btn.innerText = 'Copied';
             setTimeout(() => { btn.innerText = orig; }, 2000);
           }
         }

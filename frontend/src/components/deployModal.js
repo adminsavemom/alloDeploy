@@ -184,9 +184,8 @@ export function renderDeployModal(container) {
             ${step === 'drop' ? `
               <button class="btn btn-secondary" id="btn-cancel-drop">Cancel</button>
               ${activeTab === 'drop' ? `
-                <button class="btn btn-primary" id="btn-start-deployment-drop" ${!canDirectDeploy ? 'disabled style="opacity: 0.45; cursor: not-allowed; background: #334155;"' : 'style="background: linear-gradient(135deg, #7c3aed, #a855f7); font-weight: 600; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);"'}>
-                  <span>🚀</span>
-                  <span>${!droppedFilesInfo ? 'Choose Folder to Deploy' : (!isNameValid ? 'Enter Valid Project Name' : (!droppedFilesInfo.hasIndexHtml ? 'Missing Root index.html' : (isUpdatingExisting ? `Deploy to ${store.targetServiceName}` : 'Deploy to AlloDeploy')))}</span>
+                <button class="btn btn-primary" id="btn-start-deployment-drop" ${!canDirectDeploy ? 'disabled style="opacity: 0.45; cursor: not-allowed; background: #334155;"' : 'style="background: #7c3aed; font-weight: 600;"'}>
+                  <span>${!droppedFilesInfo ? 'Choose folder to deploy' : (!isNameValid ? 'Enter valid project name' : (!droppedFilesInfo.hasIndexHtml ? 'Missing root index.html' : (isUpdatingExisting ? `Deploy to ${store.targetServiceName}` : 'Deploy project')))}</span>
                 </button>
               ` : ''}
             ` : ''}
@@ -195,9 +194,9 @@ export function renderDeployModal(container) {
               <button class="btn btn-secondary" id="btn-back-to-drop">
                 ${icons.arrowLeft} Back
               </button>
-              <button class="btn btn-primary" id="btn-start-deployment" ${deploySourceType === 'upload' && droppedFilesInfo && droppedFilesInfo.hasIndexHtml === false ? 'disabled style="opacity: 0.5; cursor: not-allowed; background: #64748b;"' : 'style="background: linear-gradient(135deg, #7c3aed, #a855f7); font-weight: 600; padding: 10px 20px;"'}>
+              <button class="btn btn-primary" id="btn-start-deployment" ${deploySourceType === 'upload' && droppedFilesInfo && droppedFilesInfo.hasIndexHtml === false ? 'disabled style="opacity: 0.5; cursor: not-allowed; background: #64748b;"' : 'style="background: #7c3aed; font-weight: 600; padding: 10px 20px;"'}>
                 ${icons.zap}
-                <span>${deploySourceType === 'github' ? 'Build & Deploy from GitHub' : (deploySourceType === 'upload' && droppedFilesInfo && droppedFilesInfo.hasIndexHtml === false ? 'Missing Root index.html' : 'Deploy to AlloDeploy')}</span>
+                <span>${deploySourceType === 'github' ? 'Build & deploy from GitHub' : (deploySourceType === 'upload' && droppedFilesInfo && droppedFilesInfo.hasIndexHtml === false ? 'Missing root index.html' : 'Deploy project')}</span>
               </button>
             ` : ''}
 
@@ -285,8 +284,8 @@ export function renderDeployModal(container) {
               style="width: 100%; font-family: var(--font-mono); font-weight: 600; font-size: 14px; padding: 10px 14px; background: rgba(0, 0, 0, 0.4); border-color: ${isNameValid ? 'rgba(99, 102, 241, 0.4)' : 'rgba(239, 68, 68, 0.5)'};"
             />
           </div>
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-auto-name" title="Generate random memorable project name" style="white-space: nowrap; padding: 10px 14px; display: inline-flex; align-items: center; gap: 6px;">
-            <span>🎲</span> Randomize
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-auto-name" title="Generate project name" style="white-space: nowrap; padding: 10px 14px; display: inline-flex; align-items: center; gap: 6px;">
+            ${icons.refresh} Generate Name
           </button>
         </div>
 
@@ -299,8 +298,8 @@ export function renderDeployModal(container) {
           </div>
           <div>
             ${isNameValid 
-              ? `<span style="color: #34d399; font-weight: 500; display: inline-flex; align-items: center; gap: 4px;">✓ Valid project name</span>`
-              : `<span style="color: #f87171; font-weight: 500; display: inline-flex; align-items: center; gap: 4px;">⚠ 3–63 chars: lowercase, numbers, hyphens</span>`
+              ? `<span style="color: #34d399; font-weight: 500; display: inline-flex; align-items: center; gap: 4px;">Valid name</span>`
+              : `<span style="color: #f87171; font-weight: 500; display: inline-flex; align-items: center; gap: 4px;">3–63 chars: lowercase, numbers, hyphens</span>`
             }
           </div>
         </div>
@@ -309,8 +308,8 @@ export function renderDeployModal(container) {
       <!-- Existing Project Target Banner -->
       <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: var(--radius-md); padding: 12px 18px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); display: flex; align-items: center; justify-content: center; font-size: 18px;">
-            📁
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); display: flex; align-items: center; justify-content: center; color: #38bdf8;">
+            ${icons.folder}
           </div>
           <div>
             <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint); font-weight: 600;">Updating Existing Project</div>
@@ -332,8 +331,8 @@ export function renderDeployModal(container) {
         <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(99, 102, 241, 0.35); border-radius: var(--radius-md); padding: 18px 20px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);">
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
             <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.35); display: flex; align-items: center; justify-content: center; font-size: 22px; color: #818cf8; flex-shrink: 0;">
-                ${droppedFilesInfo.isZip ? '📦' : '📁'}
+              <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.35); display: flex; align-items: center; justify-content: center; color: #818cf8; flex-shrink: 0;">
+                ${droppedFilesInfo.isZip ? icons.box : icons.folder}
               </div>
               <div>
                 <div style="display: flex; align-items: center; gap: 8px;">
@@ -353,14 +352,14 @@ export function renderDeployModal(container) {
             <div style="display: flex; align-items: center; gap: 10px;">
               ${droppedFilesInfo.hasIndexHtml
                 ? `<span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 11.5px; font-weight: 600; padding: 4px 10px; display: inline-flex; align-items: center; gap: 5px;">
-                     <span>✓</span> Root index.html Verified
+                     Root index.html verified
                    </span>`
                 : `<span class="badge" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 11.5px; font-weight: 600; padding: 4px 10px; display: inline-flex; align-items: center; gap: 5px;">
-                     <span>⚠</span> Missing Root index.html
+                     Missing root index.html
                    </span>`
               }
               <button type="button" class="btn btn-secondary btn-sm" id="btn-remove-folder" style="color: #cbd5e1; font-size: 12px; padding: 6px 12px;">
-                ✕ Change Folder
+                Change folder
               </button>
             </div>
           </div>
@@ -423,8 +422,8 @@ export function renderDeployModal(container) {
       <!-- Optional Advanced Settings Accordion (New Projects only) -->
       <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
         <button type="button" id="btn-toggle-advanced-drop" style="background: none; border: none; color: #94a3b8; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 0;">
-          <span>⚙️</span>
-          <span style="text-decoration: underline;">Advanced AlloDeploy & Custom Domain Settings</span>
+          ${icons.settings}
+          <span style="text-decoration: underline;">Advanced Settings & Custom Domain</span>
           <span id="adv-caret">▾</span>
         </button>
 
@@ -473,7 +472,7 @@ export function renderDeployModal(container) {
               </div>
             </div>
             <span class="badge" style="background: rgba(234, 67, 53, 0.15); color: #f87171; border: 1px solid rgba(234, 67, 53, 0.3); font-size: 11px;">
-              ⚡ 1-Click Link
+              Gmail Linked
             </span>
           </div>
 
@@ -561,7 +560,7 @@ export function renderDeployModal(container) {
       <div class="github-repos-list">
         ${repos.length === 0 ? `
           <div style="text-align: center; padding: 36px 16px; color: var(--text-muted); background: #090c14; border-radius: var(--radius-md); border: 1px dashed var(--border-subtle);">
-            <div style="font-size: 28px; margin-bottom: 8px;">🐙</div>
+            <div style="margin-bottom: 8px; color: #818cf8;">${icons.github}</div>
             <div style="font-weight: 600; color: #fff; font-size: 14.5px;">Loading GitHub Repositories...</div>
             <div style="font-size: 12.5px; margin: 6px 0 16px; color: var(--text-faint);">Fetching available repositories from AlloDeploy Git pipeline.</div>
             <button type="button" class="btn btn-primary btn-sm" id="btn-load-repos-empty">
@@ -570,7 +569,7 @@ export function renderDeployModal(container) {
           </div>
         ` : filteredRepos.length === 0 ? `
           <div style="text-align: center; padding: 32px 16px; color: var(--text-muted); background: #090c14; border-radius: var(--radius-md); border: 1px dashed var(--border-subtle);">
-            <div style="font-size: 24px; margin-bottom: 8px;">🔍</div>
+            <div style="margin-bottom: 8px; color: var(--text-muted);">${icons.search}</div>
             <div style="font-weight: 600; color: #fff;">No repositories match "${githubSearchQuery}"</div>
             <div style="font-size: 12.5px; margin-top: 4px;">Try searching for another keyword or paste a repository URL below.</div>
           </div>
@@ -595,13 +594,13 @@ export function renderDeployModal(container) {
                     <span class="lang-dot ${langClass}"></span>
                     <span>${repo.language}</span>
                   </span>
-                  <span>⭐ ${repo.stargazers_count} stars</span>
-                  <span>🍴 ${repo.forks_count} forks</span>
+                  <span>${repo.stargazers_count} stars</span>
+                  <span>${repo.forks_count} forks</span>
                   ${repo.latest_commit ? `<span style="font-family: var(--font-mono); color: #cbd5e1;">commit: ${repo.latest_commit.sha}</span>` : ''}
                 </div>
               </div>
 
-              <button type="button" class="btn btn-primary btn-sm btn-import-repo" data-repo-id="${repo.id}" style="flex-shrink: 0; background: linear-gradient(135deg, #6366f1, #06b6d4);">
+              <button type="button" class="btn btn-primary btn-sm btn-import-repo" data-repo-id="${repo.id}" style="flex-shrink: 0;">
                 <span>Import & Deploy</span>
                 ${icons.arrowLeft ? icons.externalLink : ''}
               </button>
@@ -697,7 +696,7 @@ export function renderDeployModal(container) {
               <input type="text" id="cfg-service-name" value="${serviceName}" placeholder="e.g. my-app" spellcheck="false" />
             </div>
             <span style="font-size: 11.5px; color: #a78bfa; font-family: var(--font-mono); margin-top: 4px; display: inline-block;">
-              ✦ Live at: ${store.backendUrl}/sites/${serviceName}/
+              Live at: ${store.backendUrl}/sites/${serviceName}/
             </span>
           </div>
 
@@ -726,11 +725,11 @@ export function renderDeployModal(container) {
           <div class="form-group">
             <label class="form-label" for="cfg-region">Primary Edge Distribution Region</label>
             <select id="cfg-region">
-              <option value="Frankfurt (eu-central-1)" ${region.includes('Frankfurt') ? 'selected' : ''}>Frankfurt (eu-central-1) — 14ms latency</option>
-              <option value="Oregon (us-west-1)" ${region.includes('Oregon') ? 'selected' : ''}>Oregon (us-west-1) — 22ms latency</option>
-              <option value="Ohio (us-east-2)" ${region.includes('Ohio') ? 'selected' : ''}>Ohio (us-east-2) — 18ms latency</option>
-              <option value="Singapore (ap-southeast-1)" ${region.includes('Singapore') ? 'selected' : ''}>Singapore (ap-southeast-1) — 32ms latency</option>
-              <option value="Tokyo (ap-northeast-1)" ${region.includes('Tokyo') ? 'selected' : ''}>Tokyo (ap-northeast-1) — 38ms latency</option>
+              <option value="Frankfurt (eu-central-1)" ${region.includes('Frankfurt') ? 'selected' : ''}>Frankfurt (eu-central-1)</option>
+              <option value="Oregon (us-west-1)" ${region.includes('Oregon') ? 'selected' : ''}>Oregon (us-west-1)</option>
+              <option value="Ohio (us-east-2)" ${region.includes('Ohio') ? 'selected' : ''}>Ohio (us-east-2)</option>
+              <option value="Singapore (ap-southeast-1)" ${region.includes('Singapore') ? 'selected' : ''}>Singapore (ap-southeast-1)</option>
+              <option value="Tokyo (ap-northeast-1)" ${region.includes('Tokyo') ? 'selected' : ''}>Tokyo (ap-northeast-1)</option>
             </select>
           </div>
 
@@ -764,14 +763,14 @@ export function renderDeployModal(container) {
         <div class="cf-deploy-hosting-box" style="background: rgba(168, 85, 247, 0.06); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: var(--radius-md); padding: 16px 18px;">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
             <div style="display: flex; align-items: center; gap: 10px;">
-              <span style="font-size: 20px;">⚡</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #a78bfa;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               <div>
-                <div style="font-size: 14px; font-weight: 700; color: #fff;">AlloDeploy Edge Deployment Pipeline</div>
+                <div style="font-size: 14px; font-weight: 700; color: #fff;">AlloDeploy Edge Pipeline</div>
                 <div style="font-size: 12px; color: #94a3b8;">Automated build & distribution via AlloDeploy Edge Network</div>
               </div>
             </div>
             <span class="badge" style="background: rgba(168, 85, 247, 0.18); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); font-size: 11px; font-weight: 600;">
-              ⚡ AlloDeploy Engine
+              Edge Engine
             </span>
           </div>
 
@@ -814,7 +813,7 @@ export function renderDeployModal(container) {
           <div style="display: flex; gap: 20px; flex-wrap: wrap; font-size: 12.5px;">
             <label style="display: flex; align-items: center; gap: 8px; color: #cbd5e1; cursor: pointer;">
               <input type="checkbox" id="cfg-cf-proxy" ${cfProxied ? 'checked' : ''} style="accent-color: #a855f7;" />
-              <span>AlloDeploy Proxy & Shield ⚡</span>
+              <span>AlloDeploy Proxy</span>
             </label>
             <label style="display: flex; align-items: center; gap: 8px; color: #cbd5e1; cursor: pointer;">
               <input type="checkbox" id="cfg-cf-purge" ${cfPurgeCache ? 'checked' : ''} style="accent-color: #a855f7;" />
@@ -859,8 +858,8 @@ export function renderDeployModal(container) {
     return `
       <div style="display: flex; flex-direction: column; gap: 20px;">
         ${droppedFilesInfo && droppedFilesInfo.hasIndexHtml === false ? `
-          <div style="background: rgba(239, 68, 68, 0.14); border: 1px solid rgba(239, 68, 68, 0.45); border-radius: var(--radius-md); padding: 14px 18px; display: flex; align-items: center; gap: 14px; box-shadow: 0 4px 18px rgba(239, 68, 68, 0.15);">
-            <span style="font-size: 24px; flex-shrink: 0;">⚠️</span>
+          <div style="background: rgba(239, 68, 68, 0.14); border: 1px solid rgba(239, 68, 68, 0.45); border-radius: var(--radius-md); padding: 14px 18px; display: flex; align-items: center; gap: 14px;">
+            <span style="display: flex; align-items: center; color: #ef4444; flex-shrink: 0;">${icons.alertTriangle}</span>
             <div>
               <div style="font-weight: 700; color: #ef4444; font-size: 14px; margin-bottom: 2px;">Missing Root index.html File</div>
               <div style="font-size: 12.5px; color: #fca5a5; line-height: 1.4;">
@@ -908,7 +907,7 @@ export function renderDeployModal(container) {
               <span>Raw Size: <strong>${droppedFilesInfo.size}</strong></span>
             </div>
             <div class="file-stat-item" style="color: ${droppedFilesInfo.hasIndexHtml !== false ? '#34d399' : '#ef4444'};">
-              <span>${droppedFilesInfo.hasIndexHtml !== false ? '✓ Root index.html detected' : '✕ Missing root index.html'}</span>
+              <span>${droppedFilesInfo.hasIndexHtml !== false ? 'Root index.html detected' : 'Missing root index.html'}</span>
             </div>
             <div class="file-stat-item" style="margin-left: auto; color: #a5b4fc;">
               ${icons.shield}
@@ -939,7 +938,7 @@ export function renderDeployModal(container) {
             <div style="padding: 10px 14px; max-height: 220px; overflow-y: auto; display: flex; flex-direction: column;">
               <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 6px; margin-bottom: 8px;">
                 <span style="font-family: var(--font-mono); font-size: 11.5px; color: #38bdf8;">
-                  📄 ${selectedFileForPreview}
+                  ${selectedFileForPreview}
                 </span>
                 <span style="font-size: 11px; color: var(--text-faint);">
                   Read-only Bundle Inspector
@@ -959,10 +958,10 @@ export function renderDeployModal(container) {
             </div>
             <div style="display: flex; gap: 14px; flex-wrap: wrap; margin-top: 6px;">
               <span style="font-size: 12px; color: #c084fc; font-family: var(--font-mono); font-weight: 600;">
-                ⚡ AlloDeploy: <span id="cf-pages-preview">https://${serviceName}.pages.dev</span>
+                AlloDeploy: <span id="cf-pages-preview">https://${serviceName}.pages.dev</span>
               </span>
               <span style="font-size: 11.5px; color: #a78bfa; font-family: var(--font-mono);">
-                ✦ Server Root: ${store.backendUrl}/sites/${serviceName}/
+                Server root: ${store.backendUrl}/sites/${serviceName}/
               </span>
             </div>
           </div>
@@ -970,11 +969,11 @@ export function renderDeployModal(container) {
           <div class="form-group">
             <label class="form-label" for="cfg-region">Primary Edge Distribution Region</label>
             <select id="cfg-region">
-              <option value="Frankfurt (eu-central-1)" ${region.includes('Frankfurt') ? 'selected' : ''}>Frankfurt (eu-central-1) — 14ms latency</option>
-              <option value="Oregon (us-west-1)" ${region.includes('Oregon') ? 'selected' : ''}>Oregon (us-west-1) — 22ms latency</option>
-              <option value="Ohio (us-east-2)" ${region.includes('Ohio') ? 'selected' : ''}>Ohio (us-east-2) — 18ms latency</option>
-              <option value="Singapore (ap-southeast-1)" ${region.includes('Singapore') ? 'selected' : ''}>Singapore (ap-southeast-1) — 32ms latency</option>
-              <option value="Tokyo (ap-northeast-1)" ${region.includes('Tokyo') ? 'selected' : ''}>Tokyo (ap-northeast-1) — 38ms latency</option>
+              <option value="Frankfurt (eu-central-1)" ${region.includes('Frankfurt') ? 'selected' : ''}>Frankfurt (eu-central-1)</option>
+              <option value="Oregon (us-west-1)" ${region.includes('Oregon') ? 'selected' : ''}>Oregon (us-west-1)</option>
+              <option value="Ohio (us-east-2)" ${region.includes('Ohio') ? 'selected' : ''}>Ohio (us-east-2)</option>
+              <option value="Singapore (ap-southeast-1)" ${region.includes('Singapore') ? 'selected' : ''}>Singapore (ap-southeast-1)</option>
+              <option value="Tokyo (ap-northeast-1)" ${region.includes('Tokyo') ? 'selected' : ''}>Tokyo (ap-northeast-1)</option>
             </select>
           </div>
 
@@ -1005,10 +1004,10 @@ export function renderDeployModal(container) {
         <div class="cf-deploy-hosting-box" style="background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.28); border-radius: var(--radius-md); padding: 14px 16px;">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
             <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 18px;">⚡</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #a78bfa;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               <div>
                 <div style="font-size: 13.5px; font-weight: 700; color: #fff;">AlloDeploy Edge Hosting & Custom Domain</div>
-                <div style="font-size: 11.5px; color: #94a3b8;">Automate DNS records, DDoS shield, proxy, and edge SSL via AlloDeploy</div>
+                <div style="font-size: 11.5px; color: #94a3b8;">Automate DNS records, proxy, and SSL via AlloDeploy</div>
               </div>
             </div>
             <span class="badge" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35); font-size: 11px;">
@@ -1033,7 +1032,7 @@ export function renderDeployModal(container) {
           <div style="display: flex; gap: 20px; flex-wrap: wrap; font-size: 12.5px;">
             <label style="display: flex; align-items: center; gap: 8px; color: #cbd5e1; cursor: pointer;">
               <input type="checkbox" id="cfg-cf-proxy" ${cfProxied ? 'checked' : ''} style="accent-color: #a855f7;" />
-              <span>AlloDeploy Proxy & Shield ⚡</span>
+              <span>AlloDeploy Proxy</span>
             </label>
             <label style="display: flex; align-items: center; gap: 8px; color: #cbd5e1; cursor: pointer;">
               <input type="checkbox" id="cfg-cf-purge" ${cfPurgeCache ? 'checked' : ''} style="accent-color: #a855f7;" />
@@ -1138,10 +1137,9 @@ export function renderDeployModal(container) {
           ${icons.check}
         </div>
 
-        <!-- Live URL Box -->
-        <div style="background: rgba(15, 23, 42, 0.95); border: 1px solid ${isCloudflareActive ? 'rgba(168, 85, 247, 0.45)' : 'rgba(16, 185, 129, 0.45)'}; border-radius: var(--radius-md); padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; gap: 18px; width: 100%; max-width: 680px; box-shadow: 0 6px 24px ${isCloudflareActive ? 'rgba(168, 85, 247, 0.18)' : 'rgba(16, 185, 129, 0.15)'};">
+        <div style="background: rgba(15, 23, 42, 0.95); border: 1px solid ${isCloudflareActive ? 'rgba(168, 85, 247, 0.45)' : 'rgba(16, 185, 129, 0.45)'}; border-radius: var(--radius-md); padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; gap: 18px; width: 100%; max-width: 680px;">
           <div style="display: flex; align-items: center; gap: 14px; text-align: left; min-width: 0; flex: 1;">
-            ${isCloudflareActive ? '<span style="font-size: 24px; flex-shrink: 0;">⚡</span>' : '<span class="status-dot running" style="width: 10px; height: 10px; flex-shrink: 0;"></span>'}
+            <span class="status-dot running" style="width: 10px; height: 10px; flex-shrink: 0;"></span>
             <div style="min-width: 0; flex: 1;">
               <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: ${isCloudflareActive ? '#c084fc' : '#34d399'}; font-weight: 700; margin-bottom: 3px;">
                 ${isCloudflareActive ? 'AlloDeploy Live URL' : 'Live Host Server Instance'}
@@ -1156,7 +1154,7 @@ export function renderDeployModal(container) {
             <button class="btn btn-secondary btn-sm" id="btn-copy-completed-url" data-url="${liveTargetUrl}" style="white-space: nowrap;">
               ${icons.copy} Copy Link
             </button>
-            <a href="${liveTargetUrl}" target="_blank" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 5px; background: ${isCloudflareActive ? '#7c3aed; border-color: #7c3aed;' : '#7c3aed; border-color: #7c3aed;'} box-shadow: 0 2px 10px rgba(0,0,0,0.3); white-space: nowrap;">
+            <a href="${liveTargetUrl}" target="_blank" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 5px; background: #7c3aed; border-color: #7c3aed; white-space: nowrap;">
               ${icons.externalLink} Open Link
             </a>
           </div>
@@ -1164,7 +1162,7 @@ export function renderDeployModal(container) {
 
         ${!isCloudflareActive ? `
           <div style="background: rgba(168, 85, 247, 0.06); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: var(--radius-md); padding: 12px 16px; width: 100%; max-width: 540px; text-align: left; display: flex; align-items: flex-start; gap: 10px; font-size: 12px;">
-            <span style="font-size: 18px; line-height: 1;">⚡</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #a78bfa; flex-shrink: 0; margin-top: 2px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             <div>
               <div style="font-weight: 700; color: #c084fc; margin-bottom: 2px;">Want to host on AlloDeploy Edge?</div>
               <div style="color: #94a3b8; line-height: 1.4;">
@@ -1177,12 +1175,11 @@ export function renderDeployModal(container) {
         ${cfDomain ? `
           <div style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: var(--radius-md); padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; max-width: 540px;">
             <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 16px;">⚡</span>
               <span style="font-weight: 700; color: #c084fc; font-size: 13px;">Custom Domain:</span>
               <a href="https://${cfDomain}" target="_blank" style="color: #cbd5e1; font-family: var(--font-mono); font-size: 13px; text-decoration: underline;">https://${cfDomain}</a>
             </div>
             <span class="badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); font-size: 11px;">
-              ⚡ Proxied & Shielded
+              Proxied
             </span>
           </div>
         ` : ''}
@@ -1417,7 +1414,7 @@ export function renderDeployModal(container) {
         if (listContainer) {
           listContainer.innerHTML = filtered.length === 0 ? `
             <div style="text-align: center; padding: 32px 16px; color: var(--text-muted); background: #090c14; border-radius: var(--radius-md); border: 1px dashed var(--border-subtle);">
-              <div style="font-size: 24px; margin-bottom: 8px;">🔍</div>
+              <div style="color: var(--text-faint); margin-bottom: 8px;">${icons.search}</div>
               <div style="font-weight: 600; color: #fff;">No repositories match "${githubSearchQuery}"</div>
             </div>
           ` : filtered.map(repo => {
@@ -1439,11 +1436,11 @@ export function renderDeployModal(container) {
                       <span class="lang-dot ${langClass}"></span>
                       <span>${repo.language}</span>
                     </span>
-                    <span>⭐ ${repo.stargazers_count} stars</span>
-                    <span>🍴 ${repo.forks_count} forks</span>
+                    <span>Stars: ${repo.stargazers_count}</span>
+                    <span>Forks: ${repo.forks_count}</span>
                   </div>
                 </div>
-                <button type="button" class="btn btn-primary btn-sm btn-import-repo" data-repo-id="${repo.id}" style="flex-shrink: 0; background: linear-gradient(135deg, #6366f1, #06b6d4);">
+                <button type="button" class="btn btn-primary btn-sm btn-import-repo" data-repo-id="${repo.id}" style="flex-shrink: 0;">
                   <span>Import & Deploy</span>
                 </button>
               </div>
@@ -1759,7 +1756,7 @@ export function renderDeployModal(container) {
         const ok = await copyTextToClipboard(url);
         if (ok) {
           const original = copyCompletedUrl.innerHTML;
-          copyCompletedUrl.innerHTML = '✓ Copied!';
+          copyCompletedUrl.innerHTML = 'Copied';
           copyCompletedUrl.style.color = '#34d399';
           store.showToast('Copied URL to clipboard!', 'success');
           setTimeout(() => {
@@ -2301,7 +2298,7 @@ export function renderDeployModal(container) {
               if (sse) sse.close();
               const errMsg = data.error || 'Deployment failed on server.';
               store.showToast(errMsg, 'error');
-              logLines.push({ time: new Date().toISOString().substring(14, 19), type: 'error', category: 'build', text: `❌ ${errMsg}` });
+              logLines.push({ time: new Date().toISOString().substring(14, 19), type: 'error', category: 'build', text: `Error: ${errMsg}` });
               const logBox = container.querySelector('#terminal-log-output');
               if (logBox) {
                 const div = document.createElement('div');
@@ -2353,12 +2350,12 @@ export function renderDeployModal(container) {
           if (sse) sse.close();
           const errMsg = err.message || 'Deployment aborted by network or server reset.';
           store.showToast(errMsg, 'error');
-          logLines.push({ time: new Date().toISOString().substring(14, 19), type: 'error', category: 'build', text: `❌ Network / Server Error: ${errMsg}` });
+          logLines.push({ time: new Date().toISOString().substring(14, 19), type: 'error', category: 'build', text: `Error: ${errMsg}` });
           const logBox = container.querySelector('#terminal-log-output');
           if (logBox) {
             const div = document.createElement('div');
             div.className = 'log-line';
-            div.innerHTML = `<span class="log-time">[error]</span><span class="log-error">❌ ${errMsg}</span>`;
+            div.innerHTML = `<span class="log-time">[error]</span><span class="log-error">${errMsg}</span>`;
             logBox.appendChild(div);
             logBox.scrollTop = logBox.scrollHeight;
           }
@@ -2375,20 +2372,20 @@ export function renderDeployModal(container) {
     let stages = [];
     if (deploySourceType === 'github') {
       stages = [
-        { p: 18, time: '00:00.32', type: 'success', category: 'build', text: `✔ Repository cloned successfully (branch: "${selectedBranch}", commit: 8f1e29c)` },
+        { p: 18, time: '00:00.32', type: 'success', category: 'build', text: `Repository cloned successfully (branch: "${selectedBranch}", commit: 8f1e29c)` },
         { p: 32, time: '00:00.64', type: 'info', category: 'build', text: `==> Resolving dependencies: npm ci --prefer-offline...` },
-        { p: 48, time: '00:00.98', type: 'success', category: 'security', text: `✔ AST static security audit clean: 0 vulnerabilities` },
+        { p: 48, time: '00:00.98', type: 'success', category: 'security', text: `AST static security audit clean: 0 vulnerabilities` },
         { p: 62, time: '00:01.35', type: 'purple', category: 'build', text: `==> Executing build command: "${buildCommand}"...` },
         { p: 80, time: '00:01.80', type: 'info', category: 'network', text: `==> Deploying to AlloDeploy edge network...` },
-        { p: 100, time: '00:02.50', type: 'success', category: 'network', text: `✔ Live on AlloDeploy: https://${serviceName}.pages.dev` }
+        { p: 100, time: '00:02.50', type: 'success', category: 'network', text: `Live on AlloDeploy: https://${serviceName}.pages.dev` }
       ];
     } else {
       stages = [
-        { p: 18, time: '00:00.32', type: 'success', category: 'build', text: `✔ Checksum integrity passed. Bundle unpacked (${droppedFilesInfo?.filesCount || 1} files)` },
+        { p: 18, time: '00:00.32', type: 'success', category: 'build', text: `Checksum integrity passed. Bundle unpacked (${droppedFilesInfo?.filesCount || 1} files)` },
         { p: 40, time: '00:00.70', type: 'info', category: 'security', text: `==> Verified root index.html and static assets` },
         { p: 65, time: '00:01.20', type: 'purple', category: 'build', text: `==> Running AlloDeploy CLI: allodeploy pages deploy...` },
         { p: 85, time: '00:01.80', type: 'info', category: 'network', text: `==> Uploading assets to AlloDeploy edge POPs...` },
-        { p: 100, time: '00:02.40', type: 'success', category: 'network', text: `✔ Live on AlloDeploy: https://${serviceName}.pages.dev` }
+        { p: 100, time: '00:02.40', type: 'success', category: 'network', text: `Live on AlloDeploy: https://${serviceName}.pages.dev` }
       ];
     }
 
@@ -2473,27 +2470,27 @@ export function renderDeployModal(container) {
     .git-label { color: #64748b; }
     .git-val { color: #a78bfa; font-family: monospace; font-weight: 600; }
     .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: 8px; font-weight: 600; font-size: 14px; text-decoration: none; cursor: pointer; border: none; }
-    .btn-primary { background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; box-shadow: 0 4px 18px rgba(124,58,237,0.4); }
+    .btn-primary { background: #7c3aed; color: white; }
   </style>
 </head>
 <body>
   <header>
-    <div class="logo">⚡ ${name}</div>
+    <div class="logo">${name}</div>
     <div style="display: flex; gap: 14px; align-items: center;">
-      <span style="font-size: 12px; color: #34d399;">● Container Running</span>
+      <span style="font-size: 12px; color: #34d399;">● Running</span>
       <a href="${repo ? repo.html_url : '#'}" target="_blank" style="color: #94a3b8; text-decoration: none; font-size: 13px;">View GitHub</a>
     </div>
   </header>
   <div class="hero">
-    <div class="badge">🚀 Continuous Container Deployment</div>
+    <div class="badge">Continuous Deployment</div>
     <h1>${name}</h1>
-    <p>${repo ? (repo.description || 'Application automatically built and deployed from GitHub repository.') : 'Self-hosted web application running on AlloDeploy Engine.'}</p>
+    <p>${repo ? (repo.description || 'Application built and deployed from repository.') : 'Self-hosted web application running on AlloDeploy Engine.'}</p>
     <div class="git-card">
       <div class="git-row"><span class="git-label">Repository</span><span class="git-val">${repo ? repo.full_name : 'GitHub Project'}</span></div>
       <div class="git-row"><span class="git-label">Branch</span><span class="git-val">${branch || 'main'}</span></div>
       <div class="git-row"><span class="git-label">Commit</span><span class="git-val">${repo?.latest_commit?.sha || '8f1e29c'}</span></div>
       <div class="git-row"><span class="git-label">Commit Message</span><span class="git-val" style="color: #e2e8f0;">${repo?.latest_commit?.message || 'Production deploy'}</span></div>
-      <div class="git-row"><span class="git-label">Proxy Engine</span><span class="git-val" style="color: #34d399;">Local Docker Reverse Proxy</span></div>
+      <div class="git-row"><span class="git-label">Proxy Engine</span><span class="git-val" style="color: #34d399;">Reverse Proxy</span></div>
     </div>
     <div>
       <a href="${repo ? repo.html_url : '#'}" target="_blank" class="btn btn-primary">Open Repository on GitHub</a>
@@ -2510,13 +2507,7 @@ export function renderDeployModal(container) {
 
   function getFileIcon(name) {
     const ext = name.split('.').pop().toLowerCase();
-    if (ext === 'html') return '🌐';
-    if (['js', 'mjs', 'ts', 'jsx'].includes(ext)) return '📜';
-    if (ext === 'css') return '🎨';
-    if (ext === 'json') return '⚙️';
-    if (ext === 'svg' || ext === 'png' || ext === 'jpg') return '🖼️';
-    if (ext === 'md') return '📝';
-    return '📄';
+    return `<span style="font-size: 10px; font-weight: 700; font-family: var(--font-mono); color: #94a3b8; text-transform: uppercase;">.${ext}</span>`;
   }
 
   function formatBytes(bytes) {

@@ -79,19 +79,19 @@ export function renderBackendModal(container) {
               ${icons.folder} Separate Backend Folder Structure (<code>New folder/backend</code>)
             </div>
             <pre style="margin: 0; font-family: var(--font-mono); font-size: 11.5px; color: #94a3b8; line-height: 1.6;">
-📁 backend/
-  ├── 📄 server.js             <span style="color: #6366f1;"># Express server on port 5000</span>
-  ├── 📁 routes/
-  │   ├── 📄 deployRoutes.js    <span style="color: #38bdf8;"># Multer ZIP upload & GitHub deploy</span>
-  │   ├── 📄 githubRoutes.js    <span style="color: #34d399;"># GitHub repos & CI/CD webhooks</span>
-  │   ├── 📄 servicesRoutes.js  <span style="color: #fbbf24;"># Service CRUD & redeploy</span>
-  │   └── 📄 metricsRoutes.js   <span style="color: #a855f7;"># Server health & telemetry</span>
-  ├── 📁 services/
-  │   ├── 📄 storageService.js  <span style="color: #cbd5e1;"># Zip extraction & static hosting</span>
-  │   └── 📄 githubService.js   <span style="color: #cbd5e1;"># GitHub API parser & mock catalog</span>
-  ├── 📁 storage/sites/         <span style="color: #ef4444;"># Deployed site files served at /sites/</span>
-  ├── 📄 package.json           <span style="color: #64748b;"># express, multer, jszip, cors, dotenv</span>
-  └── 📄 README.md              <span style="color: #64748b;"># Full cURL and API documentation</span></pre>
+backend/
+  ├── server.js             <span style="color: #6366f1;"># Express server on port 5000</span>
+  ├── routes/
+  │   ├── deployRoutes.js    <span style="color: #38bdf8;"># Multer ZIP upload & GitHub deploy</span>
+  │   ├── githubRoutes.js    <span style="color: #34d399;"># GitHub repos & CI/CD webhooks</span>
+  │   ├── servicesRoutes.js  <span style="color: #fbbf24;"># Service CRUD & redeploy</span>
+  │   └── metricsRoutes.js   <span style="color: #a855f7;"># Server health & telemetry</span>
+  ├── services/
+  │   ├── storageService.js  <span style="color: #cbd5e1;"># Zip extraction & static hosting</span>
+  │   └── githubService.js   <span style="color: #cbd5e1;"># GitHub API parser & mock catalog</span>
+  ├── storage/sites/         <span style="color: #ef4444;"># Deployed site files served at /sites/</span>
+  ├── package.json           <span style="color: #64748b;"># express, multer, jszip, cors, dotenv</span>
+  └── README.md              <span style="color: #64748b;"># Full cURL and API documentation</span></pre>
           </div>
 
           <!-- API Endpoints Table -->

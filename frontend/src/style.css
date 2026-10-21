@@ -37,10 +37,10 @@
   --text-invert: #030006;
 
   /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.6);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.7);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.8), 0 0 20px rgba(168, 85, 247, 0.15);
-  --shadow-glow: 0 0 25px rgba(168, 85, 247, 0.45);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 4px 16px rgba(0, 0, 0, 0.4);
 
   /* Radius */
   --radius-sm: 6px;
@@ -73,30 +73,9 @@ html, body {
 }
 
 /* Background Atmosphere */
-body::before {
-  content: '';
-  position: fixed;
-  top: -20%;
-  left: 20%;
-  width: 60vw;
-  height: 60vh;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.12) 0%, rgba(124, 58, 237, 0.05) 50%, transparent 70%);
-  filter: blur(80px);
-  pointer-events: none;
-  z-index: 0;
-}
-
+body::before,
 body::after {
-  content: '';
-  position: fixed;
-  bottom: -10%;
-  right: 10%;
-  width: 50vw;
-  height: 50vh;
-  background: radial-gradient(circle, rgba(147, 51, 234, 0.1) 0%, transparent 70%);
-  filter: blur(90px);
-  pointer-events: none;
-  z-index: 0;
+  display: none;
 }
 
 #app {
@@ -162,14 +141,14 @@ a:hover {
 }
 
 .btn-primary {
-  background: linear-gradient(180deg, #a855f7 0%, #7c3aed 100%);
+  background: #7c3aed;
   color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 .btn-primary:hover {
-  background: linear-gradient(180deg, #b76bf9 0%, #8b4cf0 100%);
-  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.55);
+  background: #6d28d9;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   transform: translateY(-1px);
 }
 .btn-primary:active {
@@ -574,8 +553,8 @@ a:hover {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #06b6d4);
-  border: 2px solid var(--border-default);
+  background: #334155;
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 /* ==========================================================================
@@ -865,7 +844,7 @@ a:hover {
   background: #0e1320;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xl);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 50px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1152,7 +1131,7 @@ a:hover {
 
 .deployment-progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #6366f1, #06b6d4, #10b981);
+  background: #7c3aed;
   transition: width 0.3s ease;
   width: 0%;
 }
@@ -1746,7 +1725,7 @@ a:hover {
   align-items: center;
   gap: 6px;
   padding: 5px 12px;
-  border-radius: 9999px;
+  border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
   background: rgba(255, 255, 255, 0.05);
@@ -1816,43 +1795,9 @@ a:hover {
   background-color: var(--bg-app);
 }
 
-/* Background animated aurora glow blobs */
+/* Clean background styling */
 .auth-bg-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(100px);
-  pointer-events: none;
-  opacity: 0.45;
-  animation: floatAurora 18s ease-in-out infinite alternate;
-}
-.auth-bg-blob-1 {
-  top: -150px;
-  left: 10%;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.4) 0%, rgba(168, 85, 247, 0.15) 50%, transparent 70%);
-}
-.auth-bg-blob-2 {
-  bottom: -150px;
-  right: 5%;
-  width: 650px;
-  height: 650px;
-  background: radial-gradient(circle, rgba(6, 182, 212, 0.35) 0%, rgba(99, 102, 241, 0.15) 50%, transparent 70%);
-  animation-delay: -9s;
-}
-.auth-bg-blob-3 {
-  top: 40%;
-  left: 45%;
-  width: 450px;
-  height: 450px;
-  background: radial-gradient(circle, rgba(236, 72, 153, 0.2) 0%, transparent 70%);
-  animation-delay: -5s;
-}
-
-@keyframes floatAurora {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(40px, -30px) scale(1.08); }
-  100% { transform: translate(-30px, 30px) scale(0.95); }
+  display: none;
 }
 
 /* Auth Grid Overlay */
@@ -1884,8 +1829,7 @@ a:hover {
   justify-content: space-between;
   padding: 48px 56px;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(135deg, rgba(14, 18, 26, 0.7) 0%, rgba(10, 13, 20, 0.85) 100%);
-  backdrop-filter: blur(20px);
+  background: #0e121a;
 }
 
 .auth-hero-brand {
@@ -1897,9 +1841,7 @@ a:hover {
   font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #ffffff, #cbd5e1);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #fff;
 }
 
 .auth-hero-badge {
@@ -1909,7 +1851,7 @@ a:hover {
   padding: 5px 12px;
   background: rgba(99, 102, 241, 0.12);
   border: 1px solid rgba(99, 102, 241, 0.35);
-  border-radius: 9999px;
+  border-radius: 4px;
   font-size: 12px;
   font-weight: 600;
   color: #a5b4fc;
@@ -1930,9 +1872,9 @@ a:hover {
   color: #fff;
 }
 .auth-hero-headline .text-gradient {
-  background: linear-gradient(135deg, #818cf8 0%, #38bdf8 50%, #34d399 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #fff;
+  background: none;
+  -webkit-text-fill-color: initial;
 }
 
 .auth-hero-sub {
@@ -2039,41 +1981,22 @@ a:hover {
   position: relative;
 }
 
+.auth-card-clean,
 .auth-card-glass {
   width: 100%;
-  max-width: 480px;
-  background: rgba(14, 18, 27, 0.78);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 20px;
-  padding: 36px 32px;
-  box-shadow: 
-    0 24px 60px rgba(0, 0, 0, 0.6),
-    0 0 50px rgba(99, 102, 241, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  max-width: 440px;
+  background: #0f141f;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 32px 28px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
   position: relative;
-  transition: all 0.3s ease;
+  transition: border-color 0.2s ease;
 }
 
+.auth-card-clean:hover,
 .auth-card-glass:hover {
-  border-color: rgba(99, 102, 241, 0.35);
-  box-shadow: 
-    0 28px 70px rgba(0, 0, 0, 0.7),
-    0 0 60px rgba(99, 102, 241, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-/* Glowing top card accent bar */
-.auth-card-glass::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 20%;
-  right: 20%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #6366f1, #06b6d4, transparent);
-  border-radius: 9999px;
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 /* Auth Header */
@@ -2098,7 +2021,7 @@ a:hover {
   display: flex;
   background: rgba(10, 13, 20, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 4px;
   margin-bottom: 20px;
   gap: 4px;
@@ -2111,7 +2034,7 @@ a:hover {
   color: var(--text-muted);
   background: transparent;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -2127,7 +2050,7 @@ a:hover {
 .auth-nav-tab.active {
   background: #6366f1;
   color: #fff;
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* Quick Lead Demo Button */
@@ -2137,36 +2060,26 @@ a:hover {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 12px 18px;
-  border-radius: 10px;
+  padding: 11px 16px;
+  border-radius: 8px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   color: #fff;
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #06b6d4 100%);
-  background-size: 200% 200%;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #181d28;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   margin-bottom: 16px;
 }
 .btn-lead-demo:hover {
-  background-position: 100% 0;
-  transform: translateY(-1px);
-  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+  background: #232b3b;
+  border-color: rgba(255, 255, 255, 0.2);
 }
 .btn-lead-demo .pulse-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #34d399;
-  box-shadow: 0 0 10px #34d399;
-  animation: pulseLight 1.5s infinite;
-}
-
-@keyframes pulseLight {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.85); }
+  background: #10b981;
 }
 
 /* Primary Social Login Stack */
@@ -2424,19 +2337,11 @@ a:hover {
 
 /* Login Animations */
 .animated-glow {
-  animation: logoPulse 4s infinite ease-in-out;
-}
-@keyframes logoPulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(124, 58, 237, 0.35); }
-  50% { box-shadow: 0 0 35px rgba(124, 58, 237, 0.65), 0 0 15px rgba(6, 182, 212, 0.4); }
+  box-shadow: none;
 }
 
 .pulse-status {
   opacity: 1;
-}
-@keyframes pulseOpacity {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.9; }
 }
 
 .terminal-cursor {
@@ -2463,42 +2368,37 @@ a:hover {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 14px;
+  padding: 6px 12px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 9999px;
+  border-radius: 6px;
   font-size: 12px;
   color: #cbd5e1;
 }
 
 .glowing-card-border {
   position: relative;
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(124, 58, 237, 0.15);
-  animation: cardEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-@keyframes cardEntrance {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: translateY(0); }
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
 }
 
 .animated-input {
   transition: all 0.2s ease !important;
 }
 .animated-input:focus {
-  border-color: #8b5cf6 !important;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25) !important;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
 }
 
 .animated-submit-btn {
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
-  box-shadow: 0 4px 18px rgba(124, 58, 237, 0.35) !important;
+  background: #7c3aed !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
   transition: all 0.2s ease !important;
 }
 .animated-submit-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(124, 58, 237, 0.5) !important;
+  background: #6d28d9 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
 }
 
 /* ==========================================================================
@@ -2639,7 +2539,7 @@ a:hover {
   padding: 5px 12px;
   background: rgba(34, 197, 94, 0.08);
   border: 1px solid rgba(34, 197, 94, 0.25);
-  border-radius: 9999px;
+  border-radius: 6px;
   font-size: 12px;
   font-weight: 500;
   color: #4ade80;
@@ -2650,15 +2550,15 @@ a:hover {
   background: #7c3aed;
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+  border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   transition: all 0.2s ease;
 }
 .btn-coolify-primary:hover {
   background: #6d28d9;
-  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.5);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   transform: translateY(-1px);
 }
 
@@ -2675,8 +2575,8 @@ a:hover {
   gap: 8px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 9999px;
-  padding: 4px 12px 4px 5px;
+  border-radius: 6px;
+  padding: 4px 10px 4px 4px;
   cursor: pointer;
   transition: all 0.2s ease;
   max-width: 200px;
@@ -2684,7 +2584,7 @@ a:hover {
 
 .user-avatar-pill-btn:hover {
   background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(124, 58, 237, 0.4);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .user-avatar-pill-btn .user-avatar {
@@ -2717,8 +2617,8 @@ a:hover {
   width: 290px;
   background: #0f1422;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 14px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(124, 58, 237, 0.15);
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(20px);
   z-index: 1000;
   padding: 14px;
@@ -2987,7 +2887,7 @@ a:hover {
   align-items: center;
   gap: 6px;
   padding: 3px 10px;
-  border-radius: 9999px;
+  border-radius: 4px;
   font-size: 11.5px;
   font-weight: 600;
 }
@@ -3337,7 +3237,7 @@ a:hover {
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  border-radius: 9999px;
+  border-radius: 4px;
   font-size: 11.5px;
   font-weight: 600;
 }
@@ -3793,7 +3693,7 @@ a:hover {
   background: rgba(34, 197, 94, 0.08);
   border: 1px solid rgba(34, 197, 94, 0.25);
   padding: 2px 9px;
-  border-radius: 9999px;
+  border-radius: 4px;
   font-size: 11.5px;
   font-weight: 600;
   color: #4ade80;
@@ -3980,7 +3880,7 @@ a:hover {
 }
 
 /* ==========================================================================
-   DOMAIN SETTINGS MODAL (Exact Picture 5 Design & Strict Edge Options)
+   DOMAIN SETTINGS MODAL
    ========================================================================== */
 
 .domain-settings-modal {
@@ -4378,8 +4278,8 @@ a:hover {
 }
 
 .btn-env-add {
-  background: linear-gradient(135deg, #a855f7, #7c3aed);
-  border: 1px solid #9333ea;
+  background: #7c3aed;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   color: #ffffff;
   padding: 8px 18px;
   border-radius: 6px;
@@ -4389,12 +4289,12 @@ a:hover {
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(168, 85, 247, 0.35);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   transition: all 0.15s;
 }
 
 .btn-env-add:hover {
-  background: #9333ea;
+  background: #6d28d9;
   transform: translateY(-1px);
 }
 
@@ -4534,7 +4434,7 @@ a:hover {
 }
 
 /* ==========================================================================
-   ALLODEPLOY STYLE TABS & DEPLOYMENT TABLES (Pic 1 Design)
+   DEPLOYMENT TABS & SERVICE TABLES
    ========================================================================== */
 
 .cf-tabs-container {
@@ -4582,23 +4482,23 @@ a:hover {
 }
 
 .btn-cf-create-deploy {
-  background: linear-gradient(135deg, #a855f7, #7c3aed);
-  border: 1px solid #9333ea;
+  background: #7c3aed;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   color: #ffffff;
   font-size: 13px;
   font-weight: 600;
   padding: 8px 18px;
-  border-radius: 7px;
+  border-radius: 6px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 7px;
   transition: all 0.15s ease;
-  box-shadow: 0 2px 10px rgba(168, 85, 247, 0.35);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .btn-cf-create-deploy:hover {
-  background: #9333ea;
+  background: #6d28d9;
   transform: translateY(-1px);
 }
 

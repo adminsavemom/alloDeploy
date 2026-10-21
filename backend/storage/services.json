@@ -149,8 +149,8 @@
         "id": "dep-89333bc8",
         "date": "Just now",
         "hash": "72f34c",
-        "status": "success",
-        "message": "Full asset bundle published to Cloudflare Pages edge (204 files)",
+        "status": "running",
+        "message": "Manual container redeploy triggered",
         "duration": "2.4s"
       },
       {

@@ -43,7 +43,7 @@ export function renderPreviewModal(container) {
             <!-- URL Address Bar -->
             <div class="browser-url-pill">
               <span class="status-dot live"></span>
-              <span style="color: #64748b; font-size: 11px;">🔒 https://</span>
+              <span style="color: #64748b; font-size: 11px;">https://</span>
               <span style="font-weight: 500;">${srv.url.replace('https://', '')}</span>
               <span class="badge badge-tag" style="margin-left: auto; font-size: 10px; padding: 2px 6px;">HTTP/3</span>
             </div>
@@ -97,8 +97,8 @@ export function renderPreviewModal(container) {
               <div style="width: 100%; max-width: 820px; background: #0a0e17; border: 1px solid var(--border-default); border-radius: var(--radius-lg); padding: 24px; color: #e2e8f0; display: flex; flex-direction: column; gap: 18px; margin: auto;">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
                   <div>
-                    <h3 style="font-size: 16px; font-weight: 700;">📡 Global Edge Anycast Telemetry</h3>
-                    <p style="font-size: 12px; color: var(--text-faint);">Live diagnostic probe responses from 300+ Edge POPs</p>
+                    <h3 style="font-size: 16px; font-weight: 700;">Edge Telemetry</h3>
+                    <p style="font-size: 12px; color: var(--text-faint);">Diagnostic probe responses from edge network</p>
                   </div>
                   <span class="badge badge-live">HTTP/3 200 OK</span>
                 </div>
@@ -217,11 +217,11 @@ Strict-Transport-Security: max-age=31536000; includeSubDomains; preload</code></
     header { display: flex; justify-content: space-between; align-items: center; padding: 18px 28px; border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(14,18,26,0.85); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 10; }
     .logo { font-weight: 700; font-size: 16px; display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #6366f1, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .hero { max-width: 800px; margin: 50px auto 30px; text-align: center; padding: 0 20px; }
-    h1 { font-size: 38px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 14px; background: linear-gradient(180deg, #fff 0%, #cbd5e1 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    h1 { font-size: 34px; font-weight: 700; color: #f8fafc; margin-bottom: 14px; }
     p { font-size: 15px; color: #94a3b8; max-width: 580px; margin: 0 auto 24px; }
-    .badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 9999px; font-size: 12px; color: #a5b4fc; margin-bottom: 14px; }
-    .btn { padding: 9px 18px; border-radius: 8px; font-weight: 600; font-size: 13.5px; cursor: pointer; border: none; transition: all 0.2s; }
-    .btn-primary { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; box-shadow: 0 4px 14px rgba(99,102,241,0.3); }
+    .badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 4px; font-size: 12px; color: #a5b4fc; margin-bottom: 14px; }
+    .btn { padding: 9px 18px; border-radius: 6px; font-weight: 600; font-size: 13.5px; cursor: pointer; border: none; transition: all 0.2s; }
+    .btn-primary { background: #6366f1; color: white; }
     .btn-secondary { background: rgba(255,255,255,0.08); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.12); margin-left: 8px; }
     .demo-widget { background: #0e1322; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 22px; max-width: 420px; margin: 30px auto; text-align: center; }
     .counter-display { font-size: 34px; font-weight: 800; color: #38bdf8; font-family: monospace; margin: 10px 0; }
@@ -229,13 +229,13 @@ Strict-Transport-Security: max-age=31536000; includeSubDomains; preload</code></
 </head>
 <body>
   <header>
-    <div class="logo">⚡ ${service.name}</div>
+    <div class="logo">${service.name}</div>
     <div style="font-size: 12.5px; color: #34d399; display: flex; align-items: center; gap: 6px;">
-      <span>● Live on Global Edge (${service.region})</span>
+      <span>● Live on Edge (${service.region})</span>
     </div>
   </header>
   <div class="hero">
-    <div class="badge">⚡ Drag & Drop Static Site</div>
+    <div class="badge">Static Site Deployment</div>
     <h1>${service.name}</h1>
     <p>Deployed from ${service.source} with automated Brotli pre-compression, Anycast DNS, and Let's Encrypt Wildcard SSL.</p>
     <div>

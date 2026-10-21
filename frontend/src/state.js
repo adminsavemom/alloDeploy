@@ -711,7 +711,7 @@ class StateStore {
         }
         this.persistServices();
         this.notify();
-        this.showToast(`✔ Deployment of ${srv.name} succeeded!`, 'success');
+        this.showToast(`Deployment of ${srv.name} succeeded.`, 'success');
         return { success: true, service: updatedService, deploy: data.deploy };
       } else {
         const errData = await res.json().catch(() => ({}));
@@ -953,7 +953,7 @@ class StateStore {
       console.warn('Backend regenerate hostname error:', e);
     }
 
-    // Fallback generation matching Picture 5
+    // Fallback hostname generation
     const randomChars = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
     const fallbackHostname = `${randomChars.substring(0, 24)}.72.61.239.30.sslip.io`;
     srv.generatedHostname = fallbackHostname;
@@ -1043,9 +1043,9 @@ class StateStore {
           this.notify();
         }
         if (data.statusInfo?.status === 'active') {
-          this.showToast(`🎉 Domain ${srv.customDomain} is verified & ACTIVE on AlloDeploy!`, 'success');
+          this.showToast(`Domain ${srv.customDomain} is verified and active.`, 'success');
         } else {
-          this.showToast(`⏳ CNAME not yet resolving. Point CNAME: ${srv.customDomain} -> ${srv.name}.pages.dev`, 'info');
+          this.showToast(`CNAME not yet resolving. Point CNAME: ${srv.customDomain} -> ${srv.name}.pages.dev`, 'info');
         }
         return data;
       }
@@ -1608,9 +1608,9 @@ class StateStore {
       });
       const data = await res.json();
       if (data.success) {
-        this.showToast('✅ AlloDeploy API Token is valid and active!', 'success');
+        this.showToast('AlloDeploy API Token is valid and active.', 'success');
       } else {
-        this.showToast(`❌ Verification failed: ${data.message || 'Invalid token'}`, 'error');
+        this.showToast(`Verification failed: ${data.message || 'Invalid token'}`, 'error');
       }
       return data;
     } catch (e) {
@@ -1762,7 +1762,7 @@ class StateStore {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        this.showToast('⚡ AlloDeploy Edge Cache purged worldwide!', 'success');
+        this.showToast('Edge cache purged successfully.', 'success');
         return data;
       } else {
         this.showToast(data.error || 'Cache purge failed', 'error');

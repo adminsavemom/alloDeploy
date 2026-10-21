@@ -32,38 +32,31 @@ export function renderAuth(container) {
 
     container.innerHTML = `
       <div class="auth-page-container">
-        <!-- Dynamic Animated Aurora Blobs -->
-        <div class="auth-bg-blob auth-bg-blob-1"></div>
-        <div class="auth-bg-blob auth-bg-blob-2"></div>
-        <div class="auth-bg-blob auth-bg-blob-3"></div>
         <div class="auth-grid-overlay"></div>
 
         <div class="auth-layout">
-          <!-- Left: Hero Showcase Panel with Animations -->
           <div class="auth-hero-showcase">
             <div class="auth-hero-brand">
-              <div class="brand-logo-wrap animated-glow">
+              <div class="brand-logo-wrap">
                 ${icons.logo}
               </div>
               <div>
                 <h2>AlloDeploy</h2>
-                <div style="font-size: 11px; color: var(--text-faint); font-family: var(--font-mono);">
-                  SELF-HOSTED PAAS & INFRASTRUCTURE MANAGER
+                <div style="font-size: 11px; color: var(--text-faint); font-family: var(--font-mono); letter-spacing: 0.04em;">
+                  DEPLOYMENT & HOSTING MANAGER
                 </div>
               </div>
             </div>
 
             <div class="auth-hero-center">
               <h1 class="auth-hero-headline">
-                Self-host any application, <br/>
-                <span class="text-gradient">database, or service with ease.</span>
+                Deploy and manage applications on your infrastructure.
               </h1>
 
               <p class="auth-hero-sub">
-                Deploy your Git repositories, Docker containers, and one-click open-source templates directly on your servers with AlloDeploy.
+                Run static sites, containers, and services with automatic SSL, virtual host routing, and deployment logs.
               </p>
 
-              <!-- Interactive Simulated Terminal with Blinking Cursor -->
               <div class="auth-terminal">
                 <div class="auth-terminal-header">
                   <div class="terminal-dots">
@@ -71,7 +64,7 @@ export function renderAuth(container) {
                     <span class="terminal-dot yellow"></span>
                     <span class="terminal-dot green"></span>
                   </div>
-                  <span style="font-size: 11px; color: var(--text-faint);">allodeploy-cli — cloud engine</span>
+                  <span style="font-size: 11px; color: var(--text-faint);">allodeploy-cli / engine</span>
                   <span style="font-size: 11px; color: #34d399;" class="pulse-status">● Engine Online</span>
                 </div>
                 <div class="auth-terminal-body">
@@ -82,7 +75,7 @@ export function renderAuth(container) {
                   <div class="terminal-output">==> Pulling source code & building container image...</div>
                   <div class="terminal-output">==> Configuring reverse proxy & SSL certificates...</div>
                   <div class="terminal-output">==> Attaching PostgreSQL & Redis network bridge...</div>
-                  <div class="terminal-success">✔ Container is running & healthy on port 3000!</div>
+                  <div class="terminal-success">[ok] Container is running & healthy on port 3000!</div>
                   <div class="terminal-line">
                     <span class="terminal-prompt">></span>
                     <span style="color: #a78bfa;">https://app.allodeploy.local [ACTIVE]</span>
@@ -91,7 +84,6 @@ export function renderAuth(container) {
                 </div>
               </div>
 
-              <!-- Real Server Features List -->
               <div class="auth-features-row">
                 <div class="auth-feature-pill">
                   ${icons.server}
@@ -109,17 +101,14 @@ export function renderAuth(container) {
             </div>
           </div>
 
-          <!-- Right: Professional Animated Authentication Card -->
           <div class="auth-form-side">
-            <div class="auth-card-glass glowing-card-border">
+            <div class="auth-card-clean">
               
-              <!-- Card Header -->
               <div class="auth-card-header">
-                <h1>${isSignUp ? 'Create AlloDeploy Account' : 'Sign In to AlloDeploy'}</h1>
-                <p>${isSignUp ? 'Setup your admin workspace to manage your infrastructure' : 'Enter your email & password to access your self-hosted dashboard'}</p>
+                <h1>${isSignUp ? 'Create an account' : 'Sign in to AlloDeploy'}</h1>
+                <p>${isSignUp ? 'Set up your admin workspace to manage services' : 'Enter your credentials to access your dashboard'}</p>
               </div>
 
-              <!-- Navigation Tabs -->
               <div class="auth-nav-tabs">
                 <button class="auth-nav-tab ${!isSignUp ? 'active' : ''}" data-tab="signin">
                   ${icons.lock} Sign In
@@ -236,13 +225,12 @@ export function renderAuth(container) {
                   </div>
                 `}
 
-                <button type="submit" class="btn-auth-submit animated-submit-btn" id="btn-submit-main" ${isLoading ? 'disabled' : ''}>
+                <button type="submit" class="btn-auth-submit" id="btn-submit-main" ${isLoading ? 'disabled' : ''}>
                   ${isLoading ? `
                     <span class="spin-icon">${icons.refresh}</span>
-                    <span>${isSignUp ? 'Creating Workspace...' : 'Authenticating...'}</span>
+                    <span>${isSignUp ? 'Creating account...' : 'Signing in...'}</span>
                   ` : `
-                    ${isSignUp ? icons.zap : icons.lock}
-                    <span>${isSignUp ? 'Create Workspace & Launch' : 'Sign In to AlloDeploy'}</span>
+                    <span>${isSignUp ? 'Create account' : 'Sign in'}</span>
                   `}
                 </button>
               </form>

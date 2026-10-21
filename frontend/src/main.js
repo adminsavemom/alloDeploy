@@ -74,7 +74,9 @@ function renderApp() {
     appContainer.innerHTML = `
       <div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #08090b; color: #fff; padding: 24px; font-family: -apple-system, sans-serif;">
         <div style="background: #14171f; border: 1px solid rgba(239,68,68,0.4); border-radius: 12px; padding: 28px; max-width: 520px; text-align: center;">
-          <div style="font-size: 32px; margin-bottom: 12px;">⚠️</div>
+          <div style="margin-bottom: 16px; color: #ef4444; display: flex; justify-content: center;">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
           <h2 style="margin: 0 0 8px; font-size: 18px;">Application Render Notice</h2>
           <p style="color: #94a3b8; font-size: 13.5px; margin-bottom: 20px;">${err.message || 'Error initializing alloDeploy layout.'}</p>
           <button onclick="localStorage.clear(); window.location.reload();" style="background: #7c3aed; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600;">

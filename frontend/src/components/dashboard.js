@@ -174,7 +174,7 @@ function renderCoolifyHomeDashboard(container) {
               <span style="color: #34d399; font-weight: 600;">● Online</span>
               <span>CPU: ${serverMetrics.cpu || '0.4%'}</span>
               <span>RAM: ${serverMetrics.memory || '52 MB'}</span>
-              <span>Edge: ${store.cloudflareConfig?.configured ? '⚡ AlloDeploy Active' : 'Direct Host'}</span>
+              <span>Edge: ${store.cloudflareConfig?.configured ? 'Connected' : 'Direct host'}</span>
             </div>
           </div>
           <div class="server-alert-icon" title="Primary Host Engine">
@@ -255,7 +255,7 @@ function openProjectSettingsModal(projectName) {
     <div class="deploy-modal" style="max-width: 480px;">
       <div class="modal-header">
         <h2>${icons.settings} Project Settings: ${proj.name}</h2>
-        <button class="icon-btn" id="btn-close-proj-modal">${icons.close || '✕'}</button>
+        <button class="icon-btn" id="btn-close-proj-modal">${icons.close}</button>
       </div>
       <div class="modal-body" style="gap: 16px;">
         <div class="form-group">
@@ -378,10 +378,10 @@ export function openCustomDomainModal(serviceId) {
       <!-- Modal Header -->
       <div class="domain-settings-header">
         <h2 class="domain-settings-title">Domain settings</h2>
-        <button class="domain-settings-close" id="btn-close-domain-modal" title="Close">✕</button>
+        <button class="domain-settings-close" id="btn-close-domain-modal" title="Close">${icons.close}</button>
       </div>
 
-      <!-- Modal Body (Matching Picture 5 Design & Strict Edge Options) -->
+      <!-- Modal Body -->
       <div class="domain-settings-body">
         <!-- Row 1: Protocol, Domain * -->
         <div style="display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: flex-start;">
@@ -416,7 +416,7 @@ export function openCustomDomainModal(serviceId) {
         </div>
       </div>
 
-      <!-- Modal Footer Matching Picture 5: Regenerate Hostname (Left), Save (Right) -->
+      <!-- Modal Footer: Regenerate Hostname (Left), Save (Right) -->
       <div class="domain-settings-footer">
         <button type="button" class="btn-domain-regenerate" id="btn-regenerate-hostname">Regenerate Hostname</button>
         <button type="button" class="btn-domain-save" id="btn-save-domain-settings">Save</button>
@@ -441,7 +441,7 @@ export function openCustomDomainModal(serviceId) {
       if (success) {
         store.showToast(`Copied CNAME target: ${targetCname}`, 'success');
         const origText = copyBtn.textContent;
-        copyBtn.textContent = '✓ Copied!';
+        copyBtn.textContent = 'Copied';
         copyBtn.style.color = '#4ade80';
         copyBtn.style.borderColor = 'rgba(74, 222, 128, 0.4)';
         setTimeout(() => {
@@ -532,7 +532,7 @@ function renderAnalyticsView(container) {
           <div style="font-size: 26px; font-weight: 800; color: #f6821f; margin-top: 6px;">
             ${cf.configured ? '98.4% Cached' : 'Direct Host'}
           </div>
-          <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Orange Cloud ☁️ active</div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Cloudflare proxy active</div>
         </div>
 
         <div class="metric-card" style="padding: 18px;">
@@ -714,7 +714,7 @@ function renderProjectsView(container) {
                 <div class="coolify-url-row" style="margin-top: 4px; gap: 8px;">
                   <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
                     <span class="badge" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35); font-size: 11px; padding: 2px 6px; flex-shrink: 0; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center;" title="${srv.customDomain ? 'Custom Domain' : 'AlloDeploy'}">
-                      ${srv.customDomain ? '🌐' : '☁️'}
+                      ${srv.customDomain ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>` : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>`}
                     </span>
                     <span class="resource-url-text" style="flex: 1; min-width: 0; font-family: var(--font-mono); font-size: 12px; color: #a78bfa; word-break: break-all; white-space: normal; line-height: 1.3;" title="${openSiteUrl}">
                       ${srv.customDomain || exactPagesUrl}
@@ -730,7 +730,7 @@ function renderProjectsView(container) {
                       </a>
                     ` : ''}
                     <button class="icon-btn btn-xs" data-action="delete-project" data-id="${srv.id}" data-name="${srv.name}" title="Delete Project (${srv.name})" style="color: #ef4444;">
-                      ${icons.trash || '🗑️'}
+                      ${icons.trash}
                     </button>
                   </div>
                 </div>
@@ -865,7 +865,7 @@ function renderServersView(container) {
   });
 
   container.querySelector('#btn-ping-server')?.addEventListener('click', () => {
-    store.showToast('⚡ Server ping: 1.2ms round-trip latency to Docker socket.', 'success');
+    store.showToast('Server ping: 1.2ms round-trip latency to socket.', 'success');
   });
 
   container.querySelector('#btn-prune-cache')?.addEventListener('click', () => {
@@ -944,7 +944,9 @@ function renderDeploymentsView(container) {
             `).join('') : `
               <tr>
                 <td colspan="6" style="text-align: center; padding: 48px 16px; color: var(--text-muted);">
-                  <div style="font-size: 30px; margin-bottom: 8px;">🚀</div>
+                  <div style="margin-bottom: 12px; color: var(--text-muted);">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+                  </div>
                   <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 6px; font-size: 14px;">No deployment history recorded yet</div>
                   <div style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 16px;">Deploy an application to view live logs, commit hashes, and build history.</div>
                   <button class="btn btn-coolify-primary btn-sm" id="btn-empty-deploy-trigger">
@@ -1150,17 +1152,17 @@ function renderSettingsView(container, initialTab = null) {
           </div>
 
           <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <button class="btn btn-primary btn-sm" id="btn-save-cf-settings" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border-color: #9333ea;">
-              Save AlloDeploy Settings
+            <button class="btn btn-primary btn-sm" id="btn-save-cf-settings">
+              Save settings
             </button>
             <button class="btn btn-secondary btn-sm" id="btn-purge-cf-cache">
-              ⚡ Purge CDN Cache Worldwide
+              Purge cache
             </button>
             <button class="btn btn-secondary btn-sm" id="btn-view-cf-dns">
-              🌐 View Active DNS Records
+              View DNS records
             </button>
             <button class="btn btn-secondary btn-sm" id="btn-view-cf-hostnames" style="color: #c084fc; border-color: rgba(168,85,247,0.35);">
-              ⚡ View Custom Hostnames (SaaS Origins)
+              View custom hostnames
             </button>
           </div>
 
@@ -1205,7 +1207,7 @@ function renderSettingsView(container, initialTab = null) {
             </div>
             ${!isGhConnected ? `
               <span class="badge" style="background: rgba(234, 67, 53, 0.15); color: #f87171; border: 1px solid rgba(234, 67, 53, 0.3); font-size: 11px;">
-                ⚡ Gmail Instant Link
+                Gmail Linked
               </span>
             ` : ''}
           </div>
@@ -1352,14 +1354,14 @@ function renderSettingsView(container, initialTab = null) {
 
             <div class="auth-form-group">
               <label class="auth-form-label">Internal Port Pool Range</label>
-              <input type="text" class="auth-input" style="font-family: var(--font-mono);" value="3000 — 8999 (Dynamic Allocation)" readonly style="opacity: 0.8;" />
+              <input type="text" class="auth-input" style="font-family: var(--font-mono);" value="3000-8999 (Dynamic Allocation)" readonly style="opacity: 0.8;" />
             </div>
           </div>
 
           <div class="form-grid-2">
             <div class="auth-form-group">
               <label class="auth-form-label">Reverse Proxy Gateway</label>
-              <input type="text" class="auth-input" value="Nginx High-Performance Virtual Host Engine" readonly style="opacity: 0.8;" />
+              <input type="text" class="auth-input" value="Nginx Virtual Host Gateway" readonly style="opacity: 0.8;" />
             </div>
 
             <div class="auth-form-group">
@@ -1516,7 +1518,7 @@ function renderSettingsView(container, initialTab = null) {
     try {
       await fetch(`${store.backendUrl}/api/health`);
       const latency = Math.round(performance.now() - t0);
-      store.showToast(`✅ Database & server engine healthy (Latency: ${latency}ms).`, 'success');
+      store.showToast(`Database & server engine healthy (Latency: ${latency}ms).`, 'success');
     } catch (e) {
       store.showToast(`Server latency check: ${e.message}`, 'error');
     }
@@ -1603,7 +1605,7 @@ function renderSettingsView(container, initialTab = null) {
                 <td style="padding: 8px 12px; color: var(--text-muted); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${r.content}</td>
                 <td style="padding: 8px 12px;">
                   <button class="btn-toggle-cf-proxy" data-id="${r.id}" data-proxied="${r.proxied}" style="padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; ${r.proxied ? 'background: rgba(168,85,247,0.25); color: #c084fc; border: 1px solid rgba(168,85,247,0.4);' : 'background: rgba(255,255,255,0.05); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1);'}">
-                    ${r.proxied ? '⚡ Proxied' : 'DNS Only'}
+                    ${r.proxied ? 'Proxied' : 'DNS Only'}
                   </button>
                 </td>
               </tr>
@@ -1650,9 +1652,9 @@ function renderSettingsView(container, initialTab = null) {
       hostnamesContainer.innerHTML = `
         <div style="font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
           <span style="display: flex; align-items: center; gap: 6px;">
-            <span>⚡</span> AlloDeploy Custom Hostnames (${hostnames.length})
+            AlloDeploy Custom Hostnames (${hostnames.length})
           </span>
-          <span style="font-size: 11px; color: #c084fc;">AlloDeploy Origin Routing</span>
+          <span style="font-size: 11px; color: #c084fc;">Origin Routing</span>
         </div>
         <div style="max-height: 280px; overflow-y: auto; background: rgba(0,0,0,0.35); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
           <table style="width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--font-mono);">
@@ -1900,9 +1902,9 @@ function bindProjectsEvents(container) {
       if (cname) {
         const success = await copyTextToClipboard(cname);
         if (success) {
-          store.showToast(`Copied CNAME target: ${cname} — add this record in your domain DNS manager!`, 'success');
+          store.showToast(`Copied CNAME target: ${cname}. Add this record in your DNS manager.`, 'success');
           const orig = btn.innerText;
-          btn.innerText = '✓ Copied!';
+          btn.innerText = 'Copied';
           setTimeout(() => { btn.innerText = orig; }, 2000);
         }
       }

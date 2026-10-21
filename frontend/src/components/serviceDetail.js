@@ -37,8 +37,7 @@ export function renderServiceDetail(container) {
           <div class="spin-icon" style="width: 28px; height: 28px; margin-bottom: 16px; color: #7c3aed;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" /></svg>
           </div>
-          <div style="font-size: 14px; font-weight: 500; color: #cbd5e1;">Loading resource details...</div>
-          <div style="font-size: 12px; color: var(--text-faint); margin-top: 6px;">Syncing service telemetry from edge engine</div>
+          <div style="font-size: 14px; font-weight: 500; color: #cbd5e1;">Loading...</div>
         </div>
       `;
       return;
@@ -320,7 +319,7 @@ export function renderServiceDetail(container) {
           ${isLoadingDeployments ? `
             <span style="font-size: 12px; color: #a1a1aa; display: flex; align-items: center; gap: 6px;">
               <span class="spinner" style="display:inline-block; width:12px; height:12px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.8s linear infinite;"></span>
-              Syncing AlloDeploy...
+              Syncing...
             </span>
           ` : `
             <button class="btn btn-secondary btn-xs" id="btn-refresh-deployments" style="font-size: 11px; padding: 2px 8px; color: #94a3b8;">
@@ -341,7 +340,7 @@ export function renderServiceDetail(container) {
             ${list.length === 0 ? `
               <tr>
                 <td colspan="3" style="text-align: center; padding: 36px; color: #71717a;">
-                  No deployments recorded yet. Click <strong>"Create deployment"</strong> above to launch your first build.
+                  No deployments recorded yet.
                 </td>
               </tr>
             ` : list.map((dep, idx) => {
@@ -385,9 +384,6 @@ export function renderServiceDetail(container) {
         <div class="cf-card-header">
           <div>
             <h2 class="cf-card-title">Domains</h2>
-            <p style="font-size: 12.5px; color: #a1a1aa; margin-top: 4px; margin-bottom: 0;">
-              Connect your apex domain or subdomain to route global edge traffic directly to AlloDeploy.
-            </p>
           </div>
         </div>
 
@@ -403,9 +399,6 @@ export function renderServiceDetail(container) {
                     <a href="${exactPagesUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 14px; font-weight: 600; color: #f8fafc; font-family: var(--font-mono); text-decoration: none;">
                       ${service.name}.pages.dev
                     </a>
-                  </div>
-                  <div style="font-size: 12px; color: #a1a1aa; margin-top: 2px;">
-                    AlloDeploy native edge hostname • Universal SSL Active
                   </div>
                 </div>
               </div>
@@ -426,9 +419,6 @@ export function renderServiceDetail(container) {
                         ${service.customDomain}
                       </a>
                     </div>
-                    <div style="font-size: 12px; color: #a1a1aa; margin-top: 2px;">
-                      CNAME target: <code>${service.name}.pages.dev</code> • Edge Proxy Enabled
-                    </div>
                   </div>
                 </div>
 
@@ -444,7 +434,7 @@ export function renderServiceDetail(container) {
             ` : `
               <div style="text-align: center; padding: 32px 16px; background: rgba(0,0,0,0.3); border: 1px dashed rgba(168, 85, 247, 0.22); border-radius: 8px;">
                 <p style="color: #a1a1aa; font-size: 13px; margin-bottom: 12px;">
-                  No custom domain connected yet. You can bind any branded domain or subdomain (e.g. <code>app.mycompany.com</code>).
+                  No custom domain connected yet.
                 </p>
                 <button class="btn btn-primary btn-sm btn-open-custom-domain-modal" data-id="${service.id}" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: 1px solid #9333ea; box-shadow: 0 2px 10px rgba(168, 85, 247, 0.35);">
                   Connect Custom Domain
@@ -546,8 +536,8 @@ export function renderServiceDetail(container) {
 
         ${isDevView ? `
           <div class="env-dev-editor-wrap">
-            <div style="font-size: 12px; color: #a1a1aa; margin-bottom: 4px;">
-              Developer Raw <code>.env</code> Editor (bulk paste or edit variables):
+            <div style="font-size: 12px; color: #a1a1aa; margin-bottom: 6px;">
+              Raw <code>.env</code>
             </div>
             <textarea id="env-dev-raw-text" class="env-dev-textarea" placeholder="PORT=5000\nNODE_ENV=production\nDATABASE_URL=postgres://...">${rawEnvText}</textarea>
           </div>
@@ -555,7 +545,7 @@ export function renderServiceDetail(container) {
           <div class="env-list-body" id="env-vars-container">
             ${envVars.length === 0 ? `
               <div style="text-align: center; padding: 36px 16px; color: #71717a; font-size: 13px;">
-                ${envSearchQuery ? 'No environment variables match your search query.' : 'No custom environment variables defined yet. Click <strong>"+ Add"</strong> above or switch to <strong>"Developer View"</strong>.'}
+                ${envSearchQuery ? 'No environment variables match your search.' : 'No environment variables defined yet.'}
               </div>
             ` : envVars.map((env, i) => {
               const isRevealed = revealedSecrets.has(env.key);
@@ -598,10 +588,7 @@ export function renderServiceDetail(container) {
           </div>
         `}
 
-        <div class="custom-env-footer">
-          <div style="font-size: 12px; color: #71717a;">
-            Variables are securely encrypted and injected into AlloDeploy build and runtime.
-          </div>
+        <div class="custom-env-footer" style="justify-content: flex-end;">
           <button type="button" class="btn btn-primary btn-sm" id="btn-save-env-vars" style="background: linear-gradient(135deg, #a855f7, #7c3aed); border: 1px solid #9333ea; font-weight: 600; padding: 8px 22px; box-shadow: 0 2px 10px rgba(168, 85, 247, 0.35);">
             Save Environment Variables
           </button>

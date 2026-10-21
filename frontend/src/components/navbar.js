@@ -49,14 +49,7 @@ export function renderNavbar(target) {
           `}
         </div>
 
-        <!-- Top-level Navigation Links -->
-        <nav class="coolify-nav-links" style="margin-left: 8px; display: flex; align-items: center; gap: 4px;">
-          <button type="button" class="coolify-nav-link ${activeNav === 'projects' && !isServiceDetail ? 'active' : ''}" data-nav="projects">Projects</button>
-          <button type="button" class="coolify-nav-link ${activeNav === 'servers' && !isServiceDetail ? 'active' : ''}" data-nav="servers">Servers</button>
-          <button type="button" class="coolify-nav-link ${activeNav === 'deployments' && !isServiceDetail ? 'active' : ''}" data-nav="deployments">Deployments</button>
-          <button type="button" class="coolify-nav-link ${activeNav === 'keys-tokens' && !isServiceDetail ? 'active' : ''}" data-nav="keys-tokens">Domains & Edge</button>
-          <button type="button" class="coolify-nav-link ${activeNav === 'settings' && !isServiceDetail ? 'active' : ''}" data-nav="settings">Settings</button>
-        </nav>
+
       </div>
 
       <div class="coolify-topbar-actions" style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
@@ -116,12 +109,6 @@ export function renderNavbar(target) {
       store.setView('dashboard');
     });
 
-    topbarContainer.querySelectorAll('.coolify-nav-link').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const nav = btn.getAttribute('data-nav');
-        store.setNav(nav);
-      });
-    });
 
     const profileTrigger = topbarContainer.querySelector('#topbar-user-profile-trigger');
     const profileDropdown = topbarContainer.querySelector('#topbar-profile-dropdown');

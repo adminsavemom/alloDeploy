@@ -1,5 +1,69 @@
 [
   {
+    "id": "srv-2bd46743",
+    "name": "bright-beacon-877",
+    "type": "Application",
+    "status": "running",
+    "url": "https://bright-beacon-877.pages.dev",
+    "liveDomain": "https://bright-beacon-877.pages.dev",
+    "customDomain": "",
+    "domains": [],
+    "sslEnabled": false,
+    "forceHttps": true,
+    "port": 7045,
+    "region": "Frankfurt (eu-central-1)",
+    "source": "Manual Upload (5 folder files)",
+    "gitRepo": "",
+    "gitUrl": "",
+    "gitBranch": "main",
+    "gitCommit": "",
+    "gitCommitMsg": "",
+    "gitAuthor": "",
+    "buildCommand": "",
+    "publishDir": "",
+    "autoDeploy": false,
+    "filesCount": 5,
+    "size": "463.7 KB",
+    "framework": "Static HTML Bundle",
+    "updatedAt": "Just now",
+    "createdAt": "2026-10-21 07:35",
+    "deployCount": 2,
+    "metrics": {
+      "cpu": "0.2%",
+      "memory": "463.7 KB",
+      "uptime": "100%"
+    },
+    "envVars": [],
+    "sampleFiles": [
+      "favicon.svg",
+      "icons.svg",
+      "index.html",
+      "assets/index-CEiYwKQ-.css",
+      "assets/index-DHkr5Fkm.js"
+    ],
+    "deploys": [
+      {
+        "id": "dep-1792568107164-tgtc3n",
+        "date": "Just now",
+        "hash": "de3d46",
+        "status": "running",
+        "message": "Deploy from bundle (5 files, 463.7 KB)",
+        "duration": "2.4s"
+      }
+    ],
+    "healthcheck": {
+      "path": "/",
+      "expectedStatus": 200,
+      "intervalSeconds": 30
+    },
+    "backups": [],
+    "templateType": "",
+    "userId": "usr_30cea933a128",
+    "userEmail": "kathirkamadurai.s@gmail.com",
+    "cloudflarePagesUrl": "https://bright-beacon-877.pages.dev",
+    "cloudflareConnected": true
+  },
+  {
     "id": "srv-37af0ce5",
     "name": "clean-forge-876",
     "type": "Application",

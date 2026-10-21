@@ -31,7 +31,33 @@ function timeAgo(dateInput) {
 export function renderServiceDetail(container) {
   let service = store.getSelectedService();
   if (!service) {
-    store.setView('dashboard');
+    if (store.isLoadingServices) {
+      container.innerHTML = `
+        <div style="padding: 80px 20px; text-align: center; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 360px;">
+          <div class="spin-icon" style="width: 28px; height: 28px; margin-bottom: 16px; color: #7c3aed;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" /></svg>
+          </div>
+          <div style="font-size: 14px; font-weight: 500; color: #cbd5e1;">Loading resource details...</div>
+          <div style="font-size: 12px; color: var(--text-faint); margin-top: 6px;">Syncing service telemetry from edge engine</div>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = `
+      <div style="padding: 60px 20px; text-align: center; color: var(--text-muted); max-width: 480px; margin: 40px auto; background: #0e121a; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;">
+        <h2 style="color: #fff; margin-bottom: 8px; font-size: 18px;">Resource Not Found</h2>
+        <p style="margin-bottom: 20px; font-size: 13.5px; line-height: 1.5; color: var(--text-muted);">
+          The requested service could not be located. It may have been deleted or moved to a different workspace.
+        </p>
+        <button class="btn btn-primary" id="btn-err-back-dash" style="padding: 8px 18px; font-size: 13px;">
+          Return to Projects
+        </button>
+      </div>
+    `;
+    container.querySelector('#btn-err-back-dash')?.addEventListener('click', () => {
+      store.setView('dashboard');
+    });
     return;
   }
 
@@ -643,7 +669,7 @@ export function renderServiceDetail(container) {
     container.querySelectorAll('.cf-tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         activeTab = btn.getAttribute('data-tab');
-        store.selectedDetailTab = activeTab;
+        store.setDetailTab(activeTab);
         openMenuIndex = null;
         render();
       });

@@ -33,13 +33,14 @@ class StateStore {
     this.recentDeployments = [];
     this.loadUserScopedData();
 
-    // Navigation State
+    // Navigation & Routing State
     this.activeView = 'dashboard'; // 'dashboard' | 'service-detail'
     this.activeNav = 'projects'; // Default to projects view
     this.activeTab = 'all'; // 'all' | 'applications' | 'databases' | 'services'
     this.currentEnvironment = 'production'; // 'production' | 'staging' | 'development'
     this.selectedServiceId = null;
-    this.selectedDetailTab = 'overview'; // 'overview' | 'env' | 'logs' | 'deployments' | 'settings'
+    this.selectedDetailTab = 'deployments'; // 'deployments' | 'domain' | 'env'
+    this.isLoadingServices = true;
     
     // Modals
     this.isDeployModalOpen = false;
@@ -79,6 +80,9 @@ class StateStore {
     this.fetchServicesFromBackend();
     this.fetchCloudflareConfig();
     this.checkGithubStatus();
+
+    // Initialize Router: sync route from URL hash or localStorage so refresh preserves the exact page
+    this.initRouter();
   }
 
   subscribe(listener) {
@@ -162,6 +166,9 @@ class StateStore {
     });
 
     this.services = cleanServices;
+    if (cleanServices && cleanServices.length > 0) {
+      this.isLoadingServices = false;
+    }
 
     // 2. Scoped Projects
     const rawProjects = localStorage.getItem(`allodeploy_projects_list_${userKey}`);
@@ -220,10 +227,119 @@ class StateStore {
     }, 4000);
   }
 
+  // Router and URL persistence
+  initRouter() {
+    if (typeof window === 'undefined') return;
+
+    window.addEventListener('hashchange', () => {
+      this.syncFromUrl();
+      this.notify();
+    });
+
+    this.syncFromUrl();
+  }
+
+  syncFromUrl() {
+    if (typeof window === 'undefined') return;
+    const rawHash = window.location.hash || '';
+
+    // If no hash in URL, check persisted route from localStorage
+    if (!rawHash || rawHash === '#' || rawHash === '#/') {
+      try {
+        const saved = localStorage.getItem('allodeploy_active_route');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === 'object') {
+            if (parsed.activeView === 'service-detail' && parsed.selectedServiceId) {
+              this.activeView = 'service-detail';
+              this.selectedServiceId = parsed.selectedServiceId;
+              this.selectedDetailTab = parsed.selectedDetailTab || 'deployments';
+              this.updateRouteUrl(true);
+              return;
+            } else if (parsed.activeView === 'dashboard' && parsed.activeNav) {
+              this.activeView = 'dashboard';
+              this.activeNav = parsed.activeNav;
+              this.updateRouteUrl(true);
+              return;
+            }
+          }
+        }
+      } catch (e) {}
+
+      this.activeView = 'dashboard';
+      this.activeNav = 'projects';
+      this.updateRouteUrl(true);
+      return;
+    }
+
+    const cleanHash = rawHash.startsWith('#/') ? rawHash.slice(2) : (rawHash.startsWith('#') ? rawHash.slice(1) : rawHash);
+
+    // #/services/:id or #/services/:id/:tab
+    if (cleanHash.startsWith('services/')) {
+      const parts = cleanHash.replace('services/', '').split('/');
+      const serviceId = decodeURIComponent(parts[0] || '').trim();
+      const tab = parts[1] ? decodeURIComponent(parts[1]).trim() : (this.selectedDetailTab || 'deployments');
+      if (serviceId) {
+        this.activeView = 'service-detail';
+        this.selectedServiceId = serviceId;
+        this.selectedDetailTab = tab;
+        this.persistRoute();
+        return;
+      }
+    }
+
+    // #/:nav
+    const validNavs = ['projects', 'servers', 'deployments', 'keys-tokens', 'settings', 'sources', 'team', 'analytics', 'terminal'];
+    const navMatch = validNavs.find(n => n === cleanHash.toLowerCase());
+    if (navMatch) {
+      this.activeView = 'dashboard';
+      this.activeNav = navMatch;
+      this.persistRoute();
+      return;
+    }
+
+    // Default fallback
+    this.activeView = 'dashboard';
+    this.activeNav = 'projects';
+    this.updateRouteUrl(true);
+  }
+
+  persistRoute() {
+    try {
+      localStorage.setItem('allodeploy_active_route', JSON.stringify({
+        activeView: this.activeView,
+        activeNav: this.activeNav,
+        selectedServiceId: this.selectedServiceId,
+        selectedDetailTab: this.selectedDetailTab
+      }));
+    } catch (e) {}
+  }
+
+  updateRouteUrl(replace = false) {
+    if (typeof window === 'undefined') return;
+    let targetHash = '';
+    if (this.activeView === 'service-detail' && this.selectedServiceId) {
+      targetHash = `#/services/${encodeURIComponent(this.selectedServiceId)}${this.selectedDetailTab ? `/${encodeURIComponent(this.selectedDetailTab)}` : ''}`;
+    } else {
+      targetHash = `#/${this.activeNav || 'projects'}`;
+    }
+
+    this.persistRoute();
+
+    if (window.location.hash !== targetHash) {
+      if (replace) {
+        window.history.replaceState(null, '', targetHash);
+      } else {
+        window.history.pushState(null, '', targetHash);
+      }
+    }
+  }
+
   // Navigation
   setNav(nav) {
     this.activeNav = (nav === 'dashboard' ? 'projects' : nav);
     this.activeView = 'dashboard';
+    this.updateRouteUrl(false);
     this.notify();
   }
 
@@ -241,8 +357,15 @@ class StateStore {
     if (detailTab) {
       this.selectedDetailTab = detailTab;
     } else if (view === 'dashboard') {
-      this.selectedDetailTab = 'overview';
+      this.selectedDetailTab = 'deployments';
     }
+    this.updateRouteUrl(false);
+    this.notify();
+  }
+
+  setDetailTab(tab) {
+    this.selectedDetailTab = tab;
+    this.updateRouteUrl(true);
     this.notify();
   }
 
@@ -266,6 +389,7 @@ class StateStore {
     localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(this.user));
     this.services = [];
     this.loadUserScopedData();
+    this.syncFromUrl();
     this.fetchServicesFromBackend();
     this.notify();
     this.showToast(`Welcome back, ${this.user.name}!`, 'success');
@@ -350,6 +474,7 @@ class StateStore {
     this.user = null;
     localStorage.removeItem(STORAGE_KEY_USER);
     localStorage.removeItem('allodeploy_auth_token');
+    localStorage.removeItem('allodeploy_active_route');
     this.services = [];
     this.projects = [];
     this.recentDeployments = [];
@@ -357,6 +482,9 @@ class StateStore {
     this.activeNav = 'projects';
     this.selectedServiceId = null;
     this.isDeployModalOpen = false;
+    if (typeof window !== 'undefined') {
+      window.location.hash = '';
+    }
     this.notify();
     this.showToast('You have been logged out safely.', 'info');
   }
@@ -475,6 +603,9 @@ class StateStore {
       }
     } catch (err) {
       console.warn('Could not fetch services from backend:', err);
+    } finally {
+      this.isLoadingServices = false;
+      this.notify();
     }
   }
 
@@ -1868,7 +1999,14 @@ class StateStore {
   }
 
   getSelectedService() {
-    return this.services.find(s => s.id === this.selectedServiceId) || this.services[0];
+    if (this.selectedServiceId) {
+      const match = this.services.find(s => String(s.id).toLowerCase() === String(this.selectedServiceId).toLowerCase());
+      if (match) return match;
+      const nameMatch = this.services.find(s => String(s.name).toLowerCase() === String(this.selectedServiceId).toLowerCase());
+      if (nameMatch) return nameMatch;
+      return null;
+    }
+    return this.services[0] || null;
   }
 }
 

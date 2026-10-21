@@ -7,15 +7,25 @@ export function renderNavbar(target) {
 
   const topbarContainer = target?.topbar || document.getElementById('coolify-topbar-root');
   const activeNav = store.activeNav || 'projects';
+  const isServiceDetail = store.activeView === 'service-detail';
+  const selectedService = isServiceDetail ? store.getSelectedService() : null;
 
   if (topbarContainer) {
     const navTitles = {
-      'projects': 'Projects'
+      'projects': 'Projects',
+      'servers': 'Servers',
+      'deployments': 'Deployments',
+      'keys-tokens': 'Domains & Edge',
+      'settings': 'Settings',
+      'sources': 'Sources',
+      'team': 'Organization',
+      'analytics': 'Analytics',
+      'terminal': 'Terminal'
     };
 
     topbarContainer.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 18px;">
-        <div class="coolify-brand-badge" id="btn-topbar-home" style="cursor: pointer; display: flex; align-items: center; gap: 10px;" title="alloDeploy">
+      <div style="display: flex; align-items: center; gap: 18px; flex: 1; min-width: 0;">
+        <div class="coolify-brand-badge" id="btn-topbar-home" style="cursor: pointer; display: flex; align-items: center; gap: 10px; flex-shrink: 0;" title="alloDeploy">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <rect width="24" height="24" rx="6" fill="#7c3aed" />
             <path d="M7 8h10M7 12h10M7 16h6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" />
@@ -23,14 +33,33 @@ export function renderNavbar(target) {
           <span class="coolify-title" style="font-size: 16px; font-weight: 700; color: #fff; letter-spacing: -0.02em;">alloDeploy</span>
         </div>
 
-        <div class="coolify-topbar-breadcrumb" style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #64748b;">
-          <span class="bc-root" style="color: #94a3b8; font-weight: 500;">Root Team</span>
-          <span class="bc-sep">/</span>
-          <span class="bc-active" style="color: #cbd5e1; font-weight: 600;">${navTitles[activeNav] || 'Projects'}</span>
+        <div class="coolify-topbar-breadcrumb" style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #64748b; flex-shrink: 0;">
+          ${isServiceDetail && selectedService ? `
+            <span class="bc-root" id="btn-topbar-bc-projects" style="color: #94a3b8; font-weight: 500; cursor: pointer;">Projects</span>
+            <span class="bc-sep">/</span>
+            <span class="bc-active" style="color: #cbd5e1; font-weight: 600;">${selectedService.name}</span>
+            ${store.selectedDetailTab && store.selectedDetailTab !== 'overview' ? `
+              <span class="bc-sep">/</span>
+              <span style="color: #a78bfa; font-size: 12px; text-transform: capitalize;">${store.selectedDetailTab}</span>
+            ` : ''}
+          ` : `
+            <span class="bc-root" style="color: #94a3b8; font-weight: 500;">Root Team</span>
+            <span class="bc-sep">/</span>
+            <span class="bc-active" style="color: #cbd5e1; font-weight: 600;">${navTitles[activeNav] || 'Projects'}</span>
+          `}
         </div>
+
+        <!-- Top-level Navigation Links -->
+        <nav class="coolify-nav-links" style="margin-left: 8px; display: flex; align-items: center; gap: 4px;">
+          <button type="button" class="coolify-nav-link ${activeNav === 'projects' && !isServiceDetail ? 'active' : ''}" data-nav="projects">Projects</button>
+          <button type="button" class="coolify-nav-link ${activeNav === 'servers' && !isServiceDetail ? 'active' : ''}" data-nav="servers">Servers</button>
+          <button type="button" class="coolify-nav-link ${activeNav === 'deployments' && !isServiceDetail ? 'active' : ''}" data-nav="deployments">Deployments</button>
+          <button type="button" class="coolify-nav-link ${activeNav === 'keys-tokens' && !isServiceDetail ? 'active' : ''}" data-nav="keys-tokens">Domains & Edge</button>
+          <button type="button" class="coolify-nav-link ${activeNav === 'settings' && !isServiceDetail ? 'active' : ''}" data-nav="settings">Settings</button>
+        </nav>
       </div>
 
-      <div class="coolify-topbar-actions" style="display: flex; align-items: center; gap: 12px;">
+      <div class="coolify-topbar-actions" style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
         <div class="topbar-user-section" style="position: relative; display: flex; align-items: center; gap: 8px;">
           <div class="topbar-profile-trigger" id="topbar-user-profile-trigger" style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px 8px; border-radius: 6px; user-select: none; transition: background 0.15s;" title="Account Profile">
             <div class="sidebar-avatar-circle" style="width: 26px; height: 26px; border-radius: 50%; background: #27272a; color: #f4f4f5; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center;">
@@ -80,6 +109,18 @@ export function renderNavbar(target) {
     topbarContainer.querySelector('#btn-topbar-home')?.addEventListener('click', () => {
       store.setNav('projects');
       store.setView('dashboard');
+    });
+
+    topbarContainer.querySelector('#btn-topbar-bc-projects')?.addEventListener('click', () => {
+      store.setNav('projects');
+      store.setView('dashboard');
+    });
+
+    topbarContainer.querySelectorAll('.coolify-nav-link').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const nav = btn.getAttribute('data-nav');
+        store.setNav(nav);
+      });
     });
 
     const profileTrigger = topbarContainer.querySelector('#topbar-user-profile-trigger');

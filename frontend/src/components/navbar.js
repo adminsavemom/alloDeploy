@@ -43,8 +43,6 @@ export function renderNavbar(target) {
               <span style="color: #a78bfa; font-size: 12px; text-transform: capitalize;">${store.selectedDetailTab}</span>
             ` : ''}
           ` : `
-            <span class="bc-root" style="color: #94a3b8; font-weight: 500;">Root Team</span>
-            <span class="bc-sep">/</span>
             <span class="bc-active" style="color: #cbd5e1; font-weight: 600;">${navTitles[activeNav] || 'Projects'}</span>
           `}
         </div>

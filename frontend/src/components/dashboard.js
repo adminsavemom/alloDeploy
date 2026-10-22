@@ -584,16 +584,7 @@ function renderTerminalView(container) {
 
 // 1. PROJECTS & RESOURCES VIEW
 function renderProjectsView(container) {
-  const activeTab = store.activeTab || 'all';
   let services = store.services || [];
-
-  if (activeTab === 'applications') {
-    services = services.filter(s => s.type === 'Application' || s.type.includes('Site') || s.type.includes('Web'));
-  } else if (activeTab === 'databases') {
-    services = services.filter(s => s.type === 'Database' || s.type.includes('Postgres') || s.type.includes('Redis'));
-  } else if (activeTab === 'services') {
-    services = services.filter(s => s.type === 'Service' || s.templateType);
-  }
 
   const runningCount = (store.services || []).filter(s => s.status === 'running' || s.status === 'live').length;
   const stoppedCount = (store.services || []).filter(s => s.status === 'stopped').length;
@@ -605,12 +596,12 @@ function renderProjectsView(container) {
       <!-- Coolify Workspace Header -->
       <div class="coolify-project-header">
         <div>
-          <h1 class="coolify-page-title">Resources & Applications</h1>
-          <p class="coolify-page-sub">Manage your running applications, databases, and container services hosted on this server.</p>
+          <h1 class="coolify-page-title">Projects</h1>
+          <p class="coolify-page-sub">Manage your deployed applications, websites, and projects hosted on this server.</p>
         </div>
 
         <div class="coolify-header-actions">
-          <button class="btn btn-secondary btn-sm" id="btn-refresh-services" title="Refresh Container Status">
+          <button class="btn btn-secondary btn-sm" id="btn-refresh-services" title="Refresh Project Status">
             ${icons.refresh}
             <span>Refresh</span>
           </button>
@@ -633,29 +624,20 @@ function renderProjectsView(container) {
         </div>
         <div class="summary-stat-chip">
           <span class="stat-indicator purple"></span>
-          <span>${totalCount} Total Resources</span>
+          <span>${totalCount} Total Projects</span>
         </div>
       </div>
 
-      <!-- Coolify Category Filters Toolbar -->
+      <!-- Projects Toolbar -->
       <div class="coolify-resources-toolbar">
         <div class="coolify-filter-tabs">
-          <button class="filter-tab ${activeTab === 'all' ? 'active' : ''}" data-tab="all">
-            All Resources (${totalCount})
-          </button>
-          <button class="filter-tab ${activeTab === 'applications' ? 'active' : ''}" data-tab="applications">
-            Applications (${store.services.filter(s => s.type === 'Application' || (s.type || '').includes('Site') || (s.type || '').includes('Web')).length})
-          </button>
-          <button class="filter-tab ${activeTab === 'databases' ? 'active' : ''}" data-tab="databases">
-            Databases (${store.services.filter(s => s.type === 'Database' || (s.type || '').includes('Postgres') || (s.type || '').includes('Redis')).length})
-          </button>
-          <button class="filter-tab ${activeTab === 'services' ? 'active' : ''}" data-tab="services">
-            Services (${store.services.filter(s => s.type === 'Service' || s.templateType).length})
+          <button class="filter-tab active" data-tab="all">
+            Projects (${totalCount})
           </button>
         </div>
 
         <div style="font-size: 12.5px; color: var(--text-faint);">
-          Showing ${services.length} resource${services.length === 1 ? '' : 's'}
+          Showing ${services.length} project${services.length === 1 ? '' : 's'}
         </div>
       </div>
 
@@ -665,7 +647,7 @@ function renderProjectsView(container) {
           <div class="empty-icon-circle">
             ${icons.server}
           </div>
-          <h3>No resources in this category yet</h3>
+          <h3>No projects yet</h3>
           <p>Deploy an application from Git, upload a build archive, or provision a one-click database.</p>
           <button class="btn btn-coolify-primary" id="btn-empty-create">
             ${icons.plus} New Web Project Deploy

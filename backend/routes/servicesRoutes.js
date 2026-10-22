@@ -607,7 +607,7 @@ servicesRouter.get('/:id/deployments', async (req, res) => {
     console.warn('[Cloudflare Deployments API]:', e.message);
   }
 
-  // If authentic edge deployments are available, return them sorted descending (newest first)
+  // If authentic deployments are available, return them sorted descending (newest first)
   if (cfDeployments && cfDeployments.length > 0) {
     cfDeployments.sort((a, b) => new Date(b.createdOn).getTime() - new Date(a.createdOn).getTime());
     return res.json({ success: true, deployments: cfDeployments });
@@ -789,11 +789,11 @@ servicesRouter.post('/:id/domains', async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: `Domain ${cleanDomain} added, SSL certificate issued, and Nginx reverse proxy configured.${cloudflareSync?.success ? ' Synced with AlloDeploy Edge DNS.' : ''}${customHostnameResult ? ' Custom origin routing applied.' : ''}`,
+      message: `Domain ${cleanDomain} added, SSL certificate issued, and Nginx reverse proxy configured.${cloudflareSync?.success ? ' Synced with AlloDeploy DNS.' : ''}${customHostnameResult ? ' Custom origin routing applied.' : ''}`,
       service: srv,
       certificate,
       dnsCheck,
-      edge: cloudflareSync,
+      dnsSync: cloudflareSync,
       customHostname: customHostnameResult
     });
   } catch (err) {

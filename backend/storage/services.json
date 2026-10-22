@@ -1,5 +1,66 @@
 [
   {
+    "id": "srv-cf7471f3",
+    "name": "vj-test-1",
+    "type": "Application",
+    "status": "stopped",
+    "url": "https://vj-test-1.pages.dev",
+    "liveDomain": "https://vj-test-1.pages.dev",
+    "customDomain": "",
+    "domains": [],
+    "sslEnabled": false,
+    "forceHttps": true,
+    "port": 4003,
+    "region": "Frankfurt (eu-central-1)",
+    "source": "Manual Upload (4 folder files)",
+    "gitRepo": "",
+    "gitUrl": "",
+    "gitBranch": "main",
+    "gitCommit": "",
+    "gitCommitMsg": "",
+    "gitAuthor": "",
+    "buildCommand": "",
+    "publishDir": "",
+    "autoDeploy": false,
+    "filesCount": 4,
+    "size": "109.9 KB",
+    "framework": "Static HTML Bundle",
+    "updatedAt": "Just now",
+    "createdAt": "2026-10-22 04:37",
+    "deployCount": 2,
+    "metrics": {
+      "cpu": "0.2%",
+      "memory": "109.9 KB",
+      "uptime": "100%"
+    },
+    "envVars": [],
+    "sampleFiles": [
+      "index.html",
+      "templatemo-633-celadon-script.js",
+      "templatemo-633-celadon-style.css",
+      "timer.html"
+    ],
+    "deploys": [
+      {
+        "id": "dep-1792643872124-5ou4i6",
+        "date": "Just now",
+        "hash": "072758",
+        "status": "running",
+        "message": "Deploy from bundle (4 files, 109.9 KB)",
+        "duration": "2.4s"
+      }
+    ],
+    "healthcheck": {
+      "path": "/",
+      "expectedStatus": 200,
+      "intervalSeconds": 30
+    },
+    "backups": [],
+    "templateType": "",
+    "userId": "usr_d14e02b57480",
+    "userEmail": "vijay@savemom.dev"
+  },
+  {
     "id": "srv-2bd46743",
     "name": "bright-beacon-877",
     "type": "Application",
@@ -59,9 +120,7 @@
     "backups": [],
     "templateType": "",
     "userId": "usr_30cea933a128",
-    "userEmail": "kathirkamadurai.s@gmail.com",
-    "cloudflarePagesUrl": "https://bright-beacon-877.pages.dev",
-    "cloudflareConnected": true
+    "userEmail": "kathirkamadurai.s@gmail.com"
   },
   {
     "id": "srv-37af0ce5",
@@ -151,9 +210,7 @@
     "backups": [],
     "templateType": "",
     "userId": "usr_1da2b0966b89",
-    "userEmail": "gamingspidyff@gmail.com",
-    "cloudflarePagesUrl": "https://clean-forge-876.pages.dev",
-    "cloudflareConnected": true
+    "userEmail": "gamingspidyff@gmail.com"
   },
   {
     "id": "srv-0fd2b9db",
@@ -258,8 +315,6 @@
     "backups": [],
     "templateType": "",
     "userId": "usr_30cea933a128",
-    "userEmail": "kathirkamadurai.s@gmail.com",
-    "cloudflarePagesUrl": "https://uyir-portal.pages.dev",
-    "cloudflareConnected": true
+    "userEmail": "kathirkamadurai.s@gmail.com"
   }
 ]

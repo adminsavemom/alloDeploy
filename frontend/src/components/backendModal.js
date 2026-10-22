@@ -67,7 +67,7 @@ export function renderBackendModal(container) {
                 <div style="font-size: 15px; font-weight: 700; color: #38bdf8;">${metrics.memoryUsedMB} MB (${metrics.memoryUsagePercent}%)</div>
               </div>
               <div class="metric-card" style="padding: 10px 14px;">
-                <div style="font-size: 11px; color: var(--text-faint);">EDGE LATENCY</div>
+                <div style="font-size: 11px; color: var(--text-faint);">AVERAGE LATENCY</div>
                 <div style="font-size: 15px; font-weight: 700; color: #34d399;">${metrics.averageLatencyMs} ms</div>
               </div>
             </div>
@@ -112,7 +112,7 @@ backend/
                   <tr>
                     <td><span class="method-tag get">GET</span></td>
                     <td><code>/api/health</code></td>
-                    <td>Server health and edge platform status</td>
+                    <td>Server health and platform status</td>
                   </tr>
                   <tr>
                     <td><span class="method-tag post">POST</span></td>

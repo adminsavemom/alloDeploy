@@ -107,11 +107,11 @@ server {
     }
 
     const config = `# ==============================================================================
-# AlloDeploy Nginx Reverse Proxy Configuration (Edge Gateway)
+# AlloDeploy Nginx Reverse Proxy Configuration (Gateway)
 # Resource:    ${serviceName} (UUID: ${service.id || 'srv-local'})
 # Target:      http://127.0.0.1:${port} -> ${primaryDomain}
 # Generated:   ${new Date().toISOString()}
-# Managed by:  AlloDeploy Edge Reverse Proxy & Certbot Engine
+# Managed by:  AlloDeploy Reverse Proxy & Certbot Engine
 # ==============================================================================
 ${httpRedirectBlock}
 server {
@@ -124,7 +124,7 @@ ${sslBlock}
     add_header X-Content-Type-Options "nosniff" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header X-Forwarded-Proto $scheme always;
-    add_header X-Powered-By "AlloDeploy/4.0-EdgeProxy" always;
+    add_header X-Powered-By "AlloDeploy/4.0-Proxy" always;
 
     # Gzip Dynamic Compression
     gzip on;
@@ -305,7 +305,7 @@ ${sslBlock}
     } catch {
       return { 
         success: true, 
-        message: 'AlloDeploy Nginx Edge Proxy synchronized and active virtual hosts reloaded.', 
+        message: 'AlloDeploy Nginx Proxy synchronized and active virtual hosts reloaded.', 
         native: false, 
         timestamp: lastReloadTime,
         reloadCount
@@ -343,8 +343,8 @@ ${sslBlock}
     const vhosts = this.listVhosts();
     return {
       status: 'active',
-      daemon: 'AlloDeploy Nginx Edge Gateway',
-      version: '1.25.4 (AlloDeploy Custom Edge Proxy)',
+      daemon: 'AlloDeploy Nginx Gateway',
+      version: '1.25.4 (AlloDeploy Custom Proxy)',
       activeVhosts: vhosts.length,
       vhosts,
       lastReloadTime,

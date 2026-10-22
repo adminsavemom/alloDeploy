@@ -174,7 +174,7 @@ function renderCoolifyHomeDashboard(container) {
               <span style="color: #34d399; font-weight: 600;">● Online</span>
               <span>CPU: ${serverMetrics.cpu || '0.4%'}</span>
               <span>RAM: ${serverMetrics.memory || '52 MB'}</span>
-              <span>Edge: ${store.cloudflareConfig?.configured ? 'Connected' : 'Direct host'}</span>
+              <span>Network: ${store.cloudflareConfig?.configured ? 'Connected' : 'Direct host'}</span>
             </div>
           </div>
           <div class="server-alert-icon" title="Primary Host Engine">
@@ -507,10 +507,10 @@ function renderAnalyticsView(container) {
         <div>
           <div class="project-env-badge">
             <span class="status-dot live"></span>
-            <span>SYSTEM TELEMETRY & EDGE ANALYTICS</span>
+            <span>SYSTEM TELEMETRY & ANALYTICS</span>
           </div>
           <h1 class="coolify-page-title">Analytics & Metrics</h1>
-          <p class="coolify-page-sub">Host server utilization, Docker runtime memory, and AlloDeploy edge network traffic.</p>
+          <p class="coolify-page-sub">Host server utilization, Docker runtime memory, and AlloDeploy network traffic.</p>
         </div>
       </div>
 
@@ -528,7 +528,7 @@ function renderAnalyticsView(container) {
         </div>
 
         <div class="metric-card" style="padding: 18px;">
-          <div style="font-size: 11px; color: var(--text-faint); text-transform: uppercase; font-weight: 700;">AlloDeploy Edge CDN Hits</div>
+          <div style="font-size: 11px; color: var(--text-faint); text-transform: uppercase; font-weight: 700;">AlloDeploy CDN Hits</div>
           <div style="font-size: 26px; font-weight: 800; color: #f6821f; margin-top: 6px;">
             ${cf.configured ? '98.4% Cached' : 'Direct Host'}
           </div>
@@ -563,7 +563,7 @@ function renderTerminalView(container) {
         <div style="color: #64748b; margin-bottom: 12px;">Connected to AlloDeploy Host Engine on Windows / PowerShell runtime. Type commands below.</div>
         <div style="color: #c084fc; margin-bottom: 4px;">root@localhost:~$ systemctl status allodeploy-engine</div>
         <div style="color: #34d399; margin-bottom: 12px;">● allodeploy-engine.service - Production Container Supervisor<br>&nbsp;&nbsp;Loaded: loaded (/etc/systemd/system/allodeploy.service)<br>&nbsp;&nbsp;Active: active (running) since Boot</div>
-        <div style="color: #c084fc; margin-bottom: 4px;">root@localhost:~$ allodeploy-edge status</div>
+        <div style="color: #c084fc; margin-bottom: 4px;">root@localhost:~$ allodeploy status</div>
         <div style="color: #f6821f; margin-bottom: 12px;">AlloDeploy API Gateway: Active (Token Scoped Zone.DNS, CachePurge)</div>
         <div style="display: flex; gap: 8px; align-items: center; margin-top: 20px;">
           <span style="color: #34d399;">root@localhost:~$</span>
@@ -659,7 +659,7 @@ function renderProjectsView(container) {
             const isRunning = srv.status === 'running' || srv.status === 'live';
             const isDb = srv.type === 'Database' || srv.type.includes('Postgres') || srv.type.includes('Redis');
 
-            // Canonical Cloudflare Pages Deployment URL (Guaranteed exact working edge link)
+            // Canonical Cloudflare Pages Deployment URL (Guaranteed exact working link)
             const exactPagesUrl = srv.cloudflarePagesUrl && !srv.cloudflarePagesUrl.includes('localhost')
               ? srv.cloudflarePagesUrl
               : (srv.url && !srv.url.includes('localhost') && srv.url.includes('.pages.dev')
@@ -982,7 +982,7 @@ function renderSettingsView(container, initialTab = null) {
             <span>PRODUCTION INSTANCE</span>
           </div>
           <h1 class="coolify-page-title">Infrastructure Settings</h1>
-          <p class="coolify-page-sub">Configure AlloDeploy Edge API network, GitHub VCS connection, server runtime engine, and organization security.</p>
+          <p class="coolify-page-sub">Configure AlloDeploy API network, GitHub VCS connection, server runtime engine, and organization security.</p>
         </div>
       </div>
 
@@ -1023,7 +1023,7 @@ function renderSettingsView(container, initialTab = null) {
             <div>
               <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="#a855f7"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
-                <h2 style="font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.01em;">AlloDeploy Edge & DNS Network</h2>
+                <h2 style="font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.01em;">AlloDeploy DNS Network</h2>
               </div>
               <p style="font-size: 13.5px; color: var(--text-muted); max-width: 640px; line-height: 1.5;">
                 Connect AlloDeploy API to automate authoritative DNS records, instant worldwide CDN cache purges, and enterprise DDoS mitigation via AlloDeploy Proxy.
@@ -1062,7 +1062,7 @@ function renderSettingsView(container, initialTab = null) {
           <div class="form-grid-2">
             <div class="auth-form-group">
               <label class="auth-form-label">
-                <span>AlloDeploy Account ID (for Edge)</span>
+                <span>AlloDeploy Account ID</span>
                 ${(store.cloudflareAccounts && store.cloudflareAccounts.length > 0) ? `
                   <span style="color: #34d399; font-size: 11px;">● ${store.cloudflareAccounts.length} Account(s)</span>
                 ` : ''}
@@ -1076,7 +1076,7 @@ function renderSettingsView(container, initialTab = null) {
                 </select>
               ` : ''}
               <input type="text" id="cf-account-id" class="auth-input" style="font-family: var(--font-mono);" placeholder="e.g. 023e105f4ecef8ad9ca31a8372d0c353" value="${cf.accountId || ''}" />
-              <span style="font-size: 11.5px; color: var(--text-faint); margin-top: 5px;">Required for AlloDeploy edge deployments.</span>
+              <span style="font-size: 11.5px; color: var(--text-faint); margin-top: 5px;">Required for AlloDeploy deployments.</span>
             </div>
 
             <div class="auth-form-group">
@@ -1120,7 +1120,7 @@ function renderSettingsView(container, initialTab = null) {
               <input type="checkbox" id="cf-auto-purge" ${cf.autoPurge !== false ? 'checked' : ''} />
               <div>
                 <strong style="color: #fff;">Instant Global CDN Cache Invalidation</strong>
-                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Purge worldwide AlloDeploy CDN edge cache automatically upon successful service deployments.</div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Purge worldwide AlloDeploy CDN cache automatically upon successful service deployments.</div>
               </div>
             </label>
 

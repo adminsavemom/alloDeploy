@@ -15,7 +15,7 @@ export function renderNavbar(target) {
       'projects': 'Projects',
       'servers': 'Servers',
       'deployments': 'Deployments',
-      'keys-tokens': 'Domains & Edge',
+      'keys-tokens': 'Domains & DNS',
       'settings': 'Settings',
       'sources': 'Sources',
       'team': 'Organization',

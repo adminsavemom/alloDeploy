@@ -57,7 +57,7 @@ cloudflareRouter.post('/config', async (req, res) => {
 
     res.json({
       success: true,
-      message: 'AlloDeploy Edge configuration saved successfully.',
+      message: 'AlloDeploy configuration saved successfully.',
       config: saved,
       verification: verify
     });
@@ -153,7 +153,7 @@ cloudflareRouter.post('/dns', async (req, res) => {
 
     res.json({
       success: true,
-      message: `DNS record ${name} ${result.action} on AlloDeploy Edge.`,
+      message: `DNS record ${name} ${result.action} on AlloDeploy.`,
       result
     });
   } catch (err) {
@@ -167,7 +167,7 @@ cloudflareRouter.delete('/dns/:recordId', async (req, res) => {
     const { recordId } = req.params;
     const zoneId = req.query.zoneId;
     const result = await cloudflareService.deleteDnsRecord({ zoneId, recordId });
-    res.json({ success: true, message: 'DNS record removed from AlloDeploy Edge.', result });
+    res.json({ success: true, message: 'DNS record removed from AlloDeploy.', result });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -179,13 +179,13 @@ cloudflareRouter.post('/dns/:recordId/toggle-proxy', async (req, res) => {
     const { recordId } = req.params;
     const { zoneId, proxied } = req.body;
     const result = await cloudflareService.toggleProxy({ zoneId, recordId, proxied });
-    res.json({ success: true, message: `AlloDeploy Edge Proxy ${proxied ? 'enabled' : 'disabled'}`, record: result });
+    res.json({ success: true, message: `AlloDeploy Proxy ${proxied ? 'enabled' : 'disabled'}`, record: result });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST /api/cloudflare/purge - Purge Edge Cache
+// POST /api/cloudflare/purge - Purge Cache
 cloudflareRouter.post('/purge', async (req, res) => {
   try {
     const { zoneId, files, purgeEverything } = req.body;
@@ -194,7 +194,7 @@ cloudflareRouter.post('/purge', async (req, res) => {
       files: files || [],
       purgeEverything: !!purgeEverything
     });
-    res.json({ success: true, message: 'AlloDeploy Edge CDN cache purged successfully', result });
+    res.json({ success: true, message: 'AlloDeploy CDN cache purged successfully', result });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

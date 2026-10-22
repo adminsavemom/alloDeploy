@@ -58,7 +58,7 @@ class StateStore {
     this.backendMetrics = null;
     this.serverMetrics = null;
 
-    // Cloudflare Edge & DNS integration
+    // Cloudflare DNS integration
     this.cloudflareConfig = null;
     this.edgeConfig = null;
     this.cloudflareAccounts = [];
@@ -136,6 +136,7 @@ class StateStore {
       'nextjs-saas-starter',
       'nebula-cloud-docs',
       'synthwave-edge-api',
+      'synthwave-api',
       'zenith-dashboard-ui',
       'supabase-pg-vault',
       'test-git-app'
@@ -568,6 +569,7 @@ class StateStore {
           'nextjs-saas-starter',
           'nebula-cloud-docs',
           'synthwave-edge-api',
+          'synthwave-api',
           'zenith-dashboard-ui',
           'supabase-pg-vault'
         ]);
@@ -1662,7 +1664,7 @@ class StateStore {
     return null;
   }
 
-  // ALLODEPLOY EDGE & DNS AUTOMATION (Global Anycast Edge Network)
+  // ALLODEPLOY DNS AUTOMATION (Global Anycast Network)
   async fetchEdgeConfig() {
     try {
       const res = await fetch(`${this.backendUrl}/api/edge/config`);
@@ -1679,7 +1681,7 @@ class StateStore {
     }
   }
 
-  // CLOUDFLARE API & DNS AUTOMATION (Global Edge Network)
+  // CLOUDFLARE API & DNS AUTOMATION (Global Network)
   async fetchCloudflareConfig() {
     try {
       const res = await fetch(`${this.backendUrl}/api/cloudflare/config`);
@@ -1884,7 +1886,7 @@ class StateStore {
   }
 
   async purgeCloudflareCache(zoneId = null, purgeEverything = true) {
-    this.showToast('Purging AlloDeploy Edge Cache worldwide...', 'info');
+    this.showToast('Purging AlloDeploy Cache worldwide...', 'info');
     try {
       const res = await fetch(`${this.backendUrl}/api/cloudflare/purge`, {
         method: 'POST',
@@ -1893,7 +1895,7 @@ class StateStore {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        this.showToast('Edge cache purged successfully.', 'success');
+        this.showToast('Cache purged successfully.', 'success');
         return data;
       } else {
         this.showToast(data.error || 'Cache purge failed', 'error');
@@ -1970,7 +1972,7 @@ class StateStore {
   }
 
   async syncServiceWithCloudflare(serviceId, domain, options = {}) {
-    this.showToast(`Provisioning AlloDeploy DNS & Edge Proxy for ${domain}...`, 'info');
+    this.showToast(`Provisioning AlloDeploy DNS & Proxy for ${domain}...`, 'info');
     try {
       const res = await fetch(`${this.backendUrl}/api/cloudflare/sync-service/${serviceId}`, {
         method: 'POST',
@@ -1987,7 +1989,7 @@ class StateStore {
             this.notify();
           }
         }
-        this.showToast(`Domain ${domain} provisioned on AlloDeploy with Edge Proxy!`, 'success');
+        this.showToast(`Domain ${domain} provisioned on AlloDeploy with Proxy!`, 'success');
         return data;
       } else {
         this.showToast(data.error || 'Failed to sync domain with AlloDeploy', 'error');

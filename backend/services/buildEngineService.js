@@ -121,9 +121,9 @@ export const buildEngineService = {
     addLog('INFO', `==> Nginx gateway reloaded without dropping active traffic (${reloadResult.message})`);
 
     // =========================================================================
-    // Step 7: Cloudflare API & Edge Network Deployment
+    // Step 7: Cloudflare API & Network Deployment
     // =========================================================================
-    addLog('BUILD', `[Step 7/8] Connecting to Cloudflare API for Edge Build & Deployment...`, 88);
+    addLog('BUILD', `[Step 7/8] Connecting to Cloudflare API for Build & Deployment...`, 88);
     const cfCfg = cloudflareService.getConfig();
     const siteDir = storageService.getSiteDir(service.name);
     const localUrl = `http://localhost:${process.env.PORT || 5000}/sites/${service.name}/`;
@@ -187,26 +187,26 @@ export const buildEngineService = {
       const probe = await automationService.probeService(service);
       addLog('SUCCESS', `==> Healthcheck response: ${probe.statusCode} OK (latency: ${probe.latencyMs}ms)`);
     } catch {
-      addLog('INFO', `==> Healthcheck verified via edge reverse proxy.`);
+      addLog('INFO', `==> Healthcheck verified via reverse proxy.`);
     }
 
     // Create Snapshot for instant Rollback support
     await this.createSnapshot(service, deployId, nginxConf);
     addLog('SUCCESS', `✔ Snapshot archived for 1-click rollback: ${deployId}`);
 
-    // Cloudflare Edge Cache Purge Automation
+    // Cloudflare Cache Purge Automation
     if (cloudflareService.isConfigured() && cfCfg.autoPurge) {
       try {
         const purgeRes = await cloudflareService.purgeCache();
         if (purgeRes?.success) {
-          addLog('SUCCESS', `⚡ Cloudflare Edge CDN cache purged worldwide for updated assets.`);
+          addLog('SUCCESS', `⚡ Cloudflare CDN cache purged worldwide for updated assets.`);
         }
       } catch (cfErr) {
-        addLog('WARN', `==> Cloudflare Edge purge notice: ${cfErr.message}`);
+        addLog('WARN', `==> Cloudflare purge notice: ${cfErr.message}`);
       }
     }
 
-    addLog('SUCCESS', `✔ Deployment complete! ${service.name} is LIVE on Cloudflare Edge at ${service.url}`);
+    addLog('SUCCESS', `✔ Deployment complete! ${service.name} is LIVE on Cloudflare at ${service.url}`);
 
     // Save deploy record
     const deployRecord = {

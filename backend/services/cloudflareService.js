@@ -72,7 +72,7 @@ export const cloudflareService = {
 
   getHeaders(overrideToken = null) {
     const token = overrideToken || this.getConfig().apiToken;
-    if (!token) throw new Error('AlloDeploy Edge API Token is not configured.');
+    if (!token) throw new Error('AlloDeploy API Token is not configured.');
     return {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
@@ -277,7 +277,7 @@ export const cloudflareService = {
     }
   },
 
-  // Purge Edge Cache for entire zone or specific URLs
+  // Purge Cache for entire zone or specific URLs
   async purgeCache({ zoneId, files = [], purgeEverything = false } = {}) {
     try {
       const cfg = this.getConfig();
@@ -325,14 +325,14 @@ export const cloudflareService = {
   async autoSyncDomainForResource(resource, domainName, options = {}) {
     const cfg = this.getConfig();
     if (!cfg.apiToken) {
-      return { skipped: true, reason: 'AlloDeploy Edge API token not configured' };
+      return { skipped: true, reason: 'AlloDeploy API token not configured' };
     }
 
     try {
       // Find matching zone
       const matchedZone = await this.findZoneForDomain(domainName);
       if (!matchedZone) {
-        return { skipped: true, reason: `No matching AlloDeploy Edge zone found for ${domainName}` };
+        return { skipped: true, reason: `No matching AlloDeploy zone found for ${domainName}` };
       }
 
       // Check if domain is apex or subdomain
@@ -433,7 +433,7 @@ export const cloudflareService = {
     return createData.result;
   },
 
-  // Deploy project bundle through Cloudflare Pages API & Edge Network
+  // Deploy project bundle through Cloudflare Pages API & Global Network
   async deployPagesProject(projectName, { siteDir = null, branch = 'main', onLog = null } = {}) {
     const cfg = this.getConfig();
     const cleanName = (projectName || 'site').toLowerCase().replace(/[^a-z0-9-]/g, '-');
@@ -573,7 +573,7 @@ export const cloudflareService = {
           previewUrl,
           canonicalUrl: defaultPagesUrl,
           projectName: cleanName,
-          message: `Deployed live to Cloudflare Pages edge network at ${finalUrl}`
+          message: `Deployed live to Cloudflare Pages network at ${finalUrl}`
         };
       }
 

@@ -54,7 +54,7 @@ export function renderPreviewModal(container) {
                 Live Site
               </button>
               <button class="btn btn-sm ${activeTab === 'telemetry' ? 'btn-primary' : 'btn-secondary'}" id="btn-tab-telemetry" style="font-size: 11.5px; padding: 4px 10px;">
-                Edge Headers
+                Response Headers
               </button>
             </div>
 
@@ -93,12 +93,12 @@ export function renderPreviewModal(container) {
                 ></iframe>
               </div>
             ` : `
-              <!-- Edge Headers & Telemetry View -->
+              <!-- Headers & Telemetry View -->
               <div style="width: 100%; max-width: 820px; background: #0a0e17; border: 1px solid var(--border-default); border-radius: var(--radius-lg); padding: 24px; color: #e2e8f0; display: flex; flex-direction: column; gap: 18px; margin: auto;">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
                   <div>
-                    <h3 style="font-size: 16px; font-weight: 700;">Edge Telemetry</h3>
-                    <p style="font-size: 12px; color: var(--text-faint);">Diagnostic probe responses from edge network</p>
+                    <h3 style="font-size: 16px; font-weight: 700;">Network Telemetry</h3>
+                    <p style="font-size: 12px; color: var(--text-faint);">Diagnostic probe responses from network</p>
                   </div>
                   <span class="badge badge-live">HTTP/3 200 OK</span>
                 </div>
@@ -109,7 +109,7 @@ export function renderPreviewModal(container) {
                     <div style="font-size: 14px; font-weight: 600; color: #38bdf8;">${srv.region}</div>
                   </div>
                   <div class="metric-card" style="padding: 12px;">
-                    <div style="font-size: 11px; color: var(--text-faint);">EDGE CACHE STATUS</div>
+                    <div style="font-size: 11px; color: var(--text-faint);">CACHE STATUS</div>
                     <div style="font-size: 14px; font-weight: 600; color: #34d399;">HIT (Age: 42s)</div>
                   </div>
                   <div class="metric-card" style="padding: 12px;">
@@ -136,7 +136,7 @@ CF-Cache-Status: HIT
 Age: 42
 Cache-Control: public, max-age=31536000, immutable
 Alt-Svc: h3=":443"; ma=86400
-X-Edge-Origin-Region: ${srv.region}
+X-Origin-Region: ${srv.region}
 X-Content-Type-Options: nosniff
 Strict-Transport-Security: max-age=31536000; includeSubDomains; preload</code></pre>
                 </div>
@@ -188,7 +188,7 @@ Strict-Transport-Security: max-age=31536000; includeSubDomains; preload</code></
 
     // Refresh simulation
     container.querySelector('#btn-refresh-preview')?.addEventListener('click', () => {
-      store.showToast('Reloading edge preview...', 'info');
+      store.showToast('Reloading preview...', 'info');
       const frame = container.querySelector('#preview-sandboxed-frame');
       if (frame) {
         frame.srcdoc = '';
@@ -231,7 +231,7 @@ Strict-Transport-Security: max-age=31536000; includeSubDomains; preload</code></
   <header>
     <div class="logo">${service.name}</div>
     <div style="font-size: 12.5px; color: #34d399; display: flex; align-items: center; gap: 6px;">
-      <span>● Live on Edge (${service.region})</span>
+      <span>● Live (${service.region})</span>
     </div>
   </header>
   <div class="hero">
@@ -239,11 +239,11 @@ Strict-Transport-Security: max-age=31536000; includeSubDomains; preload</code></
     <h1>${service.name}</h1>
     <p>Deployed from ${service.source} with automated Brotli pre-compression, Anycast DNS, and Let's Encrypt Wildcard SSL.</p>
     <div>
-      <button class="btn btn-primary" onclick="alert('Action triggered on edge node!')">Deploy Endpoint</button>
-      <button class="btn btn-secondary" onclick="alert('Viewing edge logs...')">Inspect Logs</button>
+      <button class="btn btn-primary" onclick="alert('Action triggered on server node!')">Deploy Endpoint</button>
+      <button class="btn btn-secondary" onclick="alert('Viewing logs...')">Inspect Logs</button>
     </div>
     <div class="demo-widget">
-      <div style="font-size: 13px; font-weight: 600; color: #cbd5e1;">Live Edge State Counter</div>
+      <div style="font-size: 13px; font-weight: 600; color: #cbd5e1;">Live State Counter</div>
       <div class="counter-display" id="cnt">84</div>
       <div style="display: flex; gap: 8px; justify-content: center;">
         <button class="btn btn-secondary" style="padding: 6px 14px; font-size: 12px;" onclick="document.getElementById('cnt').innerText = parseInt(document.getElementById('cnt').innerText) - 1">- Decrement</button>

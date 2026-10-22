@@ -46,12 +46,12 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'online',
     version: '4.0.0',
-    platform: 'AlloDeploy Edge Engine',
+    platform: 'AlloDeploy Engine',
     database: db.isDbConnected() ? 'Supabase PostgreSQL (Connected)' : 'Local JSON Storage Fallback',
     nginxGateway: nginxService.getStatus().status,
     activeVhosts: nginxService.getStatus().activeVhosts,
     certificatesCount: certbotService.getCertificates().length,
-    edgeNetwork: cloudflareService.isConfigured() ? 'active' : 'unconfigured',
+    networkStatus: cloudflareService.isConfigured() ? 'active' : 'unconfigured',
     uptime: Math.floor(process.uptime()),
     timestamp: new Date().toISOString()
   });
@@ -160,7 +160,7 @@ app.use(async (req, res, next) => {
   `);
 });
 
-// Edge Static Hosting Endpoint: /sites/:subdomain/*
+// Static Hosting Endpoint: /sites/:subdomain/*
 app.use('/sites/:subdomain', async (req, res) => {
   const subdomain = req.params.subdomain;
   const services = (await storageService.getServices()) || [];
@@ -265,7 +265,7 @@ async function boot() {
     console.log(`⚡ AlloDeploy Engine Live on http://localhost:${PORT}`);
     console.log(`🗄️ Database:     ${db.isDbConnected() ? 'Supabase PostgreSQL (Connected)' : 'Local Storage Fallback'}`);
     console.log(`🚀 Deployment:   POST /api/deploy/upload & /api/deploy/github`);
-    console.log(`🌐 Edge API:     GET/POST /api/edge/config & /api/edge/dns`);
+    console.log(`🌐 DNS/Proxy API: GET/POST /api/edge/config & /api/edge/dns`);
     console.log(`🛡️ Nginx Proxy:  GET/PUT /api/nginx/status & /api/nginx/vhosts`);
     console.log(`🔒 Certbot SSL:  POST /api/ssl/issue & /api/ssl/renew/:domain`);
     console.log(`📦 Services API: http://localhost:${PORT}/api/services`);

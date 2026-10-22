@@ -1,13 +1,13 @@
-# AlloDeploy — Self-Hosted Web & Edge Deployment Manager
+# AlloDeploy — Self-Hosted Web & Application Deployment Manager
 
-AlloDeploy is a modern self-hosted application and website deployment manager with built-in Cloudflare Pages & Anycast Edge integration, drag-and-drop instant bundle deployments, and custom domain management with automated SSL.
+AlloDeploy is a modern self-hosted application and website deployment manager with built-in Cloudflare Pages & Anycast Network integration, drag-and-drop instant bundle deployments, and custom domain management with automated SSL.
 
 ---
 
 ## ✨ Features
 
-- **🚀 Cloudflare Pages & Edge Integration**: Automated Anycast Edge deployment, instant global caching, and SSL certificate provisioning.
-- **🌐 Custom Domain Management**: Full CNAME verification, live DNS status checks, and automated edge binding.
+- **🚀 Cloudflare Pages & Global CDN Integration**: Automated Anycast deployment, instant global caching, and SSL certificate provisioning.
+- **🌐 Custom Domain Management**: Full CNAME verification, live DNS status checks, and automated domain binding.
 - **📦 Instant Drag & Drop Deployment**: Drop project bundles (`.zip` or folders) directly onto the window for zero-config deployments.
 - **⚡ Interactive Workspace**: Manage containers, static sites, databases, environment variables, and live terminal logs.
 - **🔒 Secure Architecture**: Zero-exposure secret management and token-scoped Cloudflare API integration.
@@ -17,7 +17,7 @@ AlloDeploy is a modern self-hosted application and website deployment manager wi
 ## 🛠️ Tech Stack
 
 - **Frontend**: Vanilla JS (ES Modules), Vite, CSS Design System
-- **Backend**: Node.js, Express, Cloudflare REST APIs, Wrangler & Edge bindings
+- **Backend**: Node.js, Express, Cloudflare REST APIs, Wrangler & Proxy bindings
 - **Storage**: JSON / PostgreSQL (Supabase ready) persistence with telemetry tracking
 
 ---

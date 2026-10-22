@@ -4,11 +4,11 @@
 
 ## 1. Executive Summary & Project Vision
 
-**AlloDeploy** (Website Hosting Manager) is a modern, self-hosted Platform-as-a-Service (PaaS) and edge deployment platform. Inspired by systems like **Coolify**, **Vercel**, **Netlify**, and **Heroku**, AlloDeploy gives developers and teams complete control over their hosting infrastructure without relying on costly closed-source vendor platforms.
+**AlloDeploy** (Website Hosting Manager) is a modern, self-hosted Platform-as-a-Service (PaaS) and deployment platform. Inspired by systems like **Coolify**, **Vercel**, **Netlify**, and **Heroku**, AlloDeploy gives developers and teams complete control over their hosting infrastructure without relying on costly closed-source vendor platforms.
 
 ### Core Capabilities
 - **Direct Folder & ZIP Uploads**: Instant drag-and-drop deployment of frontend sites, single-page applications (SPAs), and static assets.
-- **Edge Network Distribution**: Integrated with **Cloudflare Pages** and edge routing for instant global CDN caching, automatic SSL/TLS termination, and DDoS protection.
+- **Global Network Distribution**: Integrated with **Cloudflare Pages** and routing for instant global CDN caching, automatic SSL/TLS termination, and DDoS protection.
 - **Strict Account-Based Isolation**: Multi-tenant architecture where each registered user can only access, deploy, configure, and delete projects that belong directly to their account.
 - **Custom Domains & DNS Engine**: 1-click domain binding with automatic CNAME generation (`<project>.pages.dev`), DNS propagation checking, and cache purging.
 - **Dual-Layer Persistence**: Enterprise-grade **Supabase PostgreSQL** database storage with an automated zero-downtime local JSON storage fallback.
@@ -19,7 +19,7 @@
 
 ## 2. High-Level System Architecture
 
-AlloDeploy is built as a modular client-server system with edge acceleration:
+AlloDeploy is built as a modular client-server system with cloud acceleration:
 
 ```mermaid
 graph TD
@@ -38,9 +38,9 @@ graph TD
         LocalJSON["Local JSON Cache\n(backend/storage/services.json)"]
     end
 
-    subgraph EdgeLayer ["Global Edge Network"]
+    subgraph NetworkLayer ["Global Network"]
         CloudflarePages["Cloudflare Pages API\n(<project>.pages.dev)"]
-        CustomDNS["Custom Domain CNAME\n(Edge Proxy / SSL)"]
+        CustomDNS["Custom Domain CNAME\n(Proxy / SSL)"]
     end
 
     Client -->|REST & SSE API| API
@@ -69,7 +69,7 @@ graph TD
 | **File Handling** | Multer, JSZip | Streaming multipart uploads (up to 100MB), zip extraction, directory tree generation. |
 | **Primary Database** | Supabase (PostgreSQL 15+) | Relational persistence for projects (`services` table) and accounts (`users` table). |
 | **Fallback Storage** | Local JSON (`fs` / `path`) | Standalone file persistence when Supabase credentials or network connection are unavailable. |
-| **Edge & CDN** | Cloudflare Pages & DNS API | Edge hosting, custom hostname SSL certificates, global CDN caching, instant edge cache purging. |
+| **CDN & DNS** | Cloudflare Pages & DNS API | Hosting, custom hostname SSL certificates, global CDN caching, instant cache purging. |
 | **Local Proxy** | Custom Express Middleware | Host-header inspection serving local static bundles directly to visitors. |
 
 ---
@@ -116,12 +116,12 @@ sequenceDiagram
     UI->>User: Displays success screen with live URLs
 ```
 
-### 4.4 Custom Domain & Edge DNS Management
-- **CNAME Mapping**: Each deployed project is assigned an canonical edge target: `<project-name>.pages.dev`.
+### 4.4 Custom Domain & DNS Management
+- **CNAME Mapping**: Each deployed project is assigned a canonical target: `<project-name>.pages.dev`.
 - **Domain Binding**: In the **Domain Settings** modal or Project Details, developers specify custom branded domains (e.g. `testuyir.allokonnect.com`).
 - **1-Click Copy**: The CNAME target includes a cross-environment copy button with automatic fallback (`navigator.clipboard` -> temporary textarea -> prompt) and visual feedback (`✓ Copied!`).
-- **Real-Time DNS Verification**: Clicking **Check DNS** queries live DNS over HTTPS (DoH) to check whether the domain resolves to the edge target.
-- **Cache Invalidation**: Single-click **Purge Cache** transmits an edge purge command to Cloudflare to clear stale assets globally.
+- **Real-Time DNS Verification**: Clicking **Check DNS** queries live DNS over HTTPS (DoH) to check whether the domain resolves to the target.
+- **Cache Invalidation**: Single-click **Purge Cache** transmits a purge command to Cloudflare to clear stale assets globally.
 
 ### 4.5 Environment Variables & Secret Vault
 - **Build vs. Runtime Secrets**: Variables can be flagged as `isSecret` (hidden from normal view with toggleable reveal eye) or `isBuildSecret`.
@@ -228,7 +228,7 @@ Website hosting manager/
 | `PUT` | `/api/services/:id/domain-settings` | Update domain, protocol, origin, and port | `x-user-id`, `x-user-email`, JSON |
 | `PUT` | `/api/services/:id/env` | Bulk update environment variables | `x-user-id`, `x-user-email`, JSON |
 | `DELETE` | `/api/services/:id/env/:key`| Delete a specific environment variable | `x-user-id`, `x-user-email` |
-| `DELETE` | `/api/services/:id` | Permanently delete project, folder & edge records | `x-user-id`, `x-user-email` |
+| `DELETE` | `/api/services/:id` | Permanently delete project, folder & records | `x-user-id`, `x-user-email` |
 
 ---
 
@@ -267,7 +267,7 @@ CREATE TABLE IF NOT EXISTS services (
   ssl_enabled BOOLEAN DEFAULT false,
   force_https BOOLEAN DEFAULT true,
   port INT DEFAULT 3000,
-  region TEXT DEFAULT 'Global Edge',
+  region TEXT DEFAULT 'Global',
   source TEXT DEFAULT 'Manual Upload',
   git_repo TEXT DEFAULT '',
   git_branch TEXT DEFAULT 'main',

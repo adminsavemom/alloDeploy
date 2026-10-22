@@ -144,7 +144,7 @@ deployRouter.post('/upload', upload.any(), async (req, res) => {
       deploys: existing?.deploys || []
     };
 
-    // Auto-sync Cloudflare DNS & Edge Hosting if domain specified
+    // Auto-sync Cloudflare DNS & Hosting if domain specified
     const targetDomain = req.body.cloudflareDomain || req.body.customDomain;
     if (targetDomain && cloudflareService.isConfigured()) {
       try {
@@ -328,7 +328,7 @@ deployRouter.post('/github', async (req, res) => {
       deploys: []
     };
 
-    // Auto-sync Cloudflare DNS & Edge Hosting if domain specified
+    // Auto-sync Cloudflare DNS & Hosting if domain specified
     const targetDomain = req.body.cloudflareDomain || req.body.customDomain;
     if (targetDomain && cloudflareService.isConfigured()) {
       try {

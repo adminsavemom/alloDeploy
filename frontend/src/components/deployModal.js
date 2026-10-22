@@ -54,7 +54,7 @@ let logFilter = 'all'; // 'all' | 'build' | 'network' | 'security'
 let logLines = [];
 let newServiceCreated = null;
 
-// Cloudflare Edge Hosting & Custom Domain State
+// Cloudflare Hosting & Custom Domain State
 let cfDomain = '';
 let cfZoneId = '';
 let cfProxied = true;
@@ -124,11 +124,11 @@ export function renderDeployModal(container) {
       : step === 'configure'
         ? 'Review & Configure Deployment'
         : step === 'deploying'
-          ? 'Deploying to AlloDeploy Edge'
+          ? 'Deploying to AlloDeploy'
           : 'Deployment Successfully Published!';
 
     const subText = step === 'drop'
-      ? (isUpdatingExisting ? `Upload new files to update project "${store.targetServiceName}"` : 'Deploy your static website or built dist folder directly to AlloDeploy Edge.')
+      ? (isUpdatingExisting ? `Upload new files to update project "${store.targetServiceName}"` : 'Deploy your static website or built dist folder directly to AlloDeploy.')
       : step === 'configure'
         ? (deploySourceType === 'github' ? `Repository: ${selectedGithubRepo?.full_name || serviceName} · Branch: ${selectedBranch}` : '')
         : step === 'deploying'
@@ -418,32 +418,6 @@ export function renderDeployModal(container) {
       `}
 
 
-      ${!store.targetServiceName ? `
-      <!-- Optional Advanced Settings Accordion (New Projects only) -->
-      <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
-        <button type="button" id="btn-toggle-advanced-drop" style="background: none; border: none; color: #94a3b8; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 0;">
-          ${icons.settings}
-          <span style="text-decoration: underline;">Advanced Settings & Custom Domain</span>
-          <span id="adv-caret">▾</span>
-        </button>
-
-        <div id="drop-advanced-panel" style="display: none; margin-top: 12px; background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: var(--radius-sm); padding: 14px;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <div>
-              <label style="font-size: 11.5px; color: var(--text-muted); display: block; margin-bottom: 4px;">Custom Domain (Optional)</label>
-              <input type="text" id="drop-cfg-cf-domain" class="auth-input" placeholder="e.g. app.mydomain.com" value="${cfDomain}" style="font-family: var(--font-mono); font-size: 12.5px; width: 100%;" />
-            </div>
-            <div>
-              <label style="font-size: 11.5px; color: var(--text-muted); display: block; margin-bottom: 4px;">AlloDeploy DNS Zone</label>
-              <select id="drop-cfg-cf-zone" style="font-size: 12.5px; width: 100%;">
-                <option value="">Default Account Managed Zone</option>
-                ${(store.cloudflareZones || []).map(z => `<option value="${z.id}" ${z.id === cfZoneId ? 'selected' : ''}>${z.name}</option>`).join('')}
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
-      ` : ''}
     `;
   }
 
@@ -691,7 +665,7 @@ export function renderDeployModal(container) {
         <!-- Deployment Configuration Form -->
         <div class="config-grid">
           <div class="form-group">
-            <label class="form-label" for="cfg-service-name">Service Name (Edge Subdomain)</label>
+            <label class="form-label" for="cfg-service-name">Service Name (Subdomain)</label>
             <div class="input-with-icon" style="position: relative;">
               <input type="text" id="cfg-service-name" value="${serviceName}" placeholder="e.g. my-app" spellcheck="false" />
             </div>
@@ -717,13 +691,13 @@ export function renderDeployModal(container) {
               <option value="Vite / Single-Page App" ${framework.includes('Vite') ? 'selected' : ''}>Vite / Single-Page App</option>
               <option value="Next.js / React" ${framework.includes('Next') ? 'selected' : ''}>Next.js / React Static</option>
               <option value="Astro Static" ${framework.includes('Astro') ? 'selected' : ''}>Astro Static Site</option>
-              <option value="Node.js / Express" ${framework.includes('Node') ? 'selected' : ''}>Node.js / Express Edge</option>
+              <option value="Node.js / Express" ${framework.includes('Node') ? 'selected' : ''}>Node.js / Express</option>
               <option value="Static HTML5" ${framework.includes('Static') ? 'selected' : ''}>Static HTML5 / CSS3</option>
             </select>
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="cfg-region">Primary Edge Distribution Region</label>
+            <label class="form-label" for="cfg-region">Primary Distribution Region</label>
             <select id="cfg-region">
               <option value="Frankfurt (eu-central-1)" ${region.includes('Frankfurt') ? 'selected' : ''}>Frankfurt (eu-central-1)</option>
               <option value="Oregon (us-west-1)" ${region.includes('Oregon') ? 'selected' : ''}>Oregon (us-west-1)</option>
@@ -759,18 +733,18 @@ export function renderDeployModal(container) {
           </span>
         </div>
 
-        <!-- AlloDeploy API Hosting & Edge Automation -->
+        <!-- AlloDeploy API Hosting & Automation -->
         <div class="cf-deploy-hosting-box" style="background: rgba(168, 85, 247, 0.06); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: var(--radius-md); padding: 16px 18px;">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
             <div style="display: flex; align-items: center; gap: 10px;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #a78bfa;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               <div>
-                <div style="font-size: 14px; font-weight: 700; color: #fff;">AlloDeploy Edge Pipeline</div>
-                <div style="font-size: 12px; color: #94a3b8;">Automated build & distribution via AlloDeploy Edge Network</div>
+                <div style="font-size: 14px; font-weight: 700; color: #fff;">AlloDeploy Pipeline</div>
+                <div style="font-size: 12px; color: #94a3b8;">Automated build & distribution via AlloDeploy Network</div>
               </div>
             </div>
             <span class="badge" style="background: rgba(168, 85, 247, 0.18); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); font-size: 11px; font-weight: 600;">
-              Edge Engine
+              Deployment Engine
             </span>
           </div>
 
@@ -817,7 +791,7 @@ export function renderDeployModal(container) {
             </label>
             <label style="display: flex; align-items: center; gap: 8px; color: #cbd5e1; cursor: pointer;">
               <input type="checkbox" id="cfg-cf-purge" ${cfPurgeCache ? 'checked' : ''} style="accent-color: #a855f7;" />
-              <span>Auto-Purge Edge Cache on Deploy</span>
+              <span>Auto-Purge Cache on Deploy</span>
             </label>
           </div>
         </div>
@@ -826,8 +800,8 @@ export function renderDeployModal(container) {
         <div style="border-top: 1px solid var(--border-subtle); padding-top: 16px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <div>
-              <label style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">Edge Environment Variables</label>
-              <div style="font-size: 11.5px; color: var(--text-faint);">Encrypted with AES-256 and injected at edge build & run time</div>
+              <label style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">Environment Variables</label>
+              <div style="font-size: 11.5px; color: var(--text-faint);">Encrypted with AES-256 and injected at build & run time</div>
             </div>
             <button type="button" class="btn btn-secondary btn-sm" id="btn-add-env">
               ${icons.plus} Add Variable
@@ -967,7 +941,7 @@ export function renderDeployModal(container) {
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="cfg-region">Primary Edge Distribution Region</label>
+            <label class="form-label" for="cfg-region">Primary Distribution Region</label>
             <select id="cfg-region">
               <option value="Frankfurt (eu-central-1)" ${region.includes('Frankfurt') ? 'selected' : ''}>Frankfurt (eu-central-1)</option>
               <option value="Oregon (us-west-1)" ${region.includes('Oregon') ? 'selected' : ''}>Oregon (us-west-1)</option>
@@ -993,20 +967,20 @@ export function renderDeployModal(container) {
                 Turbopack (2x)
               </button>
               <button type="button" class="btn btn-sm ${deploySpeed === 'instant' ? 'btn-primary' : 'btn-secondary'} btn-speed-opt" data-speed="instant" style="flex: 1;">
-                Edge Instant (3x)
+                Instant (3x)
               </button>
             </div>
             <span style="font-size: 11.5px; color: var(--text-faint);">Parallel multi-region propagation speed</span>
           </div>
         </div>
 
-        <!-- AlloDeploy API Hosting & Edge Automation -->
+        <!-- AlloDeploy API Hosting & Automation -->
         <div class="cf-deploy-hosting-box" style="background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.28); border-radius: var(--radius-md); padding: 14px 16px;">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #a78bfa;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               <div>
-                <div style="font-size: 13.5px; font-weight: 700; color: #fff;">AlloDeploy Edge Hosting & Custom Domain</div>
+                <div style="font-size: 13.5px; font-weight: 700; color: #fff;">AlloDeploy Hosting & Custom Domain</div>
                 <div style="font-size: 11.5px; color: #94a3b8;">Automate DNS records, proxy, and SSL via AlloDeploy</div>
               </div>
             </div>
@@ -1036,7 +1010,7 @@ export function renderDeployModal(container) {
             </label>
             <label style="display: flex; align-items: center; gap: 8px; color: #cbd5e1; cursor: pointer;">
               <input type="checkbox" id="cfg-cf-purge" ${cfPurgeCache ? 'checked' : ''} style="accent-color: #a855f7;" />
-              <span>Auto-Purge Edge Cache on Deploy</span>
+              <span>Auto-Purge Cache on Deploy</span>
             </label>
           </div>
         </div>
@@ -1045,8 +1019,8 @@ export function renderDeployModal(container) {
         <div style="border-top: 1px solid var(--border-subtle); padding-top: 16px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <div>
-              <label style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">Edge Environment Variables</label>
-              <div style="font-size: 11.5px; color: var(--text-faint);">Encrypted with AES-256 and injected at edge request time</div>
+              <label style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">Environment Variables</label>
+              <div style="font-size: 11.5px; color: var(--text-faint);">Encrypted with AES-256 and injected at request time</div>
             </div>
             <button type="button" class="btn btn-secondary btn-sm" id="btn-add-env">
               ${icons.plus} Add Variable
@@ -1076,12 +1050,9 @@ export function renderDeployModal(container) {
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
           <div style="font-weight: 600; font-size: 14.5px; display: flex; align-items: center; gap: 8px;">
             <span class="status-dot building"></span>
-            <span>Deploying to Global Edge: <strong>${serviceName}</strong></span>
+            <span>Deploying: <strong>${serviceName}</strong></span>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <span class="badge badge-tag" style="font-size: 11px;">
-              Region: ${region.split(' ')[0]}
-            </span>
             <span style="font-family: var(--font-mono); font-size: 14px; font-weight: 700; color: #38bdf8;">
               ${deployProgress}%
             </span>
@@ -1092,28 +1063,9 @@ export function renderDeployModal(container) {
           <div class="deployment-progress-bar-fill" style="width: ${deployProgress}%;"></div>
         </div>
 
-        <!-- Terminal Filter & Title Bar -->
+        <!-- Terminal Window -->
         <div class="terminal-window" style="min-height: 320px;">
-          <div class="terminal-titlebar">
-            <div class="terminal-dots">
-              <span class="t-dot red"></span>
-              <span class="t-dot yellow"></span>
-              <span class="t-dot green"></span>
-            </div>
-            
-            <div style="display: flex; gap: 8px;">
-              <span class="badge ${logFilter === 'all' ? 'badge-live' : 'badge-tag'} filter-log-btn" data-filter="all" style="cursor: pointer; font-size: 10.5px;">All Logs</span>
-              <span class="badge ${logFilter === 'build' ? 'badge-live' : 'badge-tag'} filter-log-btn" data-filter="build" style="cursor: pointer; font-size: 10.5px;">Build</span>
-              <span class="badge ${logFilter === 'network' ? 'badge-live' : 'badge-tag'} filter-log-btn" data-filter="network" style="cursor: pointer; font-size: 10.5px;">Anycast Network</span>
-              <span class="badge ${logFilter === 'security' ? 'badge-live' : 'badge-tag'} filter-log-btn" data-filter="security" style="cursor: pointer; font-size: 10.5px;">Security & SSL</span>
-            </div>
-
-            <button class="icon-btn btn-sm" id="btn-copy-terminal" title="Copy Terminal Output">
-              ${icons.copy}
-            </button>
-          </div>
-
-          <div class="terminal-logs" id="terminal-log-output" style="max-height: 280px; min-height: 240px;">
+          <div class="terminal-logs" id="terminal-log-output" style="max-height: 320px; min-height: 280px;">
             ${logLines.map(l => `
               <div class="log-line">
                 <span class="log-time">[${l.time}]</span>
@@ -1164,9 +1116,9 @@ export function renderDeployModal(container) {
           <div style="background: rgba(168, 85, 247, 0.06); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: var(--radius-md); padding: 12px 16px; width: 100%; max-width: 540px; text-align: left; display: flex; align-items: flex-start; gap: 10px; font-size: 12px;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #a78bfa; flex-shrink: 0; margin-top: 2px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             <div>
-              <div style="font-weight: 700; color: #c084fc; margin-bottom: 2px;">Want to host on AlloDeploy Edge?</div>
+              <div style="font-weight: 700; color: #c084fc; margin-bottom: 2px;">Want to host on AlloDeploy?</div>
               <div style="color: #94a3b8; line-height: 1.4;">
-                Connect your <strong>AlloDeploy API Token</strong> in Settings to automatically provision and publish your site directly to AlloDeploy's edge network.
+                Connect your <strong>AlloDeploy API Token</strong> in Settings to automatically provision and publish your site directly to AlloDeploy's network.
               </div>
             </div>
           </div>
@@ -1648,7 +1600,7 @@ export function renderDeployModal(container) {
         const autoDeployCheck = container.querySelector('#cfg-auto-deploy');
         if (autoDeployCheck) autoDeployOnPush = autoDeployCheck.checked;
 
-        // Cloudflare Edge Hosting & Custom Domain settings
+        // Cloudflare Hosting & Custom Domain settings
         const cfDomainInput = container.querySelector('#cfg-cf-domain');
         if (cfDomainInput) cfDomain = cfDomainInput.value.trim();
         const cfZoneSelect = container.querySelector('#cfg-cf-zone');
@@ -2163,7 +2115,7 @@ export function renderDeployModal(container) {
 
     logLines = [
       { time: '00:00.01', type: 'info', category: 'build', text: `==> Initializing AlloDeploy pipeline for "${serviceName}" [${deployId}]` },
-      { time: '00:00.04', type: 'info', category: 'build', text: `==> Target: AlloDeploy Edge Network (https://${serviceName}.pages.dev)` }
+      { time: '00:00.04', type: 'info', category: 'build', text: `==> Target: AlloDeploy Network (https://${serviceName}.pages.dev)` }
     ];
     render();
 
@@ -2376,7 +2328,7 @@ export function renderDeployModal(container) {
         { p: 32, time: '00:00.64', type: 'info', category: 'build', text: `==> Resolving dependencies: npm ci --prefer-offline...` },
         { p: 48, time: '00:00.98', type: 'success', category: 'security', text: `AST static security audit clean: 0 vulnerabilities` },
         { p: 62, time: '00:01.35', type: 'purple', category: 'build', text: `==> Executing build command: "${buildCommand}"...` },
-        { p: 80, time: '00:01.80', type: 'info', category: 'network', text: `==> Deploying to AlloDeploy edge network...` },
+        { p: 80, time: '00:01.80', type: 'info', category: 'network', text: `==> Deploying to AlloDeploy network...` },
         { p: 100, time: '00:02.50', type: 'success', category: 'network', text: `Live on AlloDeploy: https://${serviceName}.pages.dev` }
       ];
     } else {
@@ -2384,7 +2336,7 @@ export function renderDeployModal(container) {
         { p: 18, time: '00:00.32', type: 'success', category: 'build', text: `Checksum integrity passed. Bundle unpacked (${droppedFilesInfo?.filesCount || 1} files)` },
         { p: 40, time: '00:00.70', type: 'info', category: 'security', text: `==> Verified root index.html and static assets` },
         { p: 65, time: '00:01.20', type: 'purple', category: 'build', text: `==> Running AlloDeploy CLI: allodeploy pages deploy...` },
-        { p: 85, time: '00:01.80', type: 'info', category: 'network', text: `==> Uploading assets to AlloDeploy edge POPs...` },
+        { p: 85, time: '00:01.80', type: 'info', category: 'network', text: `==> Uploading assets to AlloDeploy servers...` },
         { p: 100, time: '00:02.40', type: 'success', category: 'network', text: `Live on AlloDeploy: https://${serviceName}.pages.dev` }
       ];
     }

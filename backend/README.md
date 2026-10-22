@@ -1,6 +1,6 @@
-﻿# ⚡ AlloDeploy Edge Backend Server
+# ⚡ AlloDeploy Backend Server
 
-Standalone Edge Deployment, GitHub CI/CD, and Hosting Backend Engine for **AlloDeploy**.
+Standalone Deployment, GitHub CI/CD, and Hosting Backend Engine for **AlloDeploy**.
 
 This backend is located in its own completely separate directory (`../backend`), distinct from the frontend application (`../day 3`).
 
@@ -23,12 +23,12 @@ This backend is located in its own completely separate directory (`../backend`),
 3. **📡 Real-Time SSE Build & Distribution Logs**
    - Server-Sent Events endpoint (`GET /api/deploy/stream/:id`) for live terminal output during builds.
 
-4. **🌐 Built-in Edge Static Hosting**
+4. **🌐 Built-in Static Hosting**
    - Deployed sites are immediately browsable at `http://localhost:5000/sites/:subdomain/`.
 
-5. **📊 Real-time Health & Edge Telemetry**
+5. **📊 Real-time Health & Telemetry**
    - `GET /api/health`: Platform status and uptime.
-   - `GET /api/system/metrics`: Memory usage, active edge nodes, and simulated 24h request traffic.
+   - `GET /api/system/metrics`: Memory usage, active nodes, and simulated 24h request traffic.
 
 ---
 
@@ -63,8 +63,8 @@ The server will launch at: **`http://localhost:5000`**
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/api/health` | Edge server health & uptime check |
-| `GET` | `/api/system/metrics` | Real-time RAM, CPU, latency, & edge POPs |
+| `GET` | `/api/health` | Server health & uptime check |
+| `GET` | `/api/system/metrics` | Real-time RAM, CPU, latency, & network POPs |
 | `GET` | `/api/services` | List all deployed services |
 | `GET` | `/api/services/:id` | Get individual service metadata & deploys |
 | `POST` | `/api/services/:id/redeploy` | Trigger immediate redeployment |
@@ -75,7 +75,7 @@ The server will launch at: **`http://localhost:5000`**
 | `GET` | `/api/github/repos` | List developer GitHub repositories |
 | `GET` | `/api/github/repo-info?url=...` | Parse and inspect any GitHub repository |
 | `POST` | `/api/github/webhook` | Webhook listener for automatic git push deploys |
-| `GET` | `/sites/:subdomain/*` | Direct live static site preview & edge routing |
+| `GET` | `/sites/:subdomain/*` | Direct live static site preview & routing |
 
 ---
 

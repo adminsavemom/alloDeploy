@@ -1,7 +1,7 @@
 {
   "name": "allodeploy-backend",
   "version": "1.0.0",
-  "description": "Production Edge Deployment and Hosting Backend for AlloDeploy",
+  "description": "Production Deployment and Hosting Backend for AlloDeploy",
   "main": "server.js",
   "type": "module",
   "scripts": {
